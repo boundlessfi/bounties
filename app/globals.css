@@ -1,13 +1,162 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-inter: 'Inter', sans-serif;
+  --color-gray-50: #f7f7f7;
+  --color-gray-75: #f2f2f2;
+  --color-gray-100: #ececec;
+  --color-gray-200: #e6e6e6;
+  --color-gray-300: #dfdfdf;
+  --color-gray-400: #d9d9d9;
+  --color-gray-500: #b5b5b5;
+  --color-gray-600: #919191;
+  --color-gray-700: #787878;
+  --color-gray-800: #484848;
+  --color-gray-900: #2b2b2b;
+
+  /*  Warning Colors */
+  --color-warning-50: #fef6e7;
+  --color-warning-75: #fbe2b7;
+  --color-warning-100: #f7d394;
+  --color-warning-200: #f7c164;
+  --color-warning-300: #f5b546;
+  --color-warning-400: #dd900d;
+  --color-warning-500: #dd900d;
+  --color-warning-600: #ad6f07;
+  --color-warning-700: #865503;
+  --color-warning-800: #664101;
+  --color-warning-900: #523300;
+
+  /* Secondary Colors */
+  --color-secondary-50: #e3effc;
+  --color-secondary-75: #c6ddf7;
+  --color-secondary-100: #b6d8ff;
+  --color-secondary-200: #80bbff;
+  --color-secondary-300: #3d89df;
+  --color-secondary-400: #1671d9;
+  --color-secondary-500: #0d5eba;
+  --color-secondary-600: #034592;
+  --color-secondary-700: #04326b;
+  --color-secondary-800: #012657;
+  --color-secondary-900: #001633;
+
+  /* Success Colors */
+  --color-success-50: #e7f6ec;
+  --color-success-75: #b5e3c4;
+  --color-success-100: #91d6a8;
+  --color-success-200: #5fc381;
+  --color-success-300: #40b869;
+  --color-success-400: #0f973d;
+  --color-success-500: #099137;
+  --color-success-600: #04802e;
+  --color-success-700: #036b26;
+  --color-success-800: #015b20;
+  --color-success-900: #004617;
+
+  /* Error Colors */
+  --color-error-50: #fbeae9;
+  --color-error-75: #f2bcba;
+  --color-error-100: #eb9b98;
+  --color-error-200: #e26e6a;
+  --color-error-300: #dd524d;
+  --color-error-400: #d42620;
+  --color-error-500: #cb1a14;
+  --color-error-600: #ba110b;
+  --color-error-700: #9e0a05;
+  --color-error-800: #800501;
+  --color-error-900: #591000;
+
+  --color-active-bg: rgba(167, 249, 80, 0.08);
+  --color-active-bg2: rgba(167, 249, 80, 0.32);
+
+  --color-background-main-bg: #030303;
+
+  --color-inactive: #171717;
+  --color-section: #1c1c1c;
+  --color-background-card: #101010;
+  --color-modal: #f5b546;
+  --color-faint: #f5b546;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a4a #1a1a1a;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1a1a1a;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #5a5a5a;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+/* Glow Effect for BoundlessSheet */
+.glow-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at var(--glow-x, 50%) var(--glow-y, 50%),
+    var(--glow-color, rgba(255, 255, 255, 0.4)) 0%,
+    transparent var(--glow-size, 200px)
+  );
+  opacity: var(--glow-intensity, 0.8);
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect > * {
+  position: relative;
+  z-index: 2;
+}
+
+body {
+  scroll-behavior: smooth;
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-stepper-text-inactive: var(--stepper-text-inactive);
+  --color-stepper-foreground: var(--stepper-foreground);
+  --color-stepper-border-active: var(--stepper-border-active);
+  --color-stepper-border: var(--stepper-border);
+  --color-placeholder: var(--placeholder);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-inter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -41,21 +190,30 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  --color-office-brown: var(--office-brown);
+  --color-office-brown-darker: var(--office-brown-darker);
+  --color-warning-orange: var(--warning-orange);
+  --color-warning-orange-darker: var(--warning-orange-darker);
+  --color-blue-ish: var(--blue-ish);
+  --color-blue-ish-darker: var(--blue-ish-darker);
+  --color-success-green: var(--success-green);
+  --color-success-green-darker: var(--success-green-darker);
+  --color-error-status: var(--error-status);
+
+  /* Custom breakpoints for 4K screens */
+  --breakpoint-4xl: 2560px;
 }
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: #030303;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: #a7f950;
+  --primary-foreground: #020502;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
@@ -72,6 +230,11 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
+  --stepper-foreground: oklch(0.2046 0 0);
+  --stepper-border: oklch(0.2264 0 0);
+  --stepper-border-active: oklch(0.3501 0.0381 190.35);
+  --stepper-text-inactive: oklch(0.7731 0 0);
+  --placeholder: oklch(0.6567 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
   --sidebar-primary-foreground: oklch(0.985 0 0);
@@ -79,6 +242,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --office-brown: #e4dbdb;
+  --office-brown-darker: #645d5d;
+  --warning-orange: #fbe2b7;
+  --warning-orange-darker: #ad6f07;
+  --blue-ish: #c6ddf7;
+  --blue-ish-darker: #034592;
+  --success-green: #b5e3c4;
+  --success-green-darker: #04802e;
+  --error-status: #034592;
 }
 
 .dark {
@@ -113,13 +285,262 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --office-brown: #645d5d;
+  --office-brown-darker: #e4dbdb;
+  --warning-orange: #ad6f07;
+  --warning-orange-darker: #fbe2b7;
+  --blue-ish: #034592;
+  --blue-ish-darker: #c6ddf7;
+  --success-green: #04802e;
+  --success-green-darker: #b5e3c4;
+  --error-status: #034592;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+button {
+  cursor: pointer;
+}
+
+/* reduce scrollbar width */
+.slim-scrollbar {
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--background);
+}
+
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.slim-scrollbar::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Hide arrows in Chrome, Safari, Edge, Opera */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide arrows in Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.text-gradient {
+  background-image: linear-gradient(180deg, #69726d 0%, #fff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+/* Dropdown menu item animations */
+@keyframes dropdownItemSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* SplitText character animations for mobile menu */
+.char {
+  display: inline-block;
+  will-change: transform;
+}
+
+.word {
+  display: inline-block;
+  margin-right: 0.25em;
+}
+
+/* Mobile menu animation enhancements */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.5s ease-out;
+}
+
+/* Navbar character animations */
+.nav-char {
+  display: inline-block;
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+}
+
+/* Waitlist page advanced text animations */
+.title-char,
+.subtitle-char {
+  display: inline-block;
+  will-change: transform;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.title-word,
+.subtitle-word {
+  display: inline-block;
+  will-change: transform;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.title-line,
+.subtitle-line {
+  display: block;
+  will-change: transform;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* 3D text effects */
+.title-char,
+.subtitle-char {
+  backface-visibility: hidden;
+  transform-origin: 50% 50%;
+}
+
+/* Hover effects for interactive text */
+.title-char:hover,
+.subtitle-char:hover {
+  filter: brightness(1.2);
+  transform: scale(1.1) translateZ(10px);
+  transition: all 0.3s ease;
+}
+
+/* Enhanced gradient text effects */
+.gradient-text-3d {
+  background: linear-gradient(45deg, #a7f950, #3ae6b2, #69726d);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Enhanced text glow effects */
+.text-glow {
+  filter: drop-shadow(0 0 20px rgba(167, 249, 80, 0.4));
+  transition: filter 0.3s ease;
+}
+
+.text-glow:hover {
+  filter: drop-shadow(0 0 30px rgba(167, 249, 80, 0.6));
+}
+
+/* Particle trail effect */
+.particle-trail {
+  position: relative;
+}
+
+.particle-trail::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle,
+    rgba(167, 249, 80, 0.1) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.particle-trail:hover::after {
+  opacity: 1;
+}
+
+/* 3D text depth */
+.text-3d {
+  text-shadow:
+    0 1px 0 #ccc,
+    0 2px 0 #c9c9c9,
+    0 3px 0 #bbb,
+    0 4px 0 #b9b9b9,
+    0 5px 0 #aaa,
+    0 6px 1px rgba(0, 0, 0, 0.1),
+    0 0 5px rgba(0, 0, 0, 0.1),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    0 3px 5px rgba(0, 0, 0, 0.2),
+    0 5px 10px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.2),
+    0 20px 20px rgba(0, 0, 0, 0.15);
+}
+
+.gradient-text {
+  background-image: linear-gradient(
+    273deg,
+    rgba(167, 249, 80, 0.5) 13.84%,
+    #3ae6b2 73.28%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-2 {
+  background: linear-gradient(93deg, #b5b5b5 15.93%, #fff 97.61%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.gradient-text-3 {
+  background: linear-gradient(
+    273deg,
+    rgba(167, 249, 80, 0.5) 13.84%,
+    #3ae6b2 73.28%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* About Timeline Card's Background gradient for images */
+.my-gradient-box {
+  background: radial-gradient(circle, #ffffff7a, #ffffff14);
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px your_desired_color inset !important;
+  -webkit-text-fill-color: white !important; /* Optional: Customize text color */
+  transition: background-color 5000s ease-in-out 0s; /* Optional: Smooth transition */
 }
