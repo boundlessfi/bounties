@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Boundless Bounties
 
-## Getting Started
+Boundless Bounties is an open-source contribution hub for the Stellar ecosystem.
 
-First, run the development server:
+It allows projects to post bounties, RFPs, and contributor tasks with on-chain escrow, milestone-based payouts, and transparent approval workflows.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This repository contains the core frontend logic for managing bounties, submissions, reviews, and payouts using Soroban and TrustlessWork.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What This Repository Provides
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+A decentralized bounty infrastructure that enables:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Ecosystem teams to post funded tasks across development, design, research, content, and operations
+- Contributors to claim tasks, submit work, and receive payments trustlessly
+- Funds to be released only after verified progress or approved milestones
+- Wallet-linked contributor histories and reputation tracking
 
-## Learn More
+## Core Features
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- On-chain bounty creation and management
+- Escrowed payouts enforced by Soroban smart contracts
+- Support for single-shot and milestone-based payments
+- Wallet-linked contributor profiles and work history
+- Reputation tracking based on completed contributions
+- Dispute and challenge windows for accountability
+- Event-driven architecture for indexing and dashboards
+- Support for direct payouts in XLM or Stellar assets, with optional fiat off-ramps
+- Public Leaderboard to display active contributors
