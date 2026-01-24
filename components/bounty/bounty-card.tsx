@@ -105,7 +105,7 @@ export function BountyCard({ bounty }: BountyCardProps) {
 
             <CardFooter className="p-5 pt-3 mt-auto border-t border-gray-800/50 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    {bounty.rewardAmount ? (
+                    {(bounty.rewardAmount !== null && bounty.rewardAmount !== undefined) ? (
                         <div className="flex flex-col">
                             <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Reward</span>
                             <span className="font-bold text-primary">
