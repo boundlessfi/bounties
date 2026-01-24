@@ -4,6 +4,9 @@ export const authClient = createAuthClient({
   baseURL: process.env.NEXT_PUBLIC_APP_URL,
 });
 
+// Export auth methods for easy access
+export const { signIn, signOut, useSession } = authClient;
+
 const errorMessages: Record<string, string> = Object.fromEntries(
   Object.keys(authClient.$ERROR_CODES).map((code) => [
     code,
