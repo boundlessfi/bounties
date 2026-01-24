@@ -1,20 +1,16 @@
-import { BountyDetails } from "@/types/bounty"
+import { Bounty } from "@/types/bounty"
 
-export const mockBounties: BountyDetails[] = [
+export const mockBounties: Bounty[] = [
   {
     id: "1",
     type: "bug",
-    title: "Fix authentication redirect loop on Safari",
-    project: {
-      name: "Boundless Finance",
-      logo: "/logo.svg",
-      url: "https://boundless.fi",
-    },
-    github: {
-      repoUrl: "https://github.com/boundlessfi/bounties",
-      issueUrl: "https://github.com/boundlessfi/bounties/issues/1",
-      issueNumber: 1,
-    },
+    issueTitle: "Fix authentication redirect loop on Safari",
+    projectId: "boundless-finance",
+    projectName: "Boundless Finance",
+    projectLogoUrl: "/logo.svg",
+    githubRepo: "boundlessfi/bounties",
+    githubIssueUrl: "https://github.com/boundlessfi/bounties/issues/1",
+    issueNumber: 1,
     description: `## Problem
 Users on Safari are experiencing an infinite redirect loop when attempting to authenticate via GitHub OAuth.
 
@@ -36,8 +32,9 @@ The issue appears to be related to cookie handling in Safari's strict privacy mo
       "Update documentation if needed",
     ],
     scope: "Authentication module only. Do not modify unrelated components.",
-    reward: { amount: 500, currency: "USDC" },
-    difficulty: "medium",
+    rewardAmount: 500,
+    rewardCurrency: "USDC",
+    difficulty: "intermediate",
     tags: ["safari", "authentication", "oauth", "cookies"],
     status: "open",
     createdAt: "2025-01-15T10:00:00Z",
@@ -46,17 +43,13 @@ The issue appears to be related to cookie handling in Safari's strict privacy mo
   {
     id: "2",
     type: "feature",
-    title: "Implement dark mode toggle in settings",
-    project: {
-      name: "Boundless Finance",
-      logo: "/logo.svg",
-      url: "https://boundless.fi",
-    },
-    github: {
-      repoUrl: "https://github.com/boundlessfi/bounties",
-      issueUrl: "https://github.com/boundlessfi/bounties/issues/2",
-      issueNumber: 2,
-    },
+    issueTitle: "Implement dark mode toggle in settings",
+    projectId: "boundless-finance",
+    projectName: "Boundless Finance",
+    projectLogoUrl: "/logo.svg",
+    githubRepo: "boundlessfi/bounties",
+    githubIssueUrl: "https://github.com/boundlessfi/bounties/issues/2",
+    issueNumber: 2,
     description: `## Feature Request
 Add a dark mode toggle to the application settings page that persists user preference.
 
@@ -71,8 +64,9 @@ Add a dark mode toggle to the application settings page that persists user prefe
       "Persist user preference",
       "Support system preference detection",
     ],
-    reward: { amount: 300, currency: "USDC" },
-    difficulty: "easy",
+    rewardAmount: 300,
+    rewardCurrency: "USDC",
+    difficulty: "beginner",
     tags: ["ui", "theme", "settings", "dark-mode"],
     status: "claimed",
     createdAt: "2025-01-10T08:00:00Z",
@@ -81,17 +75,13 @@ Add a dark mode toggle to the application settings page that persists user prefe
   {
     id: "3",
     type: "documentation",
-    title: "Write API documentation for bounty endpoints",
-    project: {
-      name: "Boundless Finance",
-      logo: "/logo.svg",
-      url: "https://boundless.fi",
-    },
-    github: {
-      repoUrl: "https://github.com/boundlessfi/bounties",
-      issueUrl: "https://github.com/boundlessfi/bounties/issues/3",
-      issueNumber: 3,
-    },
+    issueTitle: "Write API documentation for bounty endpoints",
+    projectId: "boundless-finance",
+    projectName: "Boundless Finance",
+    projectLogoUrl: "/logo.svg",
+    githubRepo: "boundlessfi/bounties",
+    githubIssueUrl: "https://github.com/boundlessfi/bounties/issues/3",
+    issueNumber: 3,
     description: `## Documentation Needed
 Create comprehensive API documentation for all bounty-related endpoints.
 
@@ -100,8 +90,9 @@ Create comprehensive API documentation for all bounty-related endpoints.
 - GET /api/bounties/:id
 - POST /api/bounties/:id/claim
 - POST /api/bounties/:id/submit`,
-    reward: { amount: 200, currency: "USDC" },
-    difficulty: "easy",
+    rewardAmount: 200,
+    rewardCurrency: "USDC",
+    difficulty: "beginner",
     tags: ["documentation", "api", "openapi"],
     status: "closed",
     createdAt: "2025-01-05T12:00:00Z",
@@ -109,10 +100,10 @@ Create comprehensive API documentation for all bounty-related endpoints.
   },
 ]
 
-export function getBountyById(id: string): BountyDetails | undefined {
+export function getBountyById(id: string): Bounty | undefined {
   return mockBounties.find((bounty) => bounty.id === id)
 }
 
-export function getAllBounties(): BountyDetails[] {
+export function getAllBounties(): Bounty[] {
   return mockBounties
 }

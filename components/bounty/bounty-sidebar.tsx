@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import type { BountyDetails } from "@/types/bounty"
+import type { Bounty } from "@/types/bounty"
 import { ExternalLink, Github, Link2, Clock, Calendar, Check } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 
 interface BountySidebarProps {
-  bounty: BountyDetails
+  bounty: Bounty
 }
 
 export function BountySidebar({ bounty }: BountySidebarProps) {
@@ -52,7 +52,7 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
   return (
     <div className="sticky top-4 rounded-xl border border-gray-800 bg-background-card p-6 space-y-4">
       <Button asChild className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-        <a href={bounty.github.issueUrl} target="_blank" rel="noopener noreferrer">
+        <a href={bounty.githubIssueUrl} target="_blank" rel="noopener noreferrer">
           <Github className="size-4" />
           View on GitHub
         </a>
@@ -74,20 +74,10 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
 
       <Separator className="bg-gray-800" />
 
-      {bounty.project.url && (
-        <a
-          href={bounty.project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
-        >
-          <ExternalLink className="size-4" />
-          Visit Project
-        </a>
-      )}
+
 
       <a
-        href={bounty.github.repoUrl}
+        href={`https://github.com/${bounty.githubRepo}`}
         target="_blank"
         rel="noopener noreferrer"
         className="flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
