@@ -74,7 +74,7 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-6 pt-2">
-        {bounty.rewardAmount ? (
+        {(bounty.rewardAmount !== null && bounty.rewardAmount !== undefined) ? (
           <div className="flex flex-col gap-1">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Reward</span>
             <div className="flex items-baseline gap-1.5">
