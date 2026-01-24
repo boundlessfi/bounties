@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
-import { Github, ExternalLink, Bug, Sparkles, FileText, RefreshCw, Circle } from "lucide-react"
+import { Github, Bug, Sparkles, FileText, RefreshCw, Circle } from "lucide-react"
 import { Bounty, BountyType } from "@/types/bounty"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
