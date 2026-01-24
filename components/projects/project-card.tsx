@@ -44,7 +44,7 @@ export function ProjectCard({ project }: { project: Project }) {
             {project.status}
           </Badge>
 
-          {/* Project Logo/Title in Banner */}
+        
           <div className="flex flex-col items-center justify-center space-y-3">
             {project.logoUrl ? (
               <img
