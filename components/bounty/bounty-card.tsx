@@ -57,7 +57,7 @@ export function BountyCard({ bounty }: BountyCardProps) {
                             </div>
                         ) : (
                             <div className="size-8 shrink-0 rounded-md bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
-                                {bounty.projectName.substring(0, 2).toUpperCase()}
+                                {(bounty.projectName || "Unknown").substring(0, 2).toUpperCase()}
                             </div>
                         )}
                         <div>
