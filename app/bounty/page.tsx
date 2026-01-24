@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { getAllBounties } from "@/lib/mock-bounty"
 import { BountyCard } from "@/components/bounty/bounty-card"
 import { Input } from "@/components/ui/input"
@@ -103,17 +103,17 @@ export default function BountiesPage() {
         )
     }
 
-    const toggleProject = (project: string) => {
+    const toggleProject = useCallback((project: string) => {
         setSelectedProjects(prev =>
             prev.includes(project) ? prev.filter(p => p !== project) : [...prev, project]
         )
-    }
+    }, [])
 
-    const toggleTag = (tag: string) => {
+    const toggleTag = useCallback((tag: string) => {
         setSelectedTags(prev =>
             prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
         )
-    }
+    }, [])
 
     const clearFilters = () => {
         setSearchQuery("")
