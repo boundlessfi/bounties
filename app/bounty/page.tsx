@@ -151,7 +151,7 @@ export default function BountiesPage() {
                                     <h2 className="text-sm font-bold uppercase tracking-wider text-gray-500 flex items-center gap-2">
                                         <Filter className="size-4" /> Filters
                                     </h2>
-                                    {(searchQuery || selectedTypes.length > 0 || selectedDifficulties.length > 0 || statusFilter !== 'open') && (
+                                    {(searchQuery || selectedTypes.length > 0 || selectedDifficulties.length > 0 || selectedProjects.length > 0 || selectedTags.length > 0 || rewardRange[0] !== 0 || rewardRange[1] !== 5000 || statusFilter !== 'open') && (
                                         <Button variant="ghost" size="sm" onClick={clearFilters} className="h-6 text-[10px] text-primary hover:text-primary/80 p-0 hover:bg-transparent">
                                             Reset
                                         </Button>
