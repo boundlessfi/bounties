@@ -1,11 +1,11 @@
 import Markdown from "react-markdown"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import type { BountyDetails } from "@/types/bounty"
+import type { Bounty } from "@/types/bounty"
 import { CheckCircle2, AlertCircle } from "lucide-react"
 
 interface BountyContentProps {
-  bounty: BountyDetails
+  bounty: Bounty
 }
 
 export function BountyContent({ bounty }: BountyContentProps) {
