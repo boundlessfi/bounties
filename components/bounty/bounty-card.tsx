@@ -180,7 +180,7 @@ export function BountyCard({
             {bounty.milestoneCount != null && (
               <Badge
                 variant="outline"
-                className="text-xs px-3 py-1 bg-[`#f7fff0`] dark:bg-slate-900 border-[`#f2ffe5`] dark:border-slate-700"
+                className="text-xs px-3 py-1 bg-[#f7fff0] dark:bg-slate-900 border-[#f2ffe5] dark:border-slate-700"
               >
                 {bounty.milestoneCount}{" "}
                 {bounty.milestoneCount === 1 ? "milestone" : "milestones"}
