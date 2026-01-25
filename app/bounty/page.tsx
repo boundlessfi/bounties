@@ -368,7 +368,7 @@ export default function BountiesPage() {
                                 </div>
                                 <h3 className="text-xl font-bold mb-2 text-gray-200">No bounties found</h3>
                                 <p className="text-gray-400 max-w-md mx-auto mb-6">
-                                    We couldn't find any bounties matching your current filters.
+                                    We couldn&apos;t find any bounties matching your current filters.
                                     Try adjusting your search terms or filters.
                                 </p>
                                 <Button onClick={clearFilters} variant="outline" className="border-gray-700 hover:bg-gray-800">
