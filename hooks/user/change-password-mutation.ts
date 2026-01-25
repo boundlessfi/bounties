@@ -57,11 +57,12 @@ export function useChangePassword() {
 
             return { success: true };
         },
-        onSuccess: (_data, variables) => {
+        onSuccess: async (_data, variables) => {
             toast.success('Password changed successfully');
 
-            // If revoking other sessions, redirect to login
+            // If revoking other sessions, sign out current session and redirect
             if (variables.revokeOtherSessions) {
+                await authClient.signOut();
                 queryClient.clear();
                 router.push('/auth');
             }
