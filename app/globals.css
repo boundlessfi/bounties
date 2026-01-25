@@ -107,12 +107,15 @@
 
 /* Hide scrollbar utility */
 .scrollbar-hide {
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer 10+ */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none;
+  /* Safari and Chrome */
 }
 
 /* Glow Effect for BoundlessSheet */
@@ -128,18 +131,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle at var(--glow-x, 50%) var(--glow-y, 50%),
-    var(--glow-color, rgba(255, 255, 255, 0.4)) 0%,
-    transparent var(--glow-size, 200px)
-  );
+  background: radial-gradient(circle at var(--glow-x, 50%) var(--glow-y, 50%),
+      var(--glow-color, rgba(255, 255, 255, 0.4)) 0%,
+      transparent var(--glow-size, 200px));
   opacity: var(--glow-intensity, 0.8);
   pointer-events: none;
   z-index: 1;
   transition: opacity 0.3s ease;
 }
 
-.glow-effect > * {
+.glow-effect>* {
   position: relative;
   z-index: 2;
 }
@@ -344,9 +345,11 @@ input[type='number'] {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .font-inter {
   font-family: 'Inter', sans-serif;
 }
+
 /* Dropdown menu item animations */
 @keyframes dropdownItemSlideIn {
   from {
@@ -441,6 +444,7 @@ input[type='number'] {
 }
 
 @keyframes gradientShift {
+
   0%,
   100% {
     background-position: 0% 50%;
@@ -473,11 +477,9 @@ input[type='number'] {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
-    circle,
-    rgba(167, 249, 80, 0.1) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(167, 249, 80, 0.1) 0%,
+      transparent 70%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -504,11 +506,9 @@ input[type='number'] {
 }
 
 .gradient-text {
-  background-image: linear-gradient(
-    273deg,
-    rgba(167, 249, 80, 0.5) 13.84%,
-    #3ae6b2 73.28%
-  );
+  background-image: linear-gradient(273deg,
+      rgba(167, 249, 80, 0.5) 13.84%,
+      #3ae6b2 73.28%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -521,12 +521,11 @@ input[type='number'] {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .gradient-text-3 {
-  background: linear-gradient(
-    273deg,
-    rgba(167, 249, 80, 0.5) 13.84%,
-    #3ae6b2 73.28%
-  );
+  background: linear-gradient(273deg,
+      rgba(167, 249, 80, 0.5) 13.84%,
+      #3ae6b2 73.28%);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -542,6 +541,8 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px your_desired_color inset !important;
-  -webkit-text-fill-color: white !important; /* Optional: Customize text color */
-  transition: background-color 5000s ease-in-out 0s; /* Optional: Smooth transition */
+  -webkit-text-fill-color: white !important;
+  /* Optional: Customize text color */
+  transition: background-color 5000s ease-in-out 0s;
+  /* Optional: Smooth transition */
 }
