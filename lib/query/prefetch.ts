@@ -33,6 +33,7 @@ export async function prefetchBounty(
     queryClient: QueryClient,
     id: string
 ): Promise<void> {
+    if (!id) return;
     await queryClient.prefetchQuery(bountyDetailQueryOptions(id));
 }
 

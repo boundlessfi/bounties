@@ -20,4 +20,8 @@ export const bountyKeys = {
 };
 
 // Type helpers for query keys
-export type BountyQueryKey = ReturnType<typeof bountyKeys.list | typeof bountyKeys.detail>;
+export type BountyQueryKey =
+    | ReturnType<typeof bountyKeys.list>
+    | ReturnType<typeof bountyKeys.infinite>
+    | ReturnType<typeof bountyKeys.detail>;
+
