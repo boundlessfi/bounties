@@ -1,145 +1,253 @@
-import Link from "next/link"
-import Image from "next/image"
-import { formatDistanceToNow } from "date-fns"
-import { Github, Bug, Sparkles, FileText, RefreshCw, Circle } from "lucide-react"
-import { Bounty, BountyType } from "@/types/bounty"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
+"use client";
+
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+
+interface Bounty {
+  id: string;
+  title: string;
+  description: string;
+  budget: {
+    amount: number;
+    asset: string;
+  };
+  status:
+    | "open"
+    | "claimed"
+    | "in_progress"
+    | "under_review"
+    | "completed"
+    | "disputed";
+  category: string;
+  claimingModel: 1 | 2 | 3 | 4;
+  creator: {
+    wallet: string;
+    displayName?: string;
+    avatar?: string;
+  };
+  deadline: Date;
+  applicantCount?: number;
+  milestoneCount?: number;
+}
 
 interface BountyCardProps {
-    bounty: Bounty
+  bounty: Bounty;
+  onClick?: () => void;
+  variant?: "grid" | "list";
 }
 
-const typeConfig: Record<BountyType, { label: string; icon: React.ReactNode; className: string }> = {
-    bug: { label: "Bug", icon: <Bug className="size-3" />, className: "bg-error-500 text-white border-transparent" },
-    feature: { label: "Feature", icon: <Sparkles className="size-3" />, className: "bg-primary text-primary-foreground border-transparent" },
-    documentation: { label: "Docs", icon: <FileText className="size-3" />, className: "bg-secondary-500 text-white border-transparent" },
-    refactor: { label: "Refactor", icon: <RefreshCw className="size-3" />, className: "bg-gray-700 text-gray-100 border-transparent" },
-    other: { label: "Other", icon: <Circle className="size-3" />, className: "bg-gray-800 text-gray-300 border-gray-600" },
-}
+const statusConfig = {
+  open: {
+    variant: "default" as const,
+    label: "Open",
+    dotColor: "bg-emerald-500",
+  },
+  claimed: {
+    variant: "secondary" as const,
+    label: "Claimed",
+    dotColor: "bg-amber-500",
+  },
+  in_progress: {
+    variant: "secondary" as const,
+    label: "In Progress",
+    dotColor: "bg-blue-500",
+  },
+  under_review: {
+    variant: "secondary" as const,
+    label: "Under Review",
+    dotColor: "bg-amber-500",
+  },
+  completed: {
+    variant: "outline" as const,
+    label: "Completed",
+    dotColor: "bg-slate-400",
+  },
+  disputed: {
+    variant: "destructive" as const,
+    label: "Disputed",
+    dotColor: "bg-red-500",
+  },
+};
 
-const difficultyColors: Record<string, string> = {
-    beginner: "text-success-400",
-    intermediate: "text-warning-400",
-    advanced: "text-error-400",
-}
+const modelNames = {
+  1: "Single Claim",
+  2: "Application",
+  3: "Competition",
+  4: "Multi-Winner",
+};
 
-const statusColors: Record<string, string> = {
-    open: "bg-success-500/10 text-success-500 border-success-500/20",
-    claimed: "bg-warning-500/10 text-warning-500 border-warning-500/20",
-    closed: "bg-gray-500/10 text-gray-500 border-gray-500/20",
-}
+/**
+ * Render a clickable card summarizing a bounty, including status, budget, category, model, creator, deadline, and applicant info.
+ *
+ * @param bounty - The bounty data to display (id, title, description, budget, status, category, claimingModel, creator, deadline, applicantCount, milestoneCount)
+ * @param onClick - Optional handler invoked when the card is clicked or activated via keyboard
+ * @param variant - Layout variant; either `"grid"` (default) or `"list"`
+ * @returns A JSX element representing the styled bounty card
+ */
+export function BountyCard({
+  bounty,
+  onClick,
+  variant = "grid",
+}: BountyCardProps) {
+  const status = statusConfig[bounty.status];
+  const timeLeft = formatDistanceToNow(bounty.deadline, { addSuffix: true });
 
-export function BountyCard({ bounty }: BountyCardProps) {
-    const typeInfo = typeConfig[bounty.type]
-    const difficultyColor = bounty.difficulty ? difficultyColors[bounty.difficulty] : "text-gray-400"
-    const statusColor = statusColors[bounty.status] || statusColors.closed
+  return (
+    <Card
+      className={cn(
+        "overflow-hidden w-full max-w-xs  rounded-4xl cursor-pointer transition-all duration-300",
+        "hover:shadow-lg hover:border-primary/60 hover:scale-[1.02]",
+        "border border-slate-200 dark:border-slate-800",
+        variant === "list" && "flex flex-col",
+      )}
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+    >
+      {/* Main Content Section */}
 
-    // Prevent card click when clicking interactive elements
-    const handleInteractiveClick = (e: React.MouseEvent) => {
-        e.stopPropagation()
-    }
+      <div
+        className={cn(
+          "flex-1 flex flex-col",
+          variant === "list" && "md:flex-row md:items-center",
+        )}
+      >
+        <CardHeader
+          className={cn(
+            "pb-3 px-4 sm:px-5",
+            variant === "list" && "md:flex-1 md:pb-0",
+          )}
+        >
+          {/* Header Row with Status and Budget */}
 
-    return (
-        <Card className="group h-full flex flex-col bg-background-card border-gray-800 transition-all duration-300 hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 relative">
-            <CardHeader className="p-5 pb-3 space-y-3">
-                <div className="flex justify-between items-start gap-4">
-                    <div className="flex items-center gap-3">
-                        {bounty.projectLogoUrl ? (
-                            <div className="relative size-8 shrink-0 overflow-hidden rounded-md border border-gray-800">
-                                <Image
-                                    src={bounty.projectLogoUrl}
-                                    alt={bounty.projectName}
-                                    fill
-                                    className="object-cover"
-                                />
-                            </div>
-                        ) : (
-                            <div className="size-8 shrink-0 rounded-md bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-400">
-                                {(bounty.projectName || "Unknown").substring(0, 2).toUpperCase()}
-                            </div>
-                        )}
-                        <div>
-                            <h3 className="text-sm font-medium text-gray-300 line-clamp-1">{bounty.projectName}</h3>
-                            <span className="text-xs text-gray-500 flex items-center gap-1">
-                                {formatDistanceToNow(new Date(bounty.createdAt), { addSuffix: true })}
-                            </span>
-                        </div>
-                    </div>
+          <div className="flex items-start justify-between gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div
+                className={cn(
+                  "w-2.5 h-2.5 rounded-full animate-pulse",
+                  status.dotColor,
+                )}
+              />
+              <Badge variant={status.variant} className="text-xs">
+                {status.label}
+              </Badge>
+            </div>
 
-                    <div className="flex flex-col items-end gap-1.5">
-                        <Badge variant="outline" className={cn("shrink-0 gap-1.5", typeInfo.className)}>
-                            {typeInfo.icon}
-                            {typeInfo.label}
-                        </Badge>
-                        <Badge variant="outline" className={cn("shrink-0 text-[10px] px-1.5 py-0 h-5 lowercase", statusColor)}>
-                            {bounty.status}
-                        </Badge>
-                    </div>
+            {variant === "grid" && (
+              <div className="text-right">
+                <div className="text-lg font-bold text-slate-900 dark:text-slate-50">
+                  {bounty.budget.amount.toLocaleString()}
                 </div>
-
-                <h2 className="text-lg font-bold text-gray-100 group-hover:text-primary transition-colors line-clamp-2 leading-tight">
-                    <Link href={`/bounty/${bounty.id}`} className="focus:outline-none after:absolute after:inset-0">
-                        {bounty.issueTitle}
-                    </Link>
-                </h2>
-            </CardHeader>
-
-            <CardContent className="p-5 py-2 flex-grow">
-                <p className="text-sm text-gray-400 line-clamp-3 mb-4">
-                    {bounty.description.replace(/[#*`_]/g, '') /* Simple stripped markdown preview */}
-                </p>
-
-                <div className="flex flex-wrap gap-2 mb-2">
-                    {bounty.tags.slice(0, 3).map(tag => (
-                        <Badge key={tag} variant="secondary" className="bg-gray-800/50 text-gray-400 border-gray-700/50 text-xs font-normal">
-                            {tag}
-                        </Badge>
-                    ))}
-                    {bounty.tags.length > 3 && (
-                        <span className="text-xs text-gray-500 self-center">+{bounty.tags.length - 3}</span>
-                    )}
+                <div className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">
+                  {bounty.budget.asset}
                 </div>
-            </CardContent>
+              </div>
+            )}
+          </div>
 
-            <CardFooter className="p-5 pt-3 mt-auto border-t border-gray-800/50 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    {(bounty.rewardAmount !== null && bounty.rewardAmount !== undefined) ? (
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Reward</span>
-                            <span className="font-bold text-primary">
-                                {bounty.rewardAmount} {bounty.rewardCurrency}
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Reward</span>
-                            <span className="text-gray-400 text-sm">-</span>
-                        </div>
-                    )}
+          {/* Title and Description */}
 
-                    {bounty.difficulty && (
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 uppercase tracking-wider font-medium">Difficulty</span>
-                            <span className={cn("text-sm font-medium capitalize", difficultyColor)}>
-                                {bounty.difficulty}
-                            </span>
-                        </div>
-                    )}
-                </div>
+          <CardTitle className="text-base font-semibold line-clamp-2 text-slate-900 dark:text-slate-50 mb-1">
+            {bounty.title}
+          </CardTitle>
+          <CardDescription className="line-clamp-2 text-xs text-slate-600 dark:text-slate-400">
+            {bounty.description}
+          </CardDescription>
 
-                <a
-                    href={bounty.githubIssueUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-gray-500 hover:text-white hover:bg-gray-800 rounded-full transition-colors relative z-10"
-                    onClick={handleInteractiveClick}
-                    title="View GitHub Issue"
-                >
-                    <Github className="size-5" />
-                </a>
-            </CardFooter>
-        </Card>
-    )
+          {/* Category and Model Badges */}
+
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Badge
+              variant="outline"
+              className="text-xs px-3 py-1 bg-[#f7fff0] dark:bg-slate-900 border-[#f2ffe5] dark:border-slate-700"
+            >
+              {bounty.category}
+            </Badge>
+            <Badge
+              variant="outline"
+              className="text-xs px-3 py-1 bg-[#f7fff0] dark:bg-slate-900 border-[#f2ffe5] dark:border-slate-700"
+            >
+              {modelNames[bounty.claimingModel]}
+            </Badge>
+            {bounty.milestoneCount && bounty.milestoneCount > 1 && (
+              <Badge
+                variant="outline"
+                className="text-xs px-3 py-1 bg-[#f7fff0] dark:bg-slate-900 border-[#f2ffe5] dark:border-slate-700"
+              >
+                {bounty.milestoneCount} milestones
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+
+        {/* List Variant Budget Display */}
+
+        {variant === "list" && (
+          <div className="px-4 sm:px-6 py-3 md:w-48 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-50">
+              {bounty.budget.amount.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              {bounty.budget.asset}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer with Creator and Meta Info */}
+
+      <CardFooter className="border-t border-[#f0f0f0] dark:border-slate-700 flex flex-wrap sm:items-center justify-center md:justify-between gap-3 py-3 px-4 text-xs text-slate-600 dark:text-slate-400">
+        {/* Creator Info */}
+        <div className="flex items-center gap-2 min-w-0 order-1 sm:order-none">
+          <Avatar className="h-6 w-6 border border-slate-200 dark:border-slate-700 flex-shrink-0">
+            <AvatarImage src={bounty.creator.avatar} />
+            <AvatarFallback className="text-xs font-medium">
+              {bounty.creator.displayName?.[0]?.toUpperCase() ||
+                bounty.creator.wallet.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <span className="truncate text-xs font-medium text-slate-700 dark:text-slate-300">
+            {bounty.creator.displayName ||
+              `${bounty.creator.wallet.slice(0, 8)}...`}
+          </span>
+        </div>
+
+        {/* Meta Information */}
+
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 order-2 sm:order-none">
+          {bounty.deadline && (
+            <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 whitespace-nowrap text-xs">
+              <Clock className="h-3.5 w-3.5 flex-shrink-0" />
+              <span className="hidden sm:inline">{timeLeft}</span>
+              <span className="sm:hidden">
+                {timeLeft.replace(" ago", "").replace(" from now", "")}
+              </span>
+            </div>
+          )}
+          {bounty.applicantCount != null && bounty.applicantCount > 0 && (
+            <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 whitespace-nowrap text-xs">
+              <Users className="h-3.5 w-3.5 flex-shrink-0" />
+              <span>{bounty.applicantCount}</span>
+            </div>
+          )}
+        </div>
+      </CardFooter>
+    </Card>
+  );
 }
