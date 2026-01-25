@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { socket } from '@/lib/socket/client';
 import { setupSocketSync } from '@/lib/query/sync/socket-sync';
@@ -9,6 +9,20 @@ import { authClient } from '@/lib/auth-client';
 export function useSocketSync() {
   const queryClient = useQueryClient();
   const { data: session, isPending: isSessionLoading } = authClient.useSession();
+  const [isConnected, setIsConnected] = useState(socket.connected);
+
+  useEffect(() => {
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+    };
+  }, []);
 
   useEffect(() => {
     if (isSessionLoading) return;
@@ -36,6 +50,6 @@ export function useSocketSync() {
 
   return {
     socket,
-    isConnected: socket.connected,
+    isConnected,
   };
 }
