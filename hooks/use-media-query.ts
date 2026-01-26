@@ -22,13 +22,24 @@ export function useMediaQuery(query: string): boolean {
         setMatches(media.matches)
 
         // Listener callback
-        const listener = () => setMatches(media.matches)
+        const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
 
-        // Register listener
-        media.addEventListener("change", listener)
+        // Register listener with fallback for older browsers
+        if (media.addEventListener) {
+            media.addEventListener("change", listener)
+        } else {
+            // Fallback for older browsers (addListener/removeListener)
+            media.addListener(listener as any)
+        }
 
         // Remove listener on cleanup
-        return () => media.removeEventListener("change", listener)
+        return () => {
+            if (media.removeEventListener) {
+                media.removeEventListener("change", listener)
+            } else {
+                media.removeListener(listener as any)
+            }
+        }
     }, [query]) // Re-run if query changes
 
     return matches
