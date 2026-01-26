@@ -7,6 +7,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "eslint",
+        "test": "jest",
         "codegen": "graphql-codegen",
         "codegen:watch": "graphql-codegen --watch"
     },
