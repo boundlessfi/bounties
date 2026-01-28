@@ -5,6 +5,8 @@ export type BountyType =
   | 'refactor'
   | 'other'
 
+export type ClaimingModel = 'single-claim' | 'application' | 'competition' | 'multi-winner'
+
 export interface Bounty {
   id: string
   type: BountyType
@@ -22,6 +24,8 @@ export interface Bounty {
   rewardAmount: number | null
   rewardCurrency: 'USD' | 'USDC' | 'XLM' | string
 
+  claimingModel: ClaimingModel
+
   difficulty: 'beginner' | 'intermediate' | 'advanced' | null
   tags: string[]
 
@@ -29,7 +33,7 @@ export interface Bounty {
 
   createdAt: string
   updatedAt: string
-  
+
   // Optional: Keep requirements/scope if needed for details view, 
   // but strictly adhering to User's type for now. 
   // I will add them as optional to avoid breaking existing UI logic too much if I can helper it, 

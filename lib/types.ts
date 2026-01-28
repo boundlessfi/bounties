@@ -40,6 +40,7 @@ export interface Bounty {
   tags: string[];
   reward: number;
   currency: string;
+  claimingModel: "single-claim" | "application" | "competition" | "multi-winner";
   status: BountyStatus;
   createdAt: Date;
   updatedAt: Date;

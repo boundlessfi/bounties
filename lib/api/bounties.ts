@@ -6,6 +6,7 @@ import type { PaginatedResponse, PaginationParams, SortParams } from './types';
 const bountyTypeSchema = z.enum(['feature', 'bug', 'documentation', 'refactor', 'other']);
 const bountyStatusSchema = z.enum(['open', 'claimed', 'closed']);
 const difficultySchema = z.enum(['beginner', 'intermediate', 'advanced']);
+const claimingModelSchema = z.enum(['single-claim', 'application', 'competition', 'multi-winner']);
 
 export const bountySchema = z.object({
     id: z.string(),
@@ -20,6 +21,7 @@ export const bountySchema = z.object({
     description: z.string(),
     rewardAmount: z.number().nullable(),
     rewardCurrency: z.string(),
+    claimingModel: claimingModelSchema,
     difficulty: difficultySchema.nullable(),
     tags: z.array(z.string()),
     status: bountyStatusSchema,
@@ -33,6 +35,7 @@ export type Bounty = z.infer<typeof bountySchema>;
 export type BountyType = z.infer<typeof bountyTypeSchema>;
 export type BountyStatus = z.infer<typeof bountyStatusSchema>;
 export type DifficultyLevel = z.infer<typeof difficultySchema>;
+export type ClaimingModel = z.infer<typeof claimingModelSchema>;
 
 // Query params
 export interface BountyListParams extends PaginationParams, SortParams {
