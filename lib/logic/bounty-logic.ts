@@ -16,7 +16,7 @@ export class BountyLogic {
      */
     static processBountyStatus<T extends {
         status: string;
-        claimingModel: any;
+        claimingModel: ClaimingModel;
         claimExpiresAt?: string;
         lastActivityAt?: string;
         claimedBy?: string;
@@ -34,9 +34,9 @@ export class BountyLogic {
             bounty.status === 'claimed'
         ) {
             // Helper to get Date object
-            const getDate = (val?: string | Date) => {
+            const getDate = (val?: string) => {
                 if (!val) return null;
-                return val instanceof Date ? val : parseISO(val);
+                return parseISO(val);
             };
 
             const expiresAt = getDate(bounty.claimExpiresAt);
@@ -72,7 +72,7 @@ export class BountyLogic {
      */
     static getClaimStatusDisplay(bounty: {
         status: string;
-        claimingModel: any;
+        claimingModel: ClaimingModel;
         claimExpiresAt?: string;
     }) {
         if (bounty.status === 'open') return { label: 'Available', color: 'green' };
