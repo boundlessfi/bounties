@@ -5,7 +5,7 @@ export type BountyType =
   | 'refactor'
   | 'other'
 
-export type ClaimingModel = 'single-claim' | 'application' | 'competition' | 'multi-winner'
+export type ClaimingModel = 'single-claim' | 'application' | 'competition' | 'multi-winner' | 'milestone'
 
 export interface Bounty {
   id: string
