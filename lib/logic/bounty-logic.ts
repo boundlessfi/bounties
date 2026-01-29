@@ -6,7 +6,7 @@ export class BountyLogic {
      * Configuration for inactivity thresholds (in days)
      */
     static readonly INACTIVITY_THRESHOLD_DAYS = 7;
-    static readonly CLAIM_DURATION_DAYS = 14;
+
 
     /**
      * Processes the bounty status based on its model and timestamps.
