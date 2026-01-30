@@ -16,9 +16,12 @@ export default function ProfilePage() {
     const userId = params.userId as string;
     const { data: reputation, isLoading, error } = useContributorReputation(userId);
 
+    const MAX_MOCK_HISTORY = 50;
+
     const mockHistory = useMemo(() => {
         if (!reputation) return [];
-        return Array(reputation.stats.totalCompleted).fill(null).map((_, i) => ({
+        const count = Math.min(reputation.stats.totalCompleted, MAX_MOCK_HISTORY);
+        return Array(count).fill(null).map((_, i) => ({
             id: `bounty-${i}`,
             bountyId: `b-${i}`,
             bountyTitle: `Implemented feature #${100 + i}`,
@@ -48,7 +51,42 @@ export default function ProfilePage() {
         );
     }
 
-    if (error || !reputation) {
+    if (error) {
+        // Check if it's a 404 (Not Found)
+        const apiError = error as { status?: number; message?: string };
+        const isNotFound = apiError?.status === 404 || apiError?.message?.includes("404");
+
+        if (isNotFound) {
+            return (
+                <div className="container mx-auto py-16 text-center">
+                    <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h1 className="text-2xl font-bold mb-2">Profile Not Found</h1>
+                    <p className="text-muted-foreground mb-6">
+                        We could not find a reputation profile for this user.
+                    </p>
+                    <Button asChild variant="outline">
+                        <Link href="/">Return Home</Link>
+                    </Button>
+                </div>
+            );
+        }
+
+        // Generic Error
+        return (
+            <div className="container mx-auto py-16 text-center">
+                <AlertCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
+                <p className="text-muted-foreground mb-6">
+                    We encountered an error while loading the profile.
+                </p>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                    Try Again
+                </Button>
+            </div>
+        );
+    }
+
+    if (!reputation) {
         return (
             <div className="container mx-auto py-16 text-center">
                 <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-4" />

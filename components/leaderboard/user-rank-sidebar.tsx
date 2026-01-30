@@ -121,7 +121,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                             <TrendingUp className="h-3 w-3" /> Rate
                         </div>
                         <div className="text-xl font-bold font-mono text-foreground">
-                            {Math.round(contributor.stats.completionRate * 100)}%
+                            {Math.round(contributor.stats.completionRate)}%
                         </div>
                     </div>
                 </div>
