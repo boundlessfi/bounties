@@ -17,7 +17,7 @@ export interface Bounty {
 
   issueTitle: string
   issueNumber: number
-  githubRepo: string // owner/repo
+  githubRepo: string
   githubIssueUrl: string
 
   description: string

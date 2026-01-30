@@ -15,8 +15,8 @@ export interface ContributorStats {
     totalEarnings: number;
     earningsCurrency: string;
     completionRate: number;
-    averageCompletionTime: number; // in hours
-    currentStreak: number; // consecutive days/weeks depending on logic, usually completion streak
+    averageCompletionTime: number;
+    currentStreak: number;
     longestStreak: number;
     nextTierThreshold?: number;
     currentTierPoints?: number;
@@ -32,7 +32,7 @@ export interface LeaderboardContributor {
     tier: ReputationTier;
     stats: ContributorStats;
     topTags: string[];
-    lastActiveAt: string; // ISO Date string
+    lastActiveAt: string;
 }
 
 export interface LeaderboardEntry {
@@ -46,7 +46,7 @@ export interface LeaderboardResponse {
     entries: LeaderboardEntry[];
     totalCount: number;
     currentUserRank: number | null;
-    lastUpdatedAt: string; // ISO Date string
+    lastUpdatedAt: string;
 }
 
 export interface LeaderboardFilters {

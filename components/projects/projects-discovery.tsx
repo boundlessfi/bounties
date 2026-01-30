@@ -116,7 +116,7 @@ export function ProjectsDiscovery({
 
           {/* Abstract Background Element */}
           <div className="absolute top-0 right-0 w-1/2 h-full opacity-20 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#39FF14] rounded-full blur-[120px]" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-[#39FF14] rounded-full blur-[120px]" />
           </div>
         </section>
 

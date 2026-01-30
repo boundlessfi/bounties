@@ -179,7 +179,7 @@ export default function BountiesPage() {
   return (
     <div className="min-h-screen  text-foreground pb-20 relative overflow-hidden">
       {/* Background ambient glow */}
-      <div className="fixed top-0 left-0 w-full h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
+      <div className="fixed top-0 left-0 w-full h-125 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
 
       <div className="container mx-auto px-4 py-12 relative z-10">
         <header className="mb-10 text-center lg:text-left border-b pb-8">
@@ -193,8 +193,7 @@ export default function BountiesPage() {
         </header>
 
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* Filters Sidebar */}
-          <aside className="w-full lg:w-[280px] shrink-0 space-y-8">
+          <aside className="w-full lg:w-70 shrink-0 space-y-8">
             <div className="lg:sticky lg:top-24 space-y-6">
               <div className="p-5 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm">
                 <div className="flex items-center justify-between mb-6">

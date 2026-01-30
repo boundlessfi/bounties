@@ -104,7 +104,7 @@ export function LeaderboardFilters({ filters, onFilterChange }: LeaderboardFilte
                 value={filters.tier || "all"}
                 onValueChange={(val) => updateFilter("tier", val === "all" ? undefined : (val as ReputationTier))}
             >
-                <SelectTrigger className="w-[140px] bg-background-card border-border/50">
+                <SelectTrigger className="w-35 bg-background-card border-border/50">
                     <SelectValue placeholder="All Tiers" />
                 </SelectTrigger>
                 <SelectContent>
@@ -149,7 +149,7 @@ export function LeaderboardFilters({ filters, onFilterChange }: LeaderboardFilte
                         )}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0" align="start">
+                <PopoverContent className="w-50 p-0" align="start">
                     <Command>
                         <CommandInput placeholder="Tags..." />
                         <CommandList>

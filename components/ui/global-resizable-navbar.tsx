@@ -16,6 +16,7 @@ import { SearchCommand } from "@/components/search-command";
 import { ModeToggle } from "@/components/mode-toggle";
 
 export default function GlobalResizableNavbar() {
+
   const navItems = [
     { name: "Explore", link: "/bounty" },
     { name: "Projects", link: "/projects" },
