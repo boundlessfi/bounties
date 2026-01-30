@@ -70,7 +70,7 @@ export function MiniLeaderboard({
                                 <div className="flex-shrink-0 relative">
                                     <Avatar className="h-9 w-9 border border-border/50">
                                         <AvatarImage src={contributor.avatarUrl || undefined} />
-                                        <AvatarFallback>{contributor.displayName[0]}</AvatarFallback>
+                                        <AvatarFallback>{contributor.displayName?.[0] ?? "John Doe"}</AvatarFallback>
                                     </Avatar>
                                     <div className="absolute -top-1 -left-1 text-white/70 flex items-center justify-center w-4 h-4 rounded-full bg-background border border-border text-[10px] font-bold">
                                         {index + 1}
