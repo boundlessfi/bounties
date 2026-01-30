@@ -2,7 +2,7 @@ import { WalletInfo } from '@/types/wallet'
 
 // Mock Stellar wallet with proper address format
 export const mockWalletInfo: WalletInfo = {
-    address: 'GDJKL4MZWXZQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQ',
+    address: 'GC64SVY3XSYEE7MYADTEQNO3ACCWJ6NLWNNJLPO2FGS4I2PCNBPVNZOP',
     displayName: 'John Doe',
     balance: 0,
     balanceCurrency: 'USD',
@@ -14,7 +14,7 @@ export const mockWalletInfo: WalletInfo = {
 
 // Example with assets and activity (for testing populated states)
 export const mockWalletWithAssets: WalletInfo = {
-    address: 'GDJKL4MZWXZQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQXQ',
+    address: 'GC64SVY3XSYEE7MYADTEQNO3ACCWJ6NLWNNJLPO2FGS4I2PCNBPVNZOP',
     displayName: 'Jane Smith',
     balance: 1250.50,
     balanceCurrency: 'USD',

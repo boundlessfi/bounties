@@ -10,10 +10,10 @@ type Direction = 'btt' | 'ttb' | 'ltr' | 'rtl';
 type ChildrenRender =
   | React.ReactNode
   | ((state: {
-      resolved: Resolved;
-      effective: ThemeSelection;
-      toggleTheme: (theme: ThemeSelection) => void;
-    }) => React.ReactNode);
+    resolved: Resolved;
+    effective: ThemeSelection;
+    toggleTheme: (theme: ThemeSelection) => void;
+  }) => React.ReactNode);
 
 function getSystemEffective(): Resolved {
   if (typeof window === 'undefined') return 'light';
@@ -53,7 +53,6 @@ function ThemeToggler({
   onImmediateChange,
   direction = 'ltr',
   children,
-  ...props
 }: ThemeTogglerProps) {
   const [preview, setPreview] = React.useState<null | {
     effective: ThemeSelection;
@@ -129,10 +128,10 @@ function ThemeToggler({
     <React.Fragment>
       {typeof children === 'function'
         ? children({
-            effective: current.effective,
-            resolved: current.resolved,
-            toggleTheme,
-          })
+          effective: current.effective,
+          resolved: current.resolved,
+          toggleTheme,
+        })
         : children}
       <style>{`::view-transition-old(root), ::view-transition-new(root){animation:none;mix-blend-mode:normal;}`}</style>
     </React.Fragment>

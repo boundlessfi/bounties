@@ -29,33 +29,39 @@ export function GlobalNavbar() {
           <div className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link
               href="/bounty"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname.startsWith("/bounty")
+              className={`transition-colors hover:text-foreground/80 ${pathname.startsWith("/bounty")
                   ? "text-foreground"
                   : "text-foreground/60"
-              }`}
+                }`}
             >
               Explore
             </Link>
             <Link
               href="/projects"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname.startsWith("/projects")
+              className={`transition-colors hover:text-foreground/80 ${pathname.startsWith("/projects")
                   ? "text-foreground"
                   : "text-foreground/60"
-              }`}
+                }`}
             >
               Projects
             </Link>
             <Link
               href="/leaderboard"
-              className={`transition-colors hover:text-foreground/80 ${
-                pathname.startsWith("/leaderboard")
+              className={`transition-colors hover:text-foreground/80 ${pathname.startsWith("/leaderboard")
                   ? "text-foreground"
                   : "text-foreground/60"
-              }`}
+                }`}
             >
               Leaderboard
+            </Link>
+            <Link
+              href="/wallet"
+              className={`transition-colors hover:text-foreground/80 ${pathname.startsWith("/wallet")
+                  ? "text-foreground"
+                  : "text-foreground/60"
+                }`}
+            >
+              Wallet
             </Link>
           </div>
         </div>
