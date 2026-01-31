@@ -7,8 +7,13 @@ declare module "@tabler/icons-react" {
 declare module "motion/react" {
   import { RefObject } from 'react'
 
-  export const motion: unknown
-  export const AnimatePresence: unknown
+  import * as React from 'react'
+
+  // Relaxed typing for motion to avoid build-time type issues in environments
+  // where `motion/react` types are not available. Using `any` here is a small
+  // compromise to let the build proceed; we keep it local to this project.
+  export const motion: any
+  export const AnimatePresence: any
 
   export function useScroll(options?: { target?: RefObject<Element | null>; offset?: string[] }): { scrollY: { get(): number } }
 
