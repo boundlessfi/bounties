@@ -215,7 +215,7 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
       {showRating && !hasRated && (
         <RatingModal
           contributor={{ id: bounty.claimedBy || '', name: 'Contributor', reputation: 100 + (reputationGain || 0) }}
-          bounty={{ id: bounty.id, title: bounty.issueTitle || bounty.title }}
+          bounty={{ id: bounty.id, title: bounty.issueTitle }}
           onSubmit={handleSubmitRating}
           onClose={() => setShowRating(false)}
         />

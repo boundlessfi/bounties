@@ -36,24 +36,22 @@ export function useLocalStorage<T>(
     // ... persists the new value to localStorage.
     const setValue = React.useCallback(
         (value: T | ((val: T) => T)) => {
-            try {
-                // Allow value to be a function so we have same API as useState
-                // Use functional update to get the latest value
-                setStoredValue((currentValue) => {
-                    const valueToStore =
-                        value instanceof Function ? value(currentValue) : value
+            // Use functional update to get the latest value
+            setStoredValue((currentValue) => {
+                const valueToStore =
+                    value instanceof Function ? value(currentValue) : value
 
-                    // Save to local storage
+                // Save to local storage (catch errors here so they don't escape React internals)
+                try {
                     if (typeof window !== "undefined") {
                         window.localStorage.setItem(key, JSON.stringify(valueToStore))
                     }
+                } catch (error) {
+                    console.warn(`Error setting localStorage key "${key}":`, error)
+                }
 
-                    return valueToStore
-                })
-            } catch (error) {
-                // A more advanced implementation would handle the error case
-                console.warn(`Error setting localStorage key "${key}":`, error)
-            }
+                return valueToStore
+            })
         },
         [key]
     )

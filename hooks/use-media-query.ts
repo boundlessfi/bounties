@@ -21,8 +21,16 @@ export function useMediaQuery(query: string): boolean {
     // Update the state with the current value
     setMatches(media.matches)
 
-    // Listener callback
-    const listener = (e: MediaQueryListEvent) => setMatches(e.matches)
+    // Listener callback (supports event or direct call fallback)
+    const listener = (e?: MediaQueryListEvent) => {
+      if (e && typeof e.matches === 'boolean') {
+        setMatches(e.matches)
+      } else {
+        // Fallback: read current value from matchMedia in case tests call the
+        // handler directly and replaced the underlying matchMedia implementation.
+        setMatches(window.matchMedia(query).matches)
+      }
+    }
 
     // Register listener with fallback for older browsers
     if (media.addEventListener) {
