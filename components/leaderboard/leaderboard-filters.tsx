@@ -81,7 +81,7 @@ export function LeaderboardFilters({ filters, onFilterChange }: LeaderboardFilte
     const hasActiveFilters = filters.timeframe !== "ALL_TIME" || filters.tier || (filters.tags?.length || 0) > 0;
 
     return (
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 text-foreground">
             {/* Timeframe Select */}
             <Select
                 value={filters.timeframe}

@@ -4,8 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Trophy, TrendingUp, Award, Coins } from "lucide-react";
-import { TierBadge } from "./tier-badge";
-import { StreakIndicator } from "./streak-indicator";
+import { TierBadge } from "@/components/reputation/tier-badge";
+import { StreakBadge } from "@/components/reputation/streak-badge";
 import { RankBadge } from "./rank-badge";
 import { Progress } from "@/components/ui/progress";
 
@@ -66,7 +66,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
     return (
         <Card className="bg-background-card border-border/50 sticky top-24">
             <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium text-white">Your Rank</CardTitle>
+                <CardTitle className="text-lg font-medium text-foreground">Your Rank</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
                 {/* Main Stats */}
@@ -77,11 +77,11 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                             <AvatarFallback>{contributor.displayName[0]}</AvatarFallback>
                         </Avatar>
                         <div className="absolute -bottom-2 -right-2">
-                            <RankBadge rank={rank} className="w-8 h-8 text-sm bg-background border border-border text-white" />
+                            <RankBadge rank={rank} className="w-8 h-8 text-sm bg-background border border-border text-foreground" />
                         </div>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-bold truncate text-white">{contributor.displayName}</h3>
+                        <h3 className="font-bold truncate text-foreground">{contributor.displayName}</h3>
                         <TierBadge tier={contributor.tier} className="mt-1" />
                     </div>
                 </div>
@@ -94,7 +94,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                         <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase font-medium">
                             <Trophy className="h-3 w-3" /> Score
                         </div>
-                        <div className="text-xl font-bold font-mono text-white">
+                        <div className="text-xl font-bold font-mono text-foreground">
                             {contributor.totalScore.toLocaleString()}
                         </div>
                     </div>
@@ -103,7 +103,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                         <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase font-medium">
                             <Coins className="h-3 w-3" /> Earnings
                         </div>
-                        <div className="text-xl font-bold font-mono text-white">
+                        <div className="text-xl font-bold font-mono text-foreground">
                             ${contributor.stats.totalEarnings.toLocaleString()}
                         </div>
                     </div>
@@ -112,7 +112,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                         <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase font-medium">
                             <Award className="h-3 w-3" /> Completed
                         </div>
-                        <div className="text-xl font-bold font-mono text-white">
+                        <div className="text-xl font-bold font-mono text-foreground">
                             {contributor.stats.totalCompleted}
                         </div>
                     </div>
@@ -120,15 +120,15 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                         <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase font-medium">
                             <TrendingUp className="h-3 w-3" /> Rate
                         </div>
-                        <div className="text-xl font-bold font-mono text-white">
-                            {Math.round(contributor.stats.completionRate * 100)}%
+                        <div className="text-xl font-bold font-mono text-foreground">
+                            {Math.round(contributor.stats.completionRate)}%
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center justify-between text-sm bg-background/50 p-2 rounded-lg border border-border/50">
-                    <span className="text-muted-foreground">Current Streak</span>
-                    <StreakIndicator streak={contributor.stats.currentStreak} />
+                    <span className="text-muted-foreground">Current</span>
+                    <StreakBadge streak={contributor.stats.currentStreak} />
                 </div>
 
                 {/* Progress to Next Tier */}
@@ -144,7 +144,7 @@ export function UserRankSidebar({ userId }: UserRankSidebarProps) {
                             <div className="space-y-2">
                                 <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground font-medium uppercase">Progress to Next Tier</span>
-                                    <span className="text-white font-mono">{Math.round(progressPercent)}%</span>
+                                    <span className="text-foreground font-mono">{Math.round(progressPercent)}%</span>
                                 </div>
                                 <Progress value={progressPercent} className="h-2" />
                             </div>

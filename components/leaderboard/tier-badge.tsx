@@ -8,15 +8,12 @@ interface TierBadgeProps {
 }
 
 export function TierBadge({ tier, className }: TierBadgeProps) {
-  return (
-    <Badge
-      variant="secondary"
-      className={cn(
-        "font-medium bg-secondary/20 hover:bg-secondary/70 border-0",
-        className,
-      )}
-    >
-      {tier}
-    </Badge>
-  );
+    return (
+        <Badge
+            variant="secondary"
+            className={cn("font-medium bg-secondary/20 text-foreground hover:bg-secondary/70 border-0", className)}
+        >
+            {tier}
+        </Badge>
+    );
 }

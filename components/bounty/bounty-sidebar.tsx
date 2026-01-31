@@ -11,6 +11,7 @@ import { formatDistanceToNow } from "date-fns"
 // import { useRouter } from "next/navigation" // If we need refresh
 import { ApplicationDialog } from "./application-dialog"
 import { toast } from "sonner"
+import { ParticipantCard } from "./participant-card"
 
 interface BountySidebarProps {
   bounty: Bounty
@@ -253,6 +254,15 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
       {renderActionButton()}
 
       <Separator className="bg-gray-800" />
+
+      {bounty.claimedBy && (
+        <>
+          <div className="space-y-3">
+            <ParticipantCard userId={bounty.claimedBy} label="Claimed by" />
+          </div>
+          <Separator className="bg-gray-800" />
+        </>
+      )}
 
       <a
         href={`https://github.com/${bounty.githubRepo}`}

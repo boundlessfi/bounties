@@ -229,7 +229,7 @@ export default function BountiesPage() {
                       <Search className="absolute left-3 top-2.5 size-4  group-focus-within:text-primary transition-colors" />
                       <Input
                         placeholder="Keywords, tags..."
-                        className="pl-9 bg-background/50 text-white border-gray-700 hover:border-gray-600 focus:border-primary/50 transition-colors h-9 text-sm"
+                        className="pl-9 h-9 text-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />

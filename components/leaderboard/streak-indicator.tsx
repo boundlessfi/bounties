@@ -16,7 +16,7 @@ export function StreakIndicator({ streak, className }: StreakIndicatorProps) {
                 <TooltipTrigger asChild>
                     <button
                         type="button"
-                        className={cn("flex items-center gap-1.5 font-medium text-sm", className)}
+                        className={cn("flex items-center gap-1.5 text-muted-foreground font-medium text-sm", className)}
                         aria-label={`${streak} week streak`}
                     >
                         <Flame className="h-4 w-4" />
