@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReputationService } from "@/lib/services/reputation";
 import { getCurrentUser } from "@/lib/server-auth";
+import { verifyMessage } from "viem";
 
 export async function POST(request: NextRequest) {
     try {
@@ -16,17 +17,24 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
         }
 
-        // 2. Signature Verification
-        // Note: Real implementation would use ethers.verifyMessage or similar
-        // const recoveredAddress = verifyMessage(`Link wallet ${address} to user ${userId}`, signature);
-        const isValidSignature = true; // Mocked for now
+        // 2. Signature Verification using viem
+        const message = `Link wallet ${address} to user ${userId}`;
+        
+        try {
+            const isValidSignature = await verifyMessage({
+                address: address as `0x${string}`,
+                message: message,
+                signature: signature as `0x${string}`,
+            });
 
-        if (!isValidSignature) {
-            // if (recoveredAddress !== address)
-            return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+            if (!isValidSignature) {
+                return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+            }
+        } catch (verifyError) {
+            console.error("Signature verification failed:", verifyError);
+            return NextResponse.json({ error: "Invalid signature format" }, { status: 403 });
         }
 
-        // 3. Service Call
         // 3. Service Call
         const result = await ReputationService.linkWallet(userId, address);
 
