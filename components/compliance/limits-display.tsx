@@ -51,21 +51,18 @@ export function LimitsDisplay({ onUpgradeClick }: LimitsDisplayProps) {
             <div className="space-y-3">
                 <LimitBar
                     label="Daily Limit"
-                    used={compliance.usage.dailyUsed}
                     total={compliance.limits.daily}
                     remaining={remaining.daily}
                     percent={remaining.percentUsed.daily}
                 />
                 <LimitBar
                     label="Weekly Limit"
-                    used={compliance.usage.weeklyUsed}
                     total={compliance.limits.weekly}
                     remaining={remaining.weekly}
                     percent={remaining.percentUsed.weekly}
                 />
                 <LimitBar
                     label="Monthly Limit"
-                    used={compliance.usage.monthlyUsed}
                     total={compliance.limits.monthly}
                     remaining={remaining.monthly}
                     percent={remaining.percentUsed.monthly}
@@ -75,9 +72,8 @@ export function LimitsDisplay({ onUpgradeClick }: LimitsDisplayProps) {
     );
 }
 
-function LimitBar({ label, used, total, remaining, percent }: {
+function LimitBar({ label, total, remaining, percent }: {
     label: string;
-    used: number;
     total: number;
     remaining: number;
     percent: number;

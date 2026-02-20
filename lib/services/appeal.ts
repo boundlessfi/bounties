@@ -1,4 +1,4 @@
-import { VerificationAppeal, AppealStatus } from "@/types/compliance";
+import { VerificationAppeal } from "@/types/compliance";
 import { EmailService } from "./email";
 
 const MOCK_APPEALS: Record<string, VerificationAppeal> = {};

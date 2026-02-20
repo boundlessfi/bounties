@@ -8,10 +8,6 @@ const RESTRICTED: RestrictedJurisdiction[] = [
     { code: 'US-NY', name: 'New York', type: 'STATE', reason: 'BitLicense requirements', effectiveDate: '2024-01-01' },
 ];
 
-const VPN_INDICATORS = [
-    'vpn', 'proxy', 'tor', 'relay', 'hosting', 'datacenter'
-];
-
 export class GeoRestrictionService {
     static async checkLocation(ip: string): Promise<UserLocation> {
         // In production: call ipapi.co, MaxMind, or ip-api.com
@@ -63,6 +59,7 @@ export class GeoRestrictionService {
     static async detectProxy(ip: string): Promise<boolean> {
         // In production: check proxy databases or use APIs
         // For now, use similar logic as VPN detection
+        void ip;
         return false;
     }
 

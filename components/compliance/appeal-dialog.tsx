@@ -30,8 +30,9 @@ export function AppealDialog({ open, onOpenChange, verificationRequestId, userId
             onOpenChange(false);
             setReason("");
             setAdditionalInfo("");
-        } catch (error: any) {
-            alert(error.message || 'Failed to submit appeal');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to submit appeal';
+            alert(message);
         } finally {
             setSubmitting(false);
         }

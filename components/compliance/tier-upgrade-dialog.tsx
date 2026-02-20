@@ -13,14 +13,13 @@ import { DocumentUpload } from "./document-upload";
 interface TierUpgradeDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    currentTier: KYCTier;
     targetTier: KYCTier;
 }
 
 const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
 
-export function TierUpgradeDialog({ open, onOpenChange, currentTier, targetTier }: TierUpgradeDialogProps) {
+export function TierUpgradeDialog({ open, onOpenChange, targetTier }: TierUpgradeDialogProps) {
     const [step, setStep] = useState<'info' | 'documents'>('info');
     const [requestId, setRequestId] = useState<string | null>(null);
     const [uploadedDocs, setUploadedDocs] = useState<Set<DocumentType>>(new Set());
@@ -37,8 +36,9 @@ export function TierUpgradeDialog({ open, onOpenChange, currentTier, targetTier 
             } else {
                 onOpenChange(false);
             }
-        } catch (error: any) {
-            alert(error.message || 'Failed to request upgrade');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Failed to request upgrade';
+            alert(message);
         }
     };
 

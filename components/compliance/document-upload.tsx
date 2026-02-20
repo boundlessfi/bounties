@@ -40,8 +40,9 @@ export function DocumentUpload({ type, label, onUpload, uploaded }: DocumentUplo
         setUploading(true);
         try {
             await onUpload(selectedFile);
-        } catch (err: any) {
-            setError(err.message || "Upload failed");
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : "Upload failed";
+            setError(message);
         } finally {
             setUploading(false);
         }

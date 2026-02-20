@@ -21,10 +21,11 @@ export async function POST(request: NextRequest) {
         );
 
         return NextResponse.json(withdrawal);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error submitting withdrawal:", error);
+        const message = error instanceof Error ? error.message : "Withdrawal failed";
         return NextResponse.json(
-            { error: error.message || "Withdrawal failed" },
+            { error: message },
             { status: 400 }
         );
     }

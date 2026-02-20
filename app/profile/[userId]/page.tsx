@@ -73,8 +73,8 @@ export default function ProfilePage() {
             <div className="container mx-auto py-8">
                 <Skeleton className="h-10 w-32 mb-8" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <Skeleton className="h-[400px] md:col-span-1" />
-                    <Skeleton className="h-[400px] md:col-span-2" />
+                    <Skeleton className="h-100 md:col-span-1" />
+                    <Skeleton className="h-100 md:col-span-2" />
                 </div>
             </div>
         );

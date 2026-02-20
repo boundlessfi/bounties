@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/server-auth";
 import { TermsService } from "@/lib/services/terms";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const terms = await TermsService.getCurrentTermsVersion();
         return NextResponse.json(terms);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Failed to fetch terms" }, { status: 500 });
     }
 }

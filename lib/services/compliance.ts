@@ -2,8 +2,6 @@ import {
     UserCompliance,
     KYCTier,
     KYCTierConfig,
-    WithdrawalLimits,
-    WithdrawalUsage,
     RemainingLimits,
     ComplianceHoldState,
     VerificationStatus,

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/server-auth";
 import { ComplianceService } from "@/lib/services/compliance";
 import { TermsService } from "@/lib/services/terms";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const user = await getCurrentUser();
         if (!user) {

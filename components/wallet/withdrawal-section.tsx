@@ -24,10 +24,9 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
     const [amount, setAmount] = useState("");
     const [showTermsDialog, setShowTermsDialog] = useState(false);
     const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-    const [validationError, setValidationError] = useState<string | null>(null);
 
     const { data: complianceData } = useComplianceStatus();
-    const validateMutation = useValidateWithdrawal();
+    const { data: validationData, mutate: validateWithdrawal } = useValidateWithdrawal();
     const submitMutation = useSubmitWithdrawal();
 
     const bankAccounts = [
@@ -36,22 +35,17 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
 
     const parsedAmount = parseFloat(amount);
     const isValidAmount = !isNaN(parsedAmount) && isFinite(parsedAmount) && parsedAmount >= 10;
+    const isAmountWithinBalance = parsedAmount <= walletInfo.balance;
 
     useEffect(() => {
-        if (isValidAmount && parsedAmount <= walletInfo.balance) {
-            validateMutation.mutate(parsedAmount, {
-                onSuccess: (result) => {
-                    if (!result.valid) {
-                        setValidationError(result.errors[0] || 'Validation failed');
-                    } else {
-                        setValidationError(null);
-                    }
-                },
-            });
-        } else {
-            setValidationError(null);
+        if (isValidAmount && isAmountWithinBalance) {
+            validateWithdrawal(parsedAmount);
         }
-    }, [parsedAmount]);
+    }, [isAmountWithinBalance, isValidAmount, parsedAmount, validateWithdrawal]);
+
+    const validationError = isValidAmount && isAmountWithinBalance && validationData && !validationData.valid
+        ? validationData.errors[0] || 'Validation failed'
+        : null;
 
     const handleWithdraw = async () => {
         if (!isValidAmount || !complianceData) return;
@@ -64,8 +58,9 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
             });
             alert('Withdrawal submitted successfully!');
             setAmount('');
-        } catch (error: any) {
-            alert(error.message || 'Withdrawal failed');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Withdrawal failed';
+            alert(message);
         }
     };
 
@@ -77,7 +72,7 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
     };
 
     const canWithdraw = isValidAmount &&
-        parsedAmount <= walletInfo.balance &&
+        isAmountWithinBalance &&
         !validationError &&
         complianceData?.compliance.holdState === 'NONE' &&
         !complianceData?.termsStatus.requiresAcceptance;
@@ -103,7 +98,6 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
                         <TierUpgradeDialog
                             open={showUpgradeDialog}
                             onOpenChange={setShowUpgradeDialog}
-                            currentTier={complianceData.compliance.currentTier}
                             targetTier={complianceData.nextTier}
                         />
                     )}

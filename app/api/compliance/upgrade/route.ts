@@ -17,16 +17,17 @@ export async function POST(request: NextRequest) {
         );
 
         return NextResponse.json(verificationRequest);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Error creating verification request:", error);
+        const message = error instanceof Error ? error.message : "Failed to create verification request";
         return NextResponse.json(
-            { error: error.message || "Failed to create verification request" },
+            { error: message },
             { status: 400 }
         );
     }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const user = await getCurrentUser();
         if (!user) {
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest) {
 
         const status = await VerificationService.getVerificationStatus(user.id);
         return NextResponse.json(status);
-    } catch (error) {
+    } catch {
         return NextResponse.json({ error: "Failed to fetch verification status" }, { status: 500 });
     }
 }
