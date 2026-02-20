@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalNavbar } from "@/components/global-navbar";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
               <GlobalNavbar />
               {children}
             </div>
+            <Toaster />
           </QueryProvider>
         </ThemeProvider>
       </body>
