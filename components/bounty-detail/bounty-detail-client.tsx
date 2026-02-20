@@ -9,10 +9,10 @@ import {
   SidebarCTA,
 } from "./bounty-detail-sidebar-cta";
 import { RequirementsCard, ScopeCard } from "./bounty-detail-requirements-card";
-import { useBountyDetail } from "@/hooks/use-bounty-detail";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
+import { useBountyDetail } from "@/hooks/Use-bounty-detail";
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   const router = useRouter();
