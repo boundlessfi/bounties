@@ -28,27 +28,25 @@ export default function SignIn({
     if (!email) return;
 
     setIsMagicLinkLoading(true);
-    try {
-      await (authClient.signIn as any).magicLink({
-        email,
-        callbackURL: "/bounty",
-      });
-      toast.success("Magic link sent to your email!");
-    } catch (error) {
-      toast.error("Failed to send magic link. Please try again.");
+    const { error } = await authClient.signIn.magicLink({
+      email,
+      callbackURL: "/bounty",
+    });
+    if (error) {
+      toast.error(error.message ?? "Failed to send magic link. Please try again.");
       console.error(error);
-    } finally {
-      setIsMagicLinkLoading(false);
+    } else {
+      toast.success("Magic link sent to your email!");
     }
+    setIsMagicLinkLoading(false);
   };
 
   const handleSocialSignIn = async (provider: "github" | "google") => {
-    try {
-      await authClient.signIn.social({
-        provider,
-        callbackURL: "/bounty",
-      });
-    } catch (error) {
+    const { error } = await authClient.signIn.social({
+      provider,
+      callbackURL: "/bounty",
+    });
+    if (error) {
       toast.error(`Failed to sign in with ${provider}.`);
       console.error(error);
     }
@@ -135,8 +133,8 @@ export default function SignIn({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our <a href="https://www.boundlessfi.xyz/terms">Terms of Service</a>{" "}
+        and <a href="https://www.boundlessfi.xyz/privacy">Privacy Policy</a>.
       </FieldDescription>
     </div>
   );
