@@ -103,8 +103,8 @@ export function WithdrawalSection({ walletInfo }: WithdrawalSectionProps) {
       });
       toast.success("Withdrawal submitted successfully!");
       setAmount("");
-    } catch (error) {
-      toast.error((error as Error).message || "Withdrawal failed");
+    } catch {
+      toast.error("Withdrawal failed. Please try again.");
     }
   };
 

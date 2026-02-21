@@ -82,7 +82,7 @@ export function AppealDialog({
             <Textarea
               id="reason"
               placeholder="Explain your situation..."
-              className="min-h-[100px]"
+              className="min-h-25"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               required
@@ -96,7 +96,7 @@ export function AppealDialog({
             <Textarea
               id="additionalInfo"
               placeholder="Any additional context..."
-              className="min-h-[80px]"
+              className="min-h-20"
               value={additionalInfo}
               onChange={(e) => setAdditionalInfo(e.target.value)}
             />

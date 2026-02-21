@@ -45,8 +45,8 @@ export function DocumentUpload({
     setUploading(true);
     try {
       await onUpload(selectedFile);
-    } catch (err) {
-      setError((err as Error).message || "Upload failed");
+    } catch {
+      setError("Upload failed. Please try again.");
     } finally {
       setUploading(false);
     }

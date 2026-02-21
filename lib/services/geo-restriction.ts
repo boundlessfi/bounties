@@ -43,9 +43,6 @@ export class GeoRestrictionService {
     ip: string,
     override?: Partial<UserLocation>,
   ): Promise<UserLocation> {
-    // In production: call ipapi.co, MaxMind, or ip-api.com
-    // Example: const response = await fetch(`https://ipapi.co/${ip}/json/`)
-
     const mockLocation: UserLocation = {
       ip,
       countryCode: override?.countryCode ?? "US",
@@ -64,7 +61,6 @@ export class GeoRestrictionService {
       isRestricted: false,
     };
 
-    // Check country-level restrictions
     const countryRestriction = RESTRICTED.find(
       (r) => r.code === mockLocation.countryCode && r.type === "COUNTRY",
     );
@@ -73,7 +69,6 @@ export class GeoRestrictionService {
       mockLocation.restrictionReason = countryRestriction.reason;
     }
 
-    // Check state-level restrictions (generic support for any country)
     if (mockLocation.regionCode) {
       const reason = this.getRestrictionReason(
         mockLocation.countryCode,
@@ -89,32 +84,23 @@ export class GeoRestrictionService {
   }
 
   static async detectVPN(ip: string): Promise<boolean> {
-    /**
-     * NOTE: This is a placeholder mock for VPN detection.
-     * TODO: Integrate with a real VPN detection service like IPHub, IP2Proxy, or VPNApi.
-     */
-
-    // Mock: check against a small list of "VPN-like" public IPs (placeholder logic)
     const vpnIps = ["192.0.2.1", "198.51.100.1"];
     return vpnIps.includes(ip);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static async detectProxy(_ip: string): Promise<boolean> {
-    // In production: check proxy databases or use APIs
-    // For now, use similar logic as VPN detection
+  static async detectProxy(ip: string): Promise<boolean> {
+    // TODO: Integrate a real proxy detection provider before production rollout.
+    void ip;
     return false;
   }
 
   static isRestricted(countryCode: string, regionCode?: string): boolean {
-    // Check country restriction
     if (
       RESTRICTED.some((r) => r.code === countryCode && r.type === "COUNTRY")
     ) {
       return true;
     }
 
-    // Check state restriction
     if (regionCode) {
       const stateCode = `${countryCode}-${regionCode}`;
       return RESTRICTED.some((r) => r.code === stateCode && r.type === "STATE");

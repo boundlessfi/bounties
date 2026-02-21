@@ -1,8 +1,10 @@
 "use client";
 
 import { useContributorReputation } from "@/hooks/use-reputation";
+import { useBounties } from "@/hooks/use-bounties";
 import { ReputationCard } from "@/components/reputation/reputation-card";
 import { CompletionHistory } from "@/components/reputation/completion-history";
+import { MyClaims, type MyClaim } from "@/components/reputation/my-claims";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,6 +17,7 @@ export default function ProfilePage() {
     const params = useParams();
     const userId = params.userId as string;
     const { data: reputation, isLoading, error } = useContributorReputation(userId);
+    const { data: bountyResponse } = useBounties();
 
     const MAX_MOCK_HISTORY = 50;
 
@@ -39,13 +42,39 @@ export default function ProfilePage() {
         }));
     }, [reputation]);
 
+    const myClaims = useMemo<MyClaim[]>(() => {
+        const bounties = bountyResponse?.data ?? [];
+
+        return bounties
+            .filter((bounty) => bounty.claimedBy === userId)
+            .map((bounty) => {
+                let status = "active";
+
+                if (bounty.status === "closed") {
+                    status = "completed";
+                } else if (bounty.status === "claimed" && bounty.claimExpiresAt) {
+                    const claimExpiry = new Date(bounty.claimExpiresAt);
+                    if (!Number.isNaN(claimExpiry.getTime()) && claimExpiry < new Date()) {
+                        status = "in-review";
+                    }
+                }
+
+                return {
+                    bountyId: bounty.id,
+                    title: bounty.issueTitle,
+                    status,
+                    rewardAmount: bounty.rewardAmount ?? undefined,
+                };
+            });
+    }, [bountyResponse?.data, userId]);
+
     if (isLoading) {
         return (
             <div className="container mx-auto py-8">
                 <Skeleton className="h-10 w-32 mb-8" />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <Skeleton className="h-[400px] md:col-span-1" />
-                    <Skeleton className="h-[400px] md:col-span-2" />
+                    <Skeleton className="h-100 md:col-span-1" />
+                    <Skeleton className="h-100 md:col-span-2" />
                 </div>
             </div>
         );
@@ -134,6 +163,12 @@ export default function ProfilePage() {
                             >
                                 Analytics
                             </TabsTrigger>
+                            <TabsTrigger
+                                value="claims"
+                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+                            >
+                                My Claims
+                            </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="history" className="mt-6">
@@ -148,6 +183,11 @@ export default function ProfilePage() {
                             <div className="p-8 border rounded-lg text-center text-muted-foreground bg-secondary/5">
                                 Detailed analytics coming soon.
                             </div>
+                        </TabsContent>
+
+                        <TabsContent value="claims" className="mt-6">
+                            <h2 className="text-xl font-bold mb-4">My Claims</h2>
+                            <MyClaims claims={myClaims} />
                         </TabsContent>
                     </Tabs>
                 </div>
