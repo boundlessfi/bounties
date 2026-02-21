@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import Link from "next/link";
 import { useBounties } from "@/hooks/use-bounties";
 import { BountyCard } from "@/components/bounty/bounty-card";
 import { BountyListSkeleton } from "@/components/bounty/bounty-card-skeleton";
@@ -156,14 +157,11 @@ export default function BountiesPage() {
     );
   }, []);
 
-  const toggleTag = useCallback(
-    (tag: string) => {
-      setSelectedTags((prev) =>
-        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-      );
-    },
-    [],
-  );
+  const toggleTag = useCallback((tag: string) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+    );
+  }, []);
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -208,23 +206,21 @@ export default function BountiesPage() {
                     rewardRange[0] !== 0 ||
                     rewardRange[1] !== 5000 ||
                     statusFilter !== "open") && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={clearFilters}
-                        className="h-6 text-[10px] text-primary hover:text-primary/80 p-0 hover:bg-transparent"
-                      >
-                        Reset
-                      </Button>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="h-6 text-[10px] text-primary hover:text-primary/80 p-0 hover:bg-transparent"
+                    >
+                      Reset
+                    </Button>
+                  )}
                 </div>
 
                 <div className="space-y-6">
                   {/* Search */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium">
-                      Search
-                    </Label>
+                    <Label className="text-xs font-medium">Search</Label>
                     <div className="relative group">
                       <Search className="absolute left-3 top-2.5 size-4  group-focus-within:text-primary transition-colors" />
                       <Input
@@ -473,9 +469,13 @@ export default function BountiesPage() {
             ) : filteredBounties.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-fr">
                 {filteredBounties.map((bounty) => (
-                  <div key={bounty.id} className="h-full">
+                  <Link
+                    key={bounty.id}
+                    href={`/bounty/${bounty.id}`}
+                    className="h-full block"
+                  >
                     <BountyCard bounty={bounty} />
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -501,7 +501,7 @@ export default function BountiesPage() {
             )}
           </main>
         </div>
-      </div >
-    </div >
+      </div>
+    </div>
   );
 }

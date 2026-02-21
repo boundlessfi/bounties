@@ -1,4 +1,4 @@
-import { Bounty } from "@/types/bounty"
+import { Bounty } from "@/types/bounty";
 
 export const mockBounties: Bounty[] = [
   {
@@ -71,7 +71,7 @@ Add a dark mode toggle to the application settings page that persists user prefe
     difficulty: "beginner",
     tags: ["ui", "theme", "settings", "dark-mode"],
     status: "claimed",
-    claimedBy: "dev_user_123",
+    claimedBy: "user-1",
     claimedAt: "2026-01-01T00:00:00Z",
     claimExpiresAt: "2026-01-15T00:00:00Z",
     createdAt: "2025-01-10T08:00:00Z",
@@ -326,12 +326,12 @@ Memory leaks detected in privacy protocol implementation during extended operati
     createdAt: "2025-01-19T16:00:00Z",
     updatedAt: "2025-01-23T12:45:00Z",
   },
-]
+];
 
 export function getBountyById(id: string): Bounty | undefined {
-  return mockBounties.find((bounty) => bounty.id === id)
+  return mockBounties.find((bounty) => bounty.id === id);
 }
 
 export function getAllBounties(): Bounty[] {
-  return mockBounties
+  return mockBounties;
 }
