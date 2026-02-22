@@ -8,9 +8,11 @@ import { Separator } from "@/components/ui/separator";
 import type { Bounty } from "@/lib/api";
 import { DifficultyBadge, StatusBadge } from "./bounty-badges";
 import { CLAIMING_MODEL_CONFIG } from "@/lib/bounty-config";
+import { SubmissionDialog } from "./submission-dialog";
 
 export function SidebarCTA({ bounty }: { bounty: Bounty }) {
   const [copied, setCopied] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const canAct = bounty.status === "open";
   const claimCfg = CLAIMING_MODEL_CONFIG[bounty.claimingModel];
   const ClaimIcon = claimCfg.icon;
@@ -102,13 +104,17 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
         className="w-full h-11 font-bold tracking-wide"
         disabled={!canAct}
         size="lg"
-        onClick={() =>
-          canAct &&
-          window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
-        }
+        onClick={() => canAct && setDialogOpen(true)}
       >
         {ctaLabel()}
       </Button>
+
+      <SubmissionDialog
+        bountyId={bounty.id}
+        bountyTitle={bounty.issueTitle}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
 
       {!canAct && (
         <p className="flex items-center gap-1.5 text-xs text-gray-500 justify-center text-center">
@@ -169,8 +175,8 @@ export function ClaimModelInfo({
 }
 
 export function MobileCTA({ bounty }: { bounty: Bounty }) {
+  const [dialogOpen, setDialogOpen] = useState(false);
   const canAct = bounty.status === "open";
-  // const claimCfg = CLAIMING_MODEL_CONFIG[bounty.claimingModel];
 
   const label = () => {
     if (!canAct)
@@ -193,13 +199,17 @@ export function MobileCTA({ bounty }: { bounty: Bounty }) {
         className="w-full h-11 font-bold tracking-wide"
         disabled={!canAct}
         size="lg"
-        onClick={() =>
-          canAct &&
-          window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
-        }
+        onClick={() => canAct && setDialogOpen(true)}
       >
         {label()}
       </Button>
+
+      <SubmissionDialog
+        bountyId={bounty.id}
+        bountyTitle={bounty.issueTitle}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+      />
     </div>
   );
 }

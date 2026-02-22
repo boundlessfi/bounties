@@ -34,7 +34,9 @@ export default function SignIn({
         callbackURL: "/bounty",
       });
       if (error) {
-        toast.error(error.message ?? "Failed to send magic link. Please try again.");
+        toast.error(
+          error.message ?? "Failed to send magic link. Please try again.",
+        );
         console.error(error);
       } else {
         toast.success("Magic link sent to your email!");
@@ -87,8 +89,14 @@ export default function SignIn({
                 />
               </Field>
               <Field>
-                <Button type="submit" className="w-full" disabled={isMagicLinkLoading}>
-                  {isMagicLinkLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isMagicLinkLoading}
+                >
+                  {isMagicLinkLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   Login with Magic Link
                 </Button>
               </Field>
@@ -144,8 +152,9 @@ export default function SignIn({
         </CardContent>
       </Card>
       <FieldDescription className="px-6 text-center">
-        By clicking continue, you agree to our <a href="https://www.boundlessfi.xyz/terms">Terms of Service</a>{" "}
-        and <a href="https://www.boundlessfi.xyz/privacy">Privacy Policy</a>.
+        By clicking continue, you agree to our{" "}
+        <a href="https://www.boundlessfi.xyz/terms">Terms of Service</a> and{" "}
+        <a href="https://www.boundlessfi.xyz/privacy">Privacy Policy</a>.
       </FieldDescription>
     </div>
   );
