@@ -33,6 +33,7 @@ const DELETE_BOUNTY_MUTATION = `
 `;
 
 const CLAIM_BOUNTY_MUTATION_STATUS = "IN_PROGRESS" as const;
+// UI cache uses the REST status union where "claimed" represents GraphQL "IN_PROGRESS".
 const CLAIM_BOUNTY_OPTIMISTIC_STATUS: Bounty["status"] = "claimed";
 
 type CreateBountyMutationResponse = {
@@ -75,10 +76,14 @@ async function updateBountyMutation(
 }
 
 async function deleteBountyMutation(id: string): Promise<void> {
-  await fetcher<DeleteBountyMutationResponse, { id: string }>(
+  const response = await fetcher<DeleteBountyMutationResponse, { id: string }>(
     DELETE_BOUNTY_MUTATION,
     { id },
   )();
+
+  if (!response.deleteBounty) {
+    throw new Error(`deleteBounty returned false for id: ${id}`);
+  }
 }
 
 export function useCreateBounty() {
