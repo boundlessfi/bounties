@@ -1,15 +1,15 @@
-import { useQuery } from '@tanstack/react-query';
-import { bountiesApi, type Bounty } from '@/lib/api';
-import { bountyKeys } from './use-bounties';
+import { useQuery } from "@tanstack/react-query";
+import { bountiesApi, type Bounty } from "@/lib/api";
+import { bountyKeys } from "@/lib/query/query-keys";
 
 interface UseBountyOptions {
-    enabled?: boolean;
+  enabled?: boolean;
 }
 
 export function useBounty(id: string, options?: UseBountyOptions) {
-    return useQuery<Bounty>({
-        queryKey: bountyKeys.detail(id),
-        queryFn: () => bountiesApi.getById(id),
-        enabled: options?.enabled ?? !!id,
-    });
+  return useQuery<Bounty>({
+    queryKey: bountyKeys.detail(id),
+    queryFn: () => bountiesApi.getById(id),
+    enabled: options?.enabled ?? !!id,
+  });
 }

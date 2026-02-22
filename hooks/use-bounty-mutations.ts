@@ -203,7 +203,9 @@ export function useDeleteBounty() {
       });
     },
     onSettled: (_data, _err, id) => {
-      queryClient.removeQueries({ queryKey: bountyKeys.detail(id) });
+      if (!_err) {
+        queryClient.removeQueries({ queryKey: bountyKeys.detail(id) });
+      }
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });

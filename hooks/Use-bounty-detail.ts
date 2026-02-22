@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { bountiesApi, type Bounty } from "@/lib/api";
-import { bountyKeys } from "./use-bounties";
+import { bountyKeys } from "@/lib/query/query-keys";
 
 export function useBountyDetail(id: string) {
   return useQuery<Bounty>({
