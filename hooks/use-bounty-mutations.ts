@@ -33,11 +33,11 @@ const DELETE_BOUNTY_MUTATION = `
 `;
 
 type CreateBountyMutationResponse = {
-  createBounty: Bounty;
+  createBounty: Pick<Bounty, "id">;
 };
 
 type UpdateBountyMutationResponse = {
-  updateBounty: Bounty;
+  updateBounty: Pick<Bounty, "id" | "status" | "updatedAt">;
 };
 
 type DeleteBountyMutationResponse = {
@@ -46,10 +46,12 @@ type DeleteBountyMutationResponse = {
 
 type UpdateBountyMutationInput = Omit<UpdateBountyInput, "status"> & {
   id: string;
-  status?: string;
+  status?: Bounty["status"];
 };
 
-async function createBountyMutation(input: CreateBountyInput): Promise<Bounty> {
+async function createBountyMutation(
+  input: CreateBountyInput,
+): Promise<Pick<Bounty, "id">> {
   const response = await fetcher<
     CreateBountyMutationResponse,
     { input: CreateBountyInput }
@@ -60,7 +62,7 @@ async function createBountyMutation(input: CreateBountyInput): Promise<Bounty> {
 
 async function updateBountyMutation(
   input: UpdateBountyMutationInput,
-): Promise<Bounty> {
+): Promise<Pick<Bounty, "id" | "status" | "updatedAt">> {
   const response = await fetcher<
     UpdateBountyMutationResponse,
     { input: UpdateBountyMutationInput }
@@ -177,7 +179,7 @@ export function useClaimBounty() {
       if (previous) {
         queryClient.setQueryData<Bounty>(bountyKeys.detail(id), {
           ...previous,
-          status: "claimed",
+          status: "IN_PROGRESS",
           updatedAt: new Date().toISOString(),
         });
       }
