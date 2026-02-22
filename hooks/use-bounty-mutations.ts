@@ -168,7 +168,8 @@ export function useDeleteBounty() {
         queryClient.setQueryData(key, data);
       });
     },
-    onSettled: () => {
+    onSettled: (_data, _err, id) => {
+      queryClient.removeQueries({ queryKey: bountyKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
