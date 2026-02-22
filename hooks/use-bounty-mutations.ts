@@ -32,6 +32,9 @@ const DELETE_BOUNTY_MUTATION = `
   }
 `;
 
+const CLAIM_BOUNTY_MUTATION_STATUS = "IN_PROGRESS" as const;
+const CLAIM_BOUNTY_OPTIMISTIC_STATUS: Bounty["status"] = "claimed";
+
 type CreateBountyMutationResponse = {
   createBounty: Pick<Bounty, "id">;
 };
@@ -46,7 +49,7 @@ type DeleteBountyMutationResponse = {
 
 type UpdateBountyMutationInput = Omit<UpdateBountyInput, "status"> & {
   id: string;
-  status?: Bounty["status"];
+  status?: Bounty["status"] | typeof CLAIM_BOUNTY_MUTATION_STATUS;
 };
 
 async function createBountyMutation(
@@ -171,7 +174,7 @@ export function useClaimBounty() {
 
   return useMutation({
     mutationFn: (id: string) =>
-      updateBountyMutation({ id, status: "IN_PROGRESS" }),
+      updateBountyMutation({ id, status: CLAIM_BOUNTY_MUTATION_STATUS }),
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
       const previous = queryClient.getQueryData<Bounty>(bountyKeys.detail(id));
@@ -179,7 +182,7 @@ export function useClaimBounty() {
       if (previous) {
         queryClient.setQueryData<Bounty>(bountyKeys.detail(id), {
           ...previous,
-          status: "IN_PROGRESS",
+          status: CLAIM_BOUNTY_OPTIMISTIC_STATUS,
           updatedAt: new Date().toISOString(),
         });
       }
