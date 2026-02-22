@@ -32,8 +32,19 @@ const DELETE_BOUNTY_MUTATION = `
   }
 `;
 
-const CLAIM_BOUNTY_MUTATION_STATUS = "IN_PROGRESS" as const;
-// UI cache uses the REST status union where "claimed" represents GraphQL "IN_PROGRESS".
+const CLAIM_BOUNTY_MUTATION = `
+  mutation ClaimBounty($id: ID!) {
+    claimBounty(id: $id) {
+      id
+      status
+      updatedAt
+    }
+  }
+`;
+
+type GraphQLBountyStatus = "OPEN" | "CLAIMED" | "CLOSED";
+
+// UI cache uses the REST status union where "claimed" represents GraphQL "CLAIMED".
 const CLAIM_BOUNTY_OPTIMISTIC_STATUS: Bounty["status"] = "claimed";
 
 type CreateBountyMutationResponse = {
@@ -41,16 +52,28 @@ type CreateBountyMutationResponse = {
 };
 
 type UpdateBountyMutationResponse = {
-  updateBounty: Pick<Bounty, "id" | "status" | "updatedAt">;
+  updateBounty: {
+    id: string;
+    status: GraphQLBountyStatus;
+    updatedAt: string;
+  };
 };
 
 type DeleteBountyMutationResponse = {
   deleteBounty: boolean;
 };
 
+type ClaimBountyMutationResponse = {
+  claimBounty: {
+    id: string;
+    status: GraphQLBountyStatus;
+    updatedAt: string;
+  };
+};
+
 type UpdateBountyMutationInput = Omit<UpdateBountyInput, "status"> & {
   id: string;
-  status?: Bounty["status"] | typeof CLAIM_BOUNTY_MUTATION_STATUS;
+  status?: GraphQLBountyStatus;
 };
 
 async function createBountyMutation(
@@ -66,13 +89,24 @@ async function createBountyMutation(
 
 async function updateBountyMutation(
   input: UpdateBountyMutationInput,
-): Promise<Pick<Bounty, "id" | "status" | "updatedAt">> {
+): Promise<UpdateBountyMutationResponse["updateBounty"]> {
   const response = await fetcher<
     UpdateBountyMutationResponse,
     { input: UpdateBountyMutationInput }
   >(UPDATE_BOUNTY_MUTATION, { input })();
 
   return response.updateBounty;
+}
+
+async function claimBountyMutation(
+  id: string,
+): Promise<ClaimBountyMutationResponse["claimBounty"]> {
+  const response = await fetcher<ClaimBountyMutationResponse, { id: string }>(
+    CLAIM_BOUNTY_MUTATION,
+    { id },
+  )();
+
+  return response.claimBounty;
 }
 
 async function deleteBountyMutation(id: string): Promise<void> {
@@ -179,8 +213,7 @@ export function useClaimBounty() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      updateBountyMutation({ id, status: CLAIM_BOUNTY_MUTATION_STATUS }),
+    mutationFn: claimBountyMutation,
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
       const previous = queryClient.getQueryData<Bounty>(bountyKeys.detail(id));
