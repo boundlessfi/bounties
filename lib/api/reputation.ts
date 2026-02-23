@@ -1,29 +1,59 @@
-import { get, post } from './client';
+import { get, post } from "./client";
 import {
-    ContributorReputation,
-    RateContributorInput
-} from '@/types/reputation';
+  ContributorReputation,
+  RateContributorInput,
+  ReputationHistoryParams,
+  ReputationHistoryResponse,
+} from "@/types/reputation";
 
-const REPUTATION_ENDPOINT = '/api/reputation';
+const REPUTATION_ENDPOINT = "/api/reputation";
 
 export const reputationApi = {
-    fetchContributorReputation: async (userId: string): Promise<ContributorReputation> => {
-        return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/${userId}`);
-    },
+  fetchContributorReputation: async (
+    userId: string,
+  ): Promise<ContributorReputation> => {
+    return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/${userId}`);
+  },
 
-    fetchContributorByWallet: async (address: string): Promise<ContributorReputation> => {
-        return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/wallet/${address}`);
-    },
+  fetchCompletionHistory: async (
+    userId: string,
+    params?: Pick<ReputationHistoryParams, "limit" | "offset">,
+  ): Promise<ReputationHistoryResponse> => {
+    const queryParams: Record<string, string> = {};
+    if (params?.limit != null) queryParams.limit = String(params.limit);
+    if (params?.offset != null) queryParams.offset = String(params.offset);
+    return get<ReputationHistoryResponse>(
+      `${REPUTATION_ENDPOINT}/${userId}/completion-history`,
+      { params: Object.keys(queryParams).length ? queryParams : undefined },
+    );
+  },
 
-    fetchMyReputation: async (): Promise<ContributorReputation> => {
-        return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/me`);
-    },
+  fetchContributorByWallet: async (
+    address: string,
+  ): Promise<ContributorReputation> => {
+    return get<ContributorReputation>(
+      `${REPUTATION_ENDPOINT}/wallet/${address}`,
+    );
+  },
 
-    rateContributor: async (data: RateContributorInput): Promise<{ success: boolean }> => {
-        return post<{ success: boolean }>(`${REPUTATION_ENDPOINT}/rate`, data);
-    },
+  fetchMyReputation: async (): Promise<ContributorReputation> => {
+    return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/me`);
+  },
 
-    linkWalletToReputation: async (data: { userId: string, address: string, signature: string }): Promise<{ success: boolean }> => {
-        return post<{ success: boolean }>(`${REPUTATION_ENDPOINT}/link-wallet`, data);
-    }
+  rateContributor: async (
+    data: RateContributorInput,
+  ): Promise<{ success: boolean }> => {
+    return post<{ success: boolean }>(`${REPUTATION_ENDPOINT}/rate`, data);
+  },
+
+  linkWalletToReputation: async (data: {
+    userId: string;
+    address: string;
+    signature: string;
+  }): Promise<{ success: boolean }> => {
+    return post<{ success: boolean }>(
+      `${REPUTATION_ENDPOINT}/link-wallet`,
+      data,
+    );
+  },
 };

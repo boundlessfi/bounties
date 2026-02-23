@@ -59,10 +59,11 @@ export function HeaderCard({ bounty }: { bounty: Bounty }) {
         <Avatar className="size-8 rounded-md border border-gray-700 shrink-0">
           <AvatarImage
             src={bounty.projectLogoUrl ?? undefined}
-            alt={bounty.projectName}
+            alt={bounty.projectName || "Project"}
           />
           <AvatarFallback className="rounded-md text-xs font-bold bg-gray-800 text-gray-300">
-            {bounty.projectName.slice(0, 2).toUpperCase()}
+            {/* Optional chaining on projectName */}
+            {bounty.projectName?.slice(0, 2).toUpperCase() || "??"}
           </AvatarFallback>
         </Avatar>
         <div>
@@ -80,7 +81,8 @@ export function HeaderCard({ bounty }: { bounty: Bounty }) {
       </div>
 
       {/* Tags */}
-      {bounty.tags.length > 0 && (
+      {/* Optional chaining to protect against missing tags array */}
+      {bounty.tags?.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <Tag className="size-3.5 text-gray-600 shrink-0" />
           {bounty.tags.map((tag) => (

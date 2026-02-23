@@ -61,8 +61,8 @@ export function GlobalNavbar() {
               href="/transparency"
               className={`transition-colors hover:text-foreground/80 ${
                 pathname.startsWith("/transparency")
-                ? "text-foreground"
-                : "text-foreground/60"
+                  ? "text-foreground"
+                  : "text-foreground/60"
               }`}
             >
               Transparency

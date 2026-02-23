@@ -1,31 +1,30 @@
-import type { CodegenConfig } from '@graphql-codegen/cli';
+import type { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
-  schema: './lib/graphql/schema.graphql',
-  documents: ['lib/graphql/**/*.ts', 'lib/graphql/**/*.tsx', 'hooks/**/*.ts', 'hooks/**/*.tsx'],
+  schema: "../boundless-nestjs/src/schema.gql",
+  documents: [
+    "lib/graphql/**/*.ts",
+    "lib/graphql/**/*.tsx",
+    "hooks/**/*.ts",
+    "hooks/**/*.tsx",
+  ],
   ignoreNoDocuments: true,
   generates: {
-    './lib/graphql/generated.ts': {
+    "./lib/graphql/generated.ts": {
       plugins: [
-        'typescript',
-        'typescript-operations',
-        'typescript-react-apollo',
+        "typescript",
+        "typescript-operations",
+        "typescript-react-query",
       ],
       config: {
-        withHooks: true,
-        withComponent: false,
-        withHOC: false,
-        skipTypename: false,
-        enumsAsTypes: true,
-        dedupeFragments: true,
-        avoidOptionals: {
-          field: false,
-          inputValue: false,
-          object: false,
+        fetcher: {
+          func: "./client#fetcher",
+          isReactHook: false,
         },
+        exposeQueryKeys: true,
         scalars: {
-          DateTime: 'string',
-          JSON: 'Record<string, any>',
+          DateTime: "string",
+          JSON: "Record<string, any>",
         },
       },
     },

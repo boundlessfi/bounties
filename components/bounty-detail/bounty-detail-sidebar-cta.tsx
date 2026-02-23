@@ -17,7 +17,7 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
   const [copied, setCopied] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const claimMutation = useClaimBounty();
-
+  
   const canAct = bounty.status === "open";
   const claimCfg = CLAIMING_MODEL_CONFIG[bounty.claimingModel];
   const ClaimIcon = claimCfg.icon;
@@ -38,7 +38,7 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
     if (bounty.claimingModel === "single-claim") {
       claimMutation.mutate(bounty.id, {
         onSuccess: () => toast.success("Bounty claimed successfully!"),
-        onError: (err) => toast.error(err.message || "Failed to claim bounty"),
+        onError: (err) => toast.error(err.message || "Failed to claim bounty")
       });
     } else {
       setDialogOpen(true);
@@ -49,7 +49,7 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
     if (claimMutation.isPending) return "Claiming...";
     if (!canAct)
       return bounty.status === "claimed" ? "Already Claimed" : "Bounty Closed";
-
+      
     switch (bounty.claimingModel) {
       case "single-claim":
         return "Claim Bounty";
@@ -108,14 +108,11 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
               <span>Deadline</span>
               <span className="flex items-center gap-1.5 text-gray-200 text-xs font-medium">
                 <Clock className="size-3.5 text-gray-500" />
-                {new Date(bounty.submissionsEndDate).toLocaleDateString(
-                  "en-US",
-                  {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  },
-                )}
+                {new Date(bounty.submissionsEndDate).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </span>
             </div>
           )}
@@ -130,9 +127,7 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
           size="lg"
           onClick={handleAction}
         >
-          {claimMutation.isPending && (
-            <Loader2 className="size-4 mr-2 animate-spin" />
-          )}
+          {claimMutation.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
           {ctaLabel()}
         </Button>
 
@@ -217,7 +212,7 @@ export function MobileCTA({ bounty }: { bounty: Bounty }) {
     if (bounty.claimingModel === "single-claim") {
       claimMutation.mutate(bounty.id, {
         onSuccess: () => toast.success("Bounty claimed successfully!"),
-        onError: (err) => toast.error(err.message || "Failed to claim bounty"),
+        onError: (err) => toast.error(err.message || "Failed to claim bounty")
       });
     } else {
       setDialogOpen(true);
@@ -228,7 +223,7 @@ export function MobileCTA({ bounty }: { bounty: Bounty }) {
     if (claimMutation.isPending) return "Claiming...";
     if (!canAct)
       return bounty.status === "claimed" ? "Already Claimed" : "Bounty Closed";
-
+      
     switch (bounty.claimingModel) {
       case "single-claim":
         return "Claim Bounty";
@@ -249,9 +244,7 @@ export function MobileCTA({ bounty }: { bounty: Bounty }) {
         size="lg"
         onClick={handleAction}
       >
-        {claimMutation.isPending && (
-          <Loader2 className="size-4 mr-2 animate-spin" />
-        )}
+        {claimMutation.isPending && <Loader2 className="size-4 mr-2 animate-spin" />}
         {label()}
       </Button>
 
@@ -268,13 +261,9 @@ export function MobileCTA({ bounty }: { bounty: Bounty }) {
 // ----------------------------------------------------------------------
 // Claimant Profile Component
 // ----------------------------------------------------------------------
-export function ClaimantProfile({
-  claimInfo,
-}: {
-  claimInfo?: Bounty["claimInfo"];
-}) {
+export function ClaimantProfile({ claimInfo }: { claimInfo?: Bounty["claimInfo"] }) {
   if (!claimInfo || !claimInfo.claimedBy) return null;
-
+  
   const { claimedBy, claimedAt } = claimInfo;
 
   // Strict safety checks to prevent crashes if the API returns undefined data
