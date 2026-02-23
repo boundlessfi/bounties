@@ -21,6 +21,17 @@ const claimingModelSchema = z.enum([
   "multi-winner",
 ]);
 
+const claimInfoSchema = z.object({
+  claimedBy: z
+    .object({
+      userId: z.string(),
+      username: z.string(),
+      avatarUrl: z.string().optional(),
+    })
+    .optional(),
+  claimedAt: z.string().optional(),
+});
+
 export const bountySchema = z.object({
   id: z.string(),
   type: bountyTypeSchema,
@@ -42,6 +53,7 @@ export const bountySchema = z.object({
   updatedAt: z.string(),
   claimedAt: z.string().optional(),
   claimedBy: z.string().optional(),
+  claimInfo: claimInfoSchema.optional(),
   lastActivityAt: z.string().optional(),
   claimExpiresAt: z.string().optional(),
   submissionsEndDate: z.string().optional(),
@@ -109,7 +121,7 @@ export const bountiesApi = {
     del<void>(`${BOUNTIES_ENDPOINT}/${id}`),
 
   claim: (id: string): Promise<Bounty> =>
-    post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`),
+    post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`, {}),
 
   submit: (
     id: string,
