@@ -32,7 +32,7 @@ export function useInfiniteBounties(params?: Omit<BountyQueryInput, "page">) {
           page: pageParam as number,
           limit: data.limit,
           total: data.total,
-          totalPages: Math.ceil(data.total / data.limit),
+          totalPages: data.limit > 0 ? Math.ceil(data.total / data.limit) : 0,
         },
       };
     },

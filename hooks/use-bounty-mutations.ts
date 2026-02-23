@@ -5,7 +5,7 @@ import {
   useDeleteBountyMutation,
   type CreateBountyInput,
   type UpdateBountyInput,
-  type BountyFieldsFragment,
+  type BountyQuery,
   type BountiesQuery,
   type CreateBountyMutation,
   type UpdateBountyMutation,
@@ -53,16 +53,19 @@ export function useUpdateBounty() {
     onMutate: async (variables) => {
       const { id } = variables.input;
       await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
-      const previous = queryClient.getQueryData<BountyFieldsFragment>(
+      const previous = queryClient.getQueryData<BountyQuery>(
         bountyKeys.detail(id),
       );
 
-      if (previous) {
-        queryClient.setQueryData<BountyFieldsFragment>(bountyKeys.detail(id), {
+      if (previous?.bounty) {
+        queryClient.setQueryData<BountyQuery>(bountyKeys.detail(id), {
           ...previous,
-          ...variables.input,
-          updatedAt: new Date().toISOString(),
-        } as BountyFieldsFragment);
+          bounty: {
+            ...previous.bounty,
+            ...variables.input,
+            updatedAt: new Date().toISOString(),
+          },
+        });
       }
 
       return { previous, id };
@@ -177,9 +180,9 @@ export function useClaimBounty() {
   // Claim is treated as an update the status to IN_PROGRESS
   const mutation = useUpdateBountyMutation({
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<BountyQuery>(
         bountyKeys.detail(variables.input.id),
-        data.updateBounty,
+        { bounty: data.updateBounty },
       );
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
