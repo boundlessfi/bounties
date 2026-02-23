@@ -284,6 +284,7 @@ export type CreateBountyMutation = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     organization?: {
       __typename?: "BountyOrganization";
       id: string;
@@ -331,6 +332,7 @@ export type UpdateBountyMutation = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     organization?: {
       __typename?: "BountyOrganization";
       id: string;
@@ -392,6 +394,7 @@ export type BountiesQuery = {
       bountyWindowId?: string | null;
       githubIssueUrl: string;
       githubIssueNumber?: number | null;
+      createdBy: string;
       organization?: {
         __typename?: "BountyOrganization";
         id: string;
@@ -440,6 +443,7 @@ export type BountyQuery = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     submissions?: Array<{
       __typename?: "BountySubmissionType";
       id: string;
@@ -512,6 +516,7 @@ export type ActiveBountiesQuery = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     organization?: {
       __typename?: "BountyOrganization";
       id: string;
@@ -559,6 +564,7 @@ export type OrganizationBountiesQuery = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     organization?: {
       __typename?: "BountyOrganization";
       id: string;
@@ -606,6 +612,7 @@ export type ProjectBountiesQuery = {
     bountyWindowId?: string | null;
     githubIssueUrl: string;
     githubIssueNumber?: number | null;
+    createdBy: string;
     organization?: {
       __typename?: "BountyOrganization";
       id: string;
@@ -647,6 +654,7 @@ export type BountyFieldsFragment = {
   bountyWindowId?: string | null;
   githubIssueUrl: string;
   githubIssueNumber?: number | null;
+  createdBy: string;
   organization?: {
     __typename?: "BountyOrganization";
     id: string;
@@ -851,6 +859,7 @@ export const BountyFieldsFragmentDoc = `
   bountyWindowId
   githubIssueUrl
   githubIssueNumber
+  createdBy
   organization {
     id
     name

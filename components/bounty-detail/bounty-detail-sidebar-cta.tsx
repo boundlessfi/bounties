@@ -5,10 +5,10 @@ import { Github, Copy, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-import type { Bounty } from "@/types/bounty";
+import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
 
-export function SidebarCTA({ bounty }: { bounty: Bounty }) {
+export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
   const [copied, setCopied] = useState(false);
   const canAct = bounty.status === "OPEN";
 
@@ -127,7 +127,7 @@ export function SidebarCTA({ bounty }: { bounty: Bounty }) {
   );
 }
 
-export function MobileCTA({ bounty }: { bounty: Bounty }) {
+export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
   const canAct = bounty.status === "OPEN";
 
   const label = () => {

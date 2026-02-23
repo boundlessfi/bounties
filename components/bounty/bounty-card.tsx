@@ -12,16 +12,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Bounty, BountyStatus } from "@/types/bounty";
+import { BountyFieldsFragment } from "@/lib/graphql/generated";
 
 interface BountyCardProps {
-  bounty: Bounty;
+  bounty: BountyFieldsFragment;
   onClick?: () => void;
   variant?: "grid" | "list";
 }
 
 const statusConfig: Record<
-  BountyStatus,
+  string,
   {
     variant: "default" | "secondary" | "outline" | "destructive";
     label: string;

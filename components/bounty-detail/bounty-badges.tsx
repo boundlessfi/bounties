@@ -1,8 +1,7 @@
-import type { BountyStatus, BountyType } from "@/types/bounty";
 import { STATUS_CONFIG, TYPE_CONFIG } from "@/lib/bounty-config";
 
-export function StatusBadge({ status }: { status: BountyStatus }) {
-  const cfg = STATUS_CONFIG[status];
+export function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.COMPLETED;
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${cfg.className}`}
@@ -13,8 +12,8 @@ export function StatusBadge({ status }: { status: BountyStatus }) {
   );
 }
 
-export function TypeBadge({ type }: { type: BountyType }) {
-  const cfg = TYPE_CONFIG[type];
+export function TypeBadge({ type }: { type: string }) {
+  const cfg = TYPE_CONFIG[type] || TYPE_CONFIG.FIXED_PRICE;
   return (
     <span
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.className}`}

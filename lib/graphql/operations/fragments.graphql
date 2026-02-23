@@ -13,6 +13,7 @@ fragment BountyFields on Bounty {
   bountyWindowId
   githubIssueUrl
   githubIssueNumber
+  createdBy
   organization {
     id
     name

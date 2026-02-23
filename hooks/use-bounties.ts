@@ -1,17 +1,30 @@
-import { useQuery } from '@tanstack/react-query';
-import { bountiesApi, type Bounty, type BountyListParams, type PaginatedResponse } from '@/lib/api';
+import {
+  useBountiesQuery,
+  type BountyQueryInput,
+  type BountyFieldsFragment,
+} from "@/lib/graphql/generated";
+import { bountyKeys } from "@/lib/query/query-keys";
 
-export const bountyKeys = {
-    all: ['bounties'] as const,
-    lists: () => [...bountyKeys.all, 'list'] as const,
-    list: (params?: BountyListParams) => [...bountyKeys.lists(), params] as const,
-    details: () => [...bountyKeys.all, 'detail'] as const,
-    detail: (id: string) => [...bountyKeys.details(), id] as const,
-};
+export { bountyKeys };
 
-export function useBounties(params?: BountyListParams) {
-    return useQuery<PaginatedResponse<Bounty>>({
-        queryKey: bountyKeys.list(params),
-        queryFn: () => bountiesApi.list(params),
-    });
+export function useBounties(params?: BountyQueryInput) {
+  const { data, ...rest } = useBountiesQuery({ query: params });
+
+  return {
+    ...rest,
+    data: data
+      ? {
+          data: data.bounties.bounties as BountyFieldsFragment[],
+          pagination: {
+            page: params?.page ?? 1,
+            limit: data.bounties.limit,
+            total: data.bounties.total,
+            totalPages:
+              data.bounties.limit > 0
+                ? Math.ceil(data.bounties.total / data.bounties.limit)
+                : 0,
+          },
+        }
+      : undefined,
+  };
 }

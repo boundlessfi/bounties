@@ -1,29 +1,49 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { bountiesApi, type Bounty, type BountyListParams, type PaginatedResponse } from '@/lib/api';
-import { bountyKeys } from './use-bounties';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { fetcher } from "@/lib/graphql/client";
+import {
+  BountiesDocument,
+  type BountiesQuery,
+  type BountyQueryInput,
+  type BountyFieldsFragment,
+} from "@/lib/graphql/generated";
+import { type PaginatedResponse } from "@/lib/api/types";
+import { bountyKeys } from "@/lib/query/query-keys";
 
 const DEFAULT_LIMIT = 20;
 
-export function useInfiniteBounties(params?: Omit<BountyListParams, 'page'>) {
-    return useInfiniteQuery<PaginatedResponse<Bounty>>({
-        queryKey: [...bountyKeys.lists(), 'infinite', params] as const,
-        queryFn: ({ pageParam }) =>
-            bountiesApi.list({ ...params, page: pageParam as number, limit: params?.limit ?? DEFAULT_LIMIT }),
-        initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-            const { page, totalPages } = lastPage.pagination;
-            return page < totalPages ? page + 1 : undefined;
+export function useInfiniteBounties(params?: Omit<BountyQueryInput, "page">) {
+  return useInfiniteQuery<PaginatedResponse<BountyFieldsFragment>>({
+    queryKey: bountyKeys.infinite(params),
+    queryFn: async ({ pageParam }) => {
+      const response = await fetcher<
+        BountiesQuery,
+        { query: BountyQueryInput }
+      >(BountiesDocument, {
+        query: {
+          ...params,
+          page: pageParam as number,
+          limit: params?.limit ?? DEFAULT_LIMIT,
         },
-        getPreviousPageParam: (firstPage) => {
-            const { page } = firstPage.pagination;
-            return page > 1 ? page - 1 : undefined;
+      })();
+      const data = response.bounties;
+      return {
+        data: data.bounties as BountyFieldsFragment[],
+        pagination: {
+          page: pageParam as number,
+          limit: data.limit,
+          total: data.total,
+          totalPages: data.limit > 0 ? Math.ceil(data.total / data.limit) : 0,
         },
-    });
-}
-
-// Helper to flatten infinite query pages
-export function flattenBountyPages(
-    pages: PaginatedResponse<Bounty>[] | undefined
-): Bounty[] {
-    return pages?.flatMap((page) => page.data) ?? [];
+      };
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, totalPages } = lastPage.pagination;
+      return page < totalPages ? page + 1 : undefined;
+    },
+    getPreviousPageParam: (firstPage) => {
+      const { page } = firstPage.pagination;
+      return page > 1 ? page - 1 : undefined;
+    },
+  });
 }

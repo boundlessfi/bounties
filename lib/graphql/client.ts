@@ -2,6 +2,8 @@
 
 import { GraphQLClient } from "graphql-request";
 import { isAuthStatus } from "./errors";
+import { toast } from "sonner";
+import { getAccessToken } from "../auth-utils";
 
 // Re-export all error utilities from errors.ts for convenience
 export {
@@ -15,32 +17,19 @@ export {
   type GraphQLErrorResponse,
 } from "./errors";
 
-// In-memory token storage (XSS-resistant, lost on page refresh)
-let accessToken: string | null = null;
-
-export function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return accessToken;
-}
-
-export function setAccessToken(token: string): void {
-  if (typeof window === "undefined") return;
-  accessToken = token;
-}
-
-export function clearAccessToken(): void {
-  if (typeof window === "undefined") return;
-  accessToken = null;
-}
-
-export function hasAccessToken(): boolean {
-  if (typeof window === "undefined") return false;
-  return accessToken !== null;
+/**
+ * Checks if a session exists.
+ */
+export async function hasAccessToken(): Promise<boolean> {
+  const token = await getAccessToken();
+  return token !== null;
 }
 
 // Create the generic GraphQLClient instance
 const url = process.env.NEXT_PUBLIC_GRAPHQL_URL || "/api/graphql";
-export const graphQLClient = new GraphQLClient(url);
+export const graphQLClient = new GraphQLClient(url, {
+  credentials: "include",
+});
 
 // A custom fetcher for @graphql-codegen/typescript-react-query
 export const fetcher = <
@@ -51,7 +40,7 @@ export const fetcher = <
   variables?: TVariables,
 ) => {
   return async (): Promise<TData> => {
-    const token = getAccessToken();
+    const token = await getAccessToken();
     const headers: Record<string, string> = {};
     if (token) {
       headers.authorization = `Bearer ${token}`;
@@ -66,7 +55,7 @@ export const fetcher = <
         ) => Promise<TData>
       )(query, variables, headers);
     } catch (error: unknown) {
-      // Global error handling for auth failures (like Apollo ErrorLink)
+      // Global error handling for auth failures
       const gqlError = error as {
         response?: { errors?: Array<{ extensions?: { status?: number } }> };
       };
@@ -74,8 +63,9 @@ export const fetcher = <
         gqlError.response.errors.forEach((err) => {
           const status = err?.extensions?.status ?? 500;
           if (isAuthStatus(status)) {
-            clearAccessToken();
+            // Let the application handle unauthorized state, potentially redirecting to login
             if (typeof window !== "undefined") {
+              toast.error("Your session has expired. Please log in again.");
               window.dispatchEvent(
                 new CustomEvent("auth:unauthorized", { detail: { status } }),
               );

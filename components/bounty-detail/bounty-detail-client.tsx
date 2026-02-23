@@ -7,7 +7,7 @@ import { MobileCTA, SidebarCTA } from "./bounty-detail-sidebar-cta";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
-import { useBountyDetail } from "@/hooks/Use-bounty-detail";
+import { useBountyDetail } from "@/hooks/use-bounty-detail";
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   const router = useRouter();

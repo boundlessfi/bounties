@@ -1,39 +1,76 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type MutateOptions } from "@tanstack/react-query";
 import {
-  bountiesApi,
-  type Bounty,
+  useCreateBountyMutation,
+  useUpdateBountyMutation,
+  useDeleteBountyMutation,
   type CreateBountyInput,
   type UpdateBountyInput,
-  type PaginatedResponse,
-} from "@/lib/api";
-import { bountyKeys } from "./use-bounties";
+  type BountyQuery,
+  type BountiesQuery,
+  type CreateBountyMutation,
+  type UpdateBountyMutation,
+  type DeleteBountyMutation,
+  type CreateBountyMutationVariables,
+  type UpdateBountyMutationVariables,
+  type DeleteBountyMutationVariables,
+} from "@/lib/graphql/generated";
+import { bountyKeys } from "@/lib/query/query-keys";
 
 export function useCreateBounty() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateBountyInput) => bountiesApi.create(data),
+  const mutation = useCreateBountyMutation({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      input: CreateBountyInput,
+      options?: MutateOptions<
+        CreateBountyMutation,
+        unknown,
+        CreateBountyMutationVariables,
+        unknown
+      >,
+    ) => mutation.mutate({ input }, options),
+    mutateAsync: (
+      input: CreateBountyInput,
+      options?: MutateOptions<
+        CreateBountyMutation,
+        unknown,
+        CreateBountyMutationVariables,
+        unknown
+      >,
+    ) => mutation.mutateAsync({ input }, options),
+  };
 }
 
 export function useUpdateBounty() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateBountyInput }) =>
-      bountiesApi.update(id, data),
-    onMutate: async ({ id, data }) => {
+  const mutation = useUpdateBountyMutation({
+    onMutate: async (variables) => {
+      const { id } = variables.input;
       await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
-      const previous = queryClient.getQueryData<Bounty>(bountyKeys.detail(id));
+      const previous = queryClient.getQueryData<BountyQuery>(
+        bountyKeys.detail(id),
+      );
 
-      if (previous) {
-        queryClient.setQueryData<Bounty>(bountyKeys.detail(id), {
+      if (previous?.bounty) {
+        const optimisticInput = Object.fromEntries(
+          Object.entries(variables.input).filter(
+            ([, value]) => value !== undefined && value !== null,
+          ),
+        ) as Partial<BountyQuery["bounty"]>;
+
+        queryClient.setQueryData<BountyQuery>(bountyKeys.detail(id), {
           ...previous,
-          ...data,
-          updatedAt: new Date().toISOString(),
+          bounty: {
+            ...previous.bounty,
+            ...optimisticInput,
+            updatedAt: new Date().toISOString(),
+          },
         });
       }
 
@@ -47,37 +84,63 @@ export function useUpdateBounty() {
         );
       }
     },
-    onSettled: (_data, _err, { id }) => {
-      queryClient.invalidateQueries({ queryKey: bountyKeys.detail(id) });
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: bountyKeys.detail(variables.input.id),
+      });
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      { id, data }: { id: string; data: Omit<UpdateBountyInput, "id"> },
+      options?: MutateOptions<
+        UpdateBountyMutation,
+        unknown,
+        UpdateBountyMutationVariables,
+        unknown
+      >,
+    ) =>
+      mutation.mutate({ input: { ...data, id } as UpdateBountyInput }, options),
+    mutateAsync: (
+      { id, data }: { id: string; data: Omit<UpdateBountyInput, "id"> },
+      options?: MutateOptions<
+        UpdateBountyMutation,
+        unknown,
+        UpdateBountyMutationVariables,
+        unknown
+      >,
+    ) =>
+      mutation.mutateAsync(
+        { input: { ...data, id } as UpdateBountyInput },
+        options,
+      ),
+  };
 }
 
 export function useDeleteBounty() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => bountiesApi.delete(id),
-    onMutate: async (id) => {
+  const mutation = useDeleteBountyMutation({
+    onMutate: async (variables) => {
+      const { id } = variables;
       await queryClient.cancelQueries({ queryKey: bountyKeys.lists() });
 
-      const previousLists = queryClient.getQueriesData<
-        PaginatedResponse<Bounty>
-      >({
+      const previousLists = queryClient.getQueriesData<BountiesQuery>({
         queryKey: bountyKeys.lists(),
       });
 
-      queryClient.setQueriesData<PaginatedResponse<Bounty>>(
+      queryClient.setQueriesData<BountiesQuery>(
         { queryKey: bountyKeys.lists() },
         (old) =>
           old
             ? {
                 ...old,
-                data: old.data.filter((b) => b.id !== id),
-                pagination: {
-                  ...old.pagination,
-                  total: old.pagination.total - 1,
+                bounties: {
+                  ...old.bounties,
+                  bounties: old.bounties.bounties.filter((b) => b.id !== id),
+                  total: old.bounties.total - 1,
                 },
               }
             : old,
@@ -85,7 +148,7 @@ export function useDeleteBounty() {
 
       return { previousLists };
     },
-    onError: (_err, _id, context) => {
+    onError: (_err, _vars, context) => {
       context?.previousLists.forEach(([key, data]) => {
         queryClient.setQueryData(key, data);
       });
@@ -94,18 +157,63 @@ export function useDeleteBounty() {
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      id: string,
+      options?: MutateOptions<
+        DeleteBountyMutation,
+        unknown,
+        DeleteBountyMutationVariables,
+        unknown
+      >,
+    ) => mutation.mutate({ id }, options),
+    mutateAsync: (
+      id: string,
+      options?: MutateOptions<
+        DeleteBountyMutation,
+        unknown,
+        DeleteBountyMutationVariables,
+        unknown
+      >,
+    ) => mutation.mutateAsync({ id }, options),
+  };
 }
 
 export function useClaimBounty() {
   const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => bountiesApi.claim(id),
-    onSuccess: (data, id) => {
-      queryClient.setQueryData<Bounty>(bountyKeys.detail(id), data);
-
-      // Invalidate the list view so the main bounties board updates
+  // Claim is treated as an update the status to IN_PROGRESS
+  const mutation = useUpdateBountyMutation({
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData<BountyQuery>(
+        bountyKeys.detail(variables.input.id),
+        { bounty: data.updateBounty },
+      );
       queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
+
+  return {
+    ...mutation,
+    mutate: (
+      id: string,
+      options?: MutateOptions<
+        UpdateBountyMutation,
+        unknown,
+        UpdateBountyMutationVariables,
+        unknown
+      >,
+    ) => mutation.mutate({ input: { id, status: "IN_PROGRESS" } }, options),
+    mutateAsync: (
+      id: string,
+      options?: MutateOptions<
+        UpdateBountyMutation,
+        unknown,
+        UpdateBountyMutationVariables,
+        unknown
+      >,
+    ) =>
+      mutation.mutateAsync({ input: { id, status: "IN_PROGRESS" } }, options),
+  };
 }
