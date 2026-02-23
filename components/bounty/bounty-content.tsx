@@ -1,11 +1,9 @@
-import Markdown from "react-markdown"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import type { Bounty } from "@/types/bounty"
-import { CheckCircle2, AlertCircle } from "lucide-react"
+import Markdown from "react-markdown";
+import { Separator } from "@/components/ui/separator";
+import type { Bounty } from "@/types/bounty";
 
 interface BountyContentProps {
-  bounty: Bounty
+  bounty: Bounty;
 }
 
 export function BountyContent({ bounty }: BountyContentProps) {
@@ -18,54 +16,20 @@ export function BountyContent({ bounty }: BountyContentProps) {
         </div>
       </section>
 
-      {bounty.requirements && bounty.requirements.length > 0 && (
+      {bounty.project && (
         <>
           <Separator className="bg-gray-800" />
           <section>
-            <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-              <CheckCircle2 className="size-5 text-primary" />
-              Acceptance Criteria
-            </h2>
-            <ul className="space-y-2">
-              {bounty.requirements.map((req, index) => (
-                <li key={index} className="flex items-start gap-2 text-sm">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
-                  {req}
-                </li>
-              ))}
-            </ul>
-          </section>
-        </>
-      )}
-
-      {bounty.scope && (
-        <>
-          <Separator className="bg-gray-800" />
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
-              <AlertCircle className="size-5 text-warning-300" />
-              Scope
-            </h2>
-            <p className="text-sm">{bounty.scope}</p>
-          </section>
-        </>
-      )}
-
-      {bounty.tags.length > 0 && (
-        <>
-          <Separator className="bg-gray-800" />
-          <section>
-            <h2 className="mb-3 text-lg font-semibold">Tags</h2>
-            <div className="flex flex-wrap gap-2">
-              {bounty.tags.map((tag) => (
-                <Badge key={tag} className=" text-xs">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
+            <h2 className="mb-3 text-lg font-semibold">Project</h2>
+            <p className="text-sm">{bounty.project.title}</p>
+            {bounty.project.description && (
+              <p className="text-sm text-gray-400 mt-1">
+                {bounty.project.description}
+              </p>
+            )}
           </section>
         </>
       )}
     </div>
-  )
+  );
 }

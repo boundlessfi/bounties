@@ -1,69 +1,95 @@
-export type BountyType =
-  | "feature"
-  | "bug"
-  | "documentation"
-  | "refactor"
-  | "other";
+/**
+ * Frontend types aligned with the backend GraphQL schema (schema.gql).
+ */
 
-export type ClaimingModel =
-  | "single-claim"
-  | "application"
-  | "competition"
-  | "multi-winner"
-  | "milestone";
+export type BountyType = "FIXED_PRICE" | "MILESTONE_BASED" | "COMPETITION";
 
-export type ClaimInfo = {
-  claimedBy?: {
-    userId: string;
-    username: string;
-    avatarUrl?: string;
-  };
-  claimedAt?: string;
-};
+export type BountyStatus =
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "DRAFT"
+  | "SUBMITTED"
+  | "UNDER_REVIEW"
+  | "DISPUTED";
+
+export type DifficultyLevel = "beginner" | "intermediate" | "advanced";
+
+export interface BountyOrganization {
+  id: string;
+  name: string;
+  logo: string | null;
+  slug: string | null;
+}
+
+export interface BountyProject {
+  id: string;
+  title: string;
+  description: string | null;
+}
+
+export interface BountyWindowType {
+  id: string;
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+}
+
+export interface BountySubmissionUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
+
+export interface BountySubmission {
+  id: string;
+  bountyId: string;
+  submittedBy: string;
+  submittedByUser?: BountySubmissionUser | null;
+  githubPullRequestUrl: string | null;
+  status: string;
+  reviewComments: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  reviewedByUser?: BountySubmissionUser | null;
+  rewardTransactionHash: string | null;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BountyCount {
+  submissions: number;
+}
 
 export interface Bounty {
   id: string;
-  type: BountyType;
-
-  projectId: string;
-  projectName: string;
-  projectLogoUrl: string | null;
-
-  issueTitle: string;
-  issueNumber: number;
-  githubRepo: string;
-  githubIssueUrl: string;
-
+  title: string;
   description: string;
-  rewardAmount: number | null;
-  rewardCurrency: "USD" | "USDC" | "XLM" | string;
+  type: BountyType;
+  status: BountyStatus;
 
-  claimingModel: ClaimingModel;
+  organizationId: string;
+  organization?: BountyOrganization | null;
+  projectId: string | null;
+  project?: BountyProject | null;
 
-  difficulty: "beginner" | "intermediate" | "advanced" | null;
-  tags: string[];
+  githubIssueUrl: string;
+  githubIssueNumber: number | null;
 
-  status: "open" | "claimed" | "closed";
+  rewardAmount: number;
+  rewardCurrency: string;
 
+  bountyWindowId?: string | null;
+  bountyWindow?: BountyWindowType | null;
+
+  submissions?: BountySubmission[] | null;
+  _count?: BountyCount | null;
+
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
-
-  // Status & Logic fields
-  claimedAt?: string;
-  claimedBy?: string; // user/wallet ID
-  claimInfo?: ClaimInfo; // Added for Single Claim Model
-  lastActivityAt?: string; // for anti-squatting
-  claimExpiresAt?: string;
-  submissionsEndDate?: string; // For competitions/applications
-  requirements?: string[];
-  scope?: string;
-  milestones?: unknown[]; // Optional milestone definition
-
-  // Participation Lists (User IDs)
-  applicants?: string[];
-  competitors?: string[];
-  members?: string[]; // For milestone/collaborative bounties
 }
-
-export type BountyStatus = Bounty["status"];
-export type DifficultyLevel = NonNullable<Bounty["difficulty"]>;

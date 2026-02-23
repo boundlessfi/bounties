@@ -1,0 +1,72 @@
+fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}
+
+fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}
+
+fragment SubmissionFieldsWithContact on BountySubmissionType {
+  ...SubmissionFields
+  submittedByUser {
+    email
+  }
+  reviewedByUser {
+    email
+  }
+}

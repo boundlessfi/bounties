@@ -105,23 +105,15 @@ export function useClaimBounty() {
       queryClient.setQueryData<Bounty>(bountyKeys.detail(id), (old) => {
         if (!old) return old;
 
-        // If the API returned a perfectly valid object with a projectName, use it
-        if (data && data.projectName) {
+        // If the API returned a valid object, use it
+        if (data) {
           return data;
         }
 
         // Otherwise, safely patch the existing data with the claimed state
         return {
           ...old,
-          status: "claimed",
-          claimInfo: {
-            claimedBy: {
-              userId: "current-user",
-              username: "You (Mock User)",
-              avatarUrl: "https://github.com/shadcn.png",
-            },
-            claimedAt: new Date().toISOString(),
-          },
+          status: "IN_PROGRESS",
         };
       });
 

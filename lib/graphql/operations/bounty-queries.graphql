@@ -1,0 +1,37 @@
+query Bounties($query: BountyQueryInput) {
+  bounties(query: $query) {
+    bounties {
+      ...BountyFields
+    }
+    total
+    limit
+    offset
+  }
+}
+
+query Bounty($id: ID!) {
+  bounty(id: $id) {
+    ...BountyFields
+    submissions {
+      ...SubmissionFields
+    }
+  }
+}
+
+query ActiveBounties {
+  activeBounties {
+    ...BountyFields
+  }
+}
+
+query OrganizationBounties($organizationId: ID!) {
+  organizationBounties(organizationId: $organizationId) {
+    ...BountyFields
+  }
+}
+
+query ProjectBounties($projectId: ID!) {
+  projectBounties(projectId: $projectId) {
+    ...BountyFields
+  }
+}

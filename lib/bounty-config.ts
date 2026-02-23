@@ -1,70 +1,66 @@
-import type { ElementType } from "react";
-import { User, Users, Trophy } from "lucide-react";
-import type { Bounty } from "@/lib/api";
+import type { BountyStatus, BountyType } from "@/types/bounty";
 
 export const STATUS_CONFIG: Record<
-  Bounty["status"],
+  BountyStatus,
   { label: string; dot: string; className: string }
 > = {
-  open: {
+  OPEN: {
     label: "Open",
     dot: "bg-emerald-400",
     className:
       "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
   },
-  claimed: {
-    label: "Claimed",
-    dot: "bg-amber-400",
-    className: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+  IN_PROGRESS: {
+    label: "In Progress",
+    dot: "bg-blue-400",
+    className: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
   },
-  closed: {
-    label: "Closed",
+  COMPLETED: {
+    label: "Completed",
     dot: "bg-gray-500",
     className: "bg-gray-800/60 text-gray-400 border border-gray-700",
   },
+  CANCELLED: {
+    label: "Cancelled",
+    dot: "bg-red-500",
+    className: "bg-red-500/10 text-red-400 border border-red-500/20",
+  },
+  DRAFT: {
+    label: "Draft",
+    dot: "bg-gray-400",
+    className: "bg-gray-800/60 text-gray-400 border border-gray-700",
+  },
+  SUBMITTED: {
+    label: "Submitted",
+    dot: "bg-yellow-400",
+    className: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
+  },
+  UNDER_REVIEW: {
+    label: "Under Review",
+    dot: "bg-amber-400",
+    className: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+  },
+  DISPUTED: {
+    label: "Disputed",
+    dot: "bg-red-600",
+    className: "bg-red-700/10 text-red-400 border border-red-700/20",
+  },
 };
 
-export const DIFFICULTY_CONFIG: Record<
-  NonNullable<Bounty["difficulty"]>,
+export const TYPE_CONFIG: Record<
+  BountyType,
   { label: string; className: string }
 > = {
-  beginner: {
-    label: "Beginner",
-    className: "bg-teal-500/10 text-teal-400 border border-teal-500/20",
+  FIXED_PRICE: {
+    label: "Fixed Price",
+    className: "bg-primary/10 text-primary border border-primary/20",
   },
-  intermediate: {
-    label: "Intermediate",
+  MILESTONE_BASED: {
+    label: "Milestone",
     className: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
   },
-  advanced: {
-    label: "Advanced",
-    className: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
-  },
-};
-
-export const CLAIMING_MODEL_CONFIG: Record<
-  Bounty["claimingModel"],
-  { label: string; description: string; icon: ElementType }
-> = {
-  "single-claim": {
-    label: "Single Claim",
-    description: "One contributor can claim and complete this bounty.",
-    icon: User,
-  },
-  application: {
-    label: "Application",
-    description:
-      "Apply to work on this bounty. Maintainers pick a contributor.",
-    icon: Users,
-  },
-  competition: {
+  COMPETITION: {
     label: "Competition",
-    description: "Multiple contributors submit — best solution wins.",
-    icon: Trophy,
-  },
-  "multi-winner": {
-    label: "Multi-Winner",
-    description: "Multiple submissions can be rewarded.",
-    icon: Users,
+    className: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
   },
 };

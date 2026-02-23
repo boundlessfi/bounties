@@ -142,14 +142,15 @@ export function SearchCommand() {
                 {results.map((bounty) => (
                   <CommandItem
                     key={bounty.id}
-                    value={bounty.issueTitle}
-                    onSelect={() => handleSelect(bounty.id, bounty.issueTitle)}
+                    value={bounty.title}
+                    onSelect={() => handleSelect(bounty.id, bounty.title)}
                   >
                     <FileText className="mr-2 h-4 w-4" />
                     <div className="flex flex-col">
-                      <span>{bounty.issueTitle}</span>
+                      <span>{bounty.title}</span>
                       <span className="text-xs text-gray-500">
-                        {bounty.projectName} • {bounty.status}
+                        {bounty.organization?.name ?? "Unknown"} •{" "}
+                        {bounty.status}
                       </span>
                     </div>
                     {bounty.rewardAmount && (
