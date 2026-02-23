@@ -58,11 +58,17 @@ export function useUpdateBounty() {
       );
 
       if (previous?.bounty) {
+        const optimisticInput = Object.fromEntries(
+          Object.entries(variables.input).filter(
+            ([, value]) => value !== undefined && value !== null,
+          ),
+        ) as Partial<BountyQuery["bounty"]>;
+
         queryClient.setQueryData<BountyQuery>(bountyKeys.detail(id), {
           ...previous,
           bounty: {
             ...previous.bounty,
-            ...variables.input,
+            ...optimisticInput,
             updatedAt: new Date().toISOString(),
           },
         });
