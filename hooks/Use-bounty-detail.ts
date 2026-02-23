@@ -1,11 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { bountiesApi, type Bounty } from "@/lib/api";
-import { bountyKeys } from "./use-bounties";
+import {
+  useBountyQuery,
+  type BountyFieldsFragment,
+} from "@/lib/graphql/generated";
 
 export function useBountyDetail(id: string) {
-  return useQuery<Bounty>({
-    queryKey: bountyKeys.detail(id),
-    queryFn: () => bountiesApi.getById(id),
-    enabled: Boolean(id),
-  });
+  const { data, ...rest } = useBountyQuery({ id }, { enabled: Boolean(id) });
+
+  return {
+    ...rest,
+    data: data?.bounty as BountyFieldsFragment | undefined,
+  };
 }

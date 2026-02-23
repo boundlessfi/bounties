@@ -6,14 +6,16 @@ import { BountyListSkeleton } from "./bounty-card-skeleton";
 import { BountyError } from "./bounty-error";
 import { BountyEmpty } from "./bounty-empty";
 import { useBounties } from "@/hooks/use-bounties";
-import type { BountyListParams } from "@/lib/api";
-import type { Bounty } from "@/types/bounty";
+import {
+  type BountyQueryInput,
+  type BountyFieldsFragment,
+} from "@/lib/graphql/generated";
 
 interface BountyListProps {
-  params?: BountyListParams;
+  params?: BountyQueryInput;
   hasFilters?: boolean;
   onClearFilters?: () => void;
-  onBountyClick?: (bounty: Bounty) => void;
+  onBountyClick?: (bounty: BountyFieldsFragment) => void;
 }
 
 export function BountyList({

@@ -2,25 +2,33 @@
 
 import { useMemo, useState } from "react";
 import { RatingModal } from "../rating/rating-modal";
-import { bountiesApi } from "@/lib/api/bounties";
+import { useClaimBounty } from "@/hooks/use-bounty-mutations";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import type { Bounty } from "@/types/bounty";
+import type {
+  BountyFieldsFragment,
+  BountySubmissionType,
+} from "@/lib/graphql/generated";
 import { Github, Link2, Clock, Calendar, Check, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 
 interface BountySidebarProps {
-  bounty: Bounty;
+  bounty: BountyFieldsFragment & {
+    submissions?:
+      | (Pick<BountySubmissionType, "submittedBy"> & {
+          submittedByUser?: { name?: string | null } | null;
+        })[]
+      | null;
+  };
 }
 
 export function BountySidebar({ bounty }: BountySidebarProps) {
   const [copied, setCopied] = useState(false);
+  const claimBounty = useClaimBounty();
   const [loading, setLoading] = useState(false);
 
-  // Mock user ID and maintainer check for now - in real app this comes from auth context
-  const CURRENT_USER_ID =
-    process.env.NEXT_PUBLIC_MOCK_USER_ID ?? "mock-user-123";
+  // Mock maintainer check for now - in real app this comes from auth context
   const IS_MAINTAINER = process.env.NEXT_PUBLIC_MOCK_MAINTAINER === "true";
 
   if (
@@ -57,20 +65,15 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
   // Generic action helper removed — unused. Keep specific handlers like `handleClaim`.
 
   const handleClaim = async (): Promise<boolean> => {
-    setLoading(true);
     try {
-      await bountiesApi.claim(bounty.id, CURRENT_USER_ID);
+      await claimBounty.mutateAsync(bounty.id);
       toast("Action completed successfully");
-      window.location.reload();
       return true;
     } catch (error) {
       console.error("Claim error:", error);
-      // Attempt to surface backend message
       const message = error instanceof Error ? error.message : "Action failed";
-      alert(message);
+      toast.error(message);
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -175,10 +178,12 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
     return (
       <Button
         onClick={() => void handleClaim()}
-        disabled={loading}
+        disabled={claimBounty.isPending}
         className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {claimBounty.isPending && (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        )}
         Submit to Bounty
       </Button>
     );

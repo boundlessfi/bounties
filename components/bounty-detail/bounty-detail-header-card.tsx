@@ -1,9 +1,9 @@
 import { ExternalLink, GitBranch } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { Bounty } from "@/types/bounty";
+import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
 
-export function HeaderCard({ bounty }: { bounty: Bounty }) {
+export function HeaderCard({ bounty }: { bounty: BountyFieldsFragment }) {
   const orgName = bounty.organization?.name ?? "Unknown";
   const orgLogo = bounty.organization?.logo;
 

@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { BountyList } from "@/components/bounty/bounty-list";
 import { Badge } from "@/components/ui/badge";
-import type { BountyType, BountyStatus } from "@/types/bounty";
+import {
+  type BountyQueryInput,
+  BountyStatus,
+  BountyType,
+} from "@/lib/graphql/generated";
 import { cn } from "@/lib/utils";
 
 interface ProjectBountiesProps {
@@ -12,21 +16,21 @@ interface ProjectBountiesProps {
 
 const bountyTypes: { value: BountyType | "all"; label: string }[] = [
   { value: "all", label: "All Types" },
-  { value: "FIXED_PRICE", label: "Fixed Price" },
-  { value: "MILESTONE_BASED", label: "Milestone" },
-  { value: "COMPETITION", label: "Competition" },
+  { value: BountyType.FixedPrice, label: "Fixed Price" },
+  { value: BountyType.MilestoneBased, label: "Milestone" },
+  { value: BountyType.Competition, label: "Competition" },
 ];
 
 const statuses: { value: BountyStatus | "all"; label: string }[] = [
   { value: "all", label: "All Status" },
-  { value: "OPEN", label: "Open" },
-  { value: "IN_PROGRESS", label: "In Progress" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
-  { value: "DRAFT", label: "Draft" },
-  { value: "SUBMITTED", label: "Submitted" },
-  { value: "UNDER_REVIEW", label: "Under Review" },
-  { value: "DISPUTED", label: "Disputed" },
+  { value: BountyStatus.Open, label: "Open" },
+  { value: BountyStatus.InProgress, label: "In Progress" },
+  { value: BountyStatus.Completed, label: "Completed" },
+  { value: BountyStatus.Cancelled, label: "Cancelled" },
+  { value: BountyStatus.Draft, label: "Draft" },
+  { value: BountyStatus.Submitted, label: "Submitted" },
+  { value: BountyStatus.UnderReview, label: "Under Review" },
+  { value: BountyStatus.Disputed, label: "Disputed" },
 ];
 
 export function ProjectBounties({ projectId }: ProjectBountiesProps) {
@@ -37,7 +41,7 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
 
   // Get all bounties for this project
 
-  const params = {
+  const params: BountyQueryInput = {
     projectId,
     ...(selectedType !== "all" && { type: selectedType }),
     ...(selectedStatus !== "all" && { status: selectedStatus }),

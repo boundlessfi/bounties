@@ -1,7 +1,5 @@
-import type { BountyStatus, BountyType } from "@/types/bounty";
-
 export const STATUS_CONFIG: Record<
-  BountyStatus,
+  string,
   { label: string; dot: string; className: string }
 > = {
   OPEN: {
@@ -47,20 +45,18 @@ export const STATUS_CONFIG: Record<
   },
 };
 
-export const TYPE_CONFIG: Record<
-  BountyType,
-  { label: string; className: string }
-> = {
-  FIXED_PRICE: {
-    label: "Fixed Price",
-    className: "bg-primary/10 text-primary border border-primary/20",
-  },
-  MILESTONE_BASED: {
-    label: "Milestone",
-    className: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
-  },
-  COMPETITION: {
-    label: "Competition",
-    className: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
-  },
-};
+export const TYPE_CONFIG: Record<string, { label: string; className: string }> =
+  {
+    FIXED_PRICE: {
+      label: "Fixed Price",
+      className: "bg-primary/10 text-primary border border-primary/20",
+    },
+    MILESTONE_BASED: {
+      label: "Milestone",
+      className: "bg-violet-500/10 text-violet-400 border border-violet-500/20",
+    },
+    COMPETITION: {
+      label: "Competition",
+      className: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
+    },
+  };
