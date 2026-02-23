@@ -1,0 +1,37 @@
+name: Check schema sync
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  check-schema:
+    name: Check schema is in sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Checkout canonical schema repo (private)
+        if: ${{ secrets.BOUNDLESS_NESTJS_TOKEN != '' }}
+        uses: actions/checkout@v4
+        with:
+          repository: boundlessfi/boundless-nestjs
+          path: boundless-nestjs
+          token: ${{ secrets.BOUNDLESS_NESTJS_TOKEN }}
+
+      - name: Note about private repo
+        if: ${{ secrets.BOUNDLESS_NESTJS_TOKEN == '' }}
+        run: |
+          echo "No secret BOUNDLESS_NESTJS_TOKEN provided; skipping checkout of private repo."
+          echo "If the canonical schema is in the private repo, add a repository secret named BOUNDLESS_NESTJS_TOKEN with a PAT that has access to boundlessfi/boundless-nestjs."
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run schema check
+        run: node ./scripts/sync-schema.js --check

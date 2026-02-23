@@ -1,5 +1,7 @@
 # ------------------------------------------------------
-# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# GENERATED FILE — DO NOT EDIT DIRECTLY
+# Source: ../boundless-nestjs/src/schema.gql
+# To update, run: npm run sync-schema
 # ------------------------------------------------------
 
 type Bounty {

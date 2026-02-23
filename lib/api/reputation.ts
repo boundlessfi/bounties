@@ -3,7 +3,6 @@ import {
   ContributorReputation,
   RateContributorInput,
   ReputationHistoryResponse,
-  ReputationHistoryParams,
 } from "@/types/reputation";
 
 const REPUTATION_ENDPOINT = "/api/reputation";

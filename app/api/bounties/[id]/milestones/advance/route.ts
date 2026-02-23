@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { BountyStore } from "@/lib/store";
+import { getCurrentUser } from "@/lib/server-auth";
 // import { MilestoneStatus } from '@/types/participation';
 
 export async function POST(
@@ -9,8 +10,18 @@ export async function POST(
   const { id: bountyId } = await params;
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { contributorId, action } = body; // action: 'advance' | 'complete' | 'remove'
+
+    // Ensure the authenticated user matches the contributor being modified
+    if (contributorId !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     if (!contributorId || !action) {
       return NextResponse.json(

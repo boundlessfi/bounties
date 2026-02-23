@@ -112,8 +112,10 @@ export const bountiesApi = {
   delete: (id: string): Promise<void> =>
     del<void>(`${BOUNTIES_ENDPOINT}/${id}`),
 
-  claim: (id: string): Promise<Bounty> =>
-    post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`, {}),
+  claim: (id: string, contributorId?: string): Promise<Bounty> => {
+    const body = contributorId ? { contributorId } : {};
+    return post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`, body);
+  },
 };
 
 // Parse and validate response (use when strict validation needed)

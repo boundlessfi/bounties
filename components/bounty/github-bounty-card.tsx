@@ -62,7 +62,13 @@ const statusLabels: Record<BountyStatus, string> = {
 };
 
 export function BountyCard({ bounty }: BountyCardProps) {
-  const typeInfo = typeConfig[bounty.type];
+  const defaultTypeInfo = {
+    label: bounty.type ?? "Unknown",
+    icon: <DollarSign className="size-3" />,
+    className: "bg-gray-500 text-white border-transparent",
+  };
+
+  const typeInfo = typeConfig[bounty.type as BountyType] ?? defaultTypeInfo;
   const statusColor = statusColors[bounty.status] || statusColors.COMPLETED;
   const statusLabel = statusLabels[bounty.status] || bounty.status;
 

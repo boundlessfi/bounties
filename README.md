@@ -232,6 +232,34 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ---
 
+## Schema sync (CI)
+
+This repository validates that the local `lib/graphql/schema.graphql` is kept in sync with the canonical GraphQL schema that lives in the backend repository.
+
+- The GitHub Actions workflow `.github/workflows/check-schema.yml` runs `node ./scripts/sync-schema.js --check` on push and pull requests.
+- If the canonical schema is stored in the private backend repo `boundlessfi/boundless-nestjs`, the workflow can check out that repo when you provide a repository PAT in the `BOUNDLESS_NESTJS_TOKEN` secret.
+
+How to enable CI checks for a private backend repo:
+
+1. Create a GitHub Personal Access Token (PAT) with `repo` (read) scope for `boundlessfi/boundless-nestjs`.
+2. In this repository, go to **Settings → Secrets → Actions** and add a new secret named `BOUNDLESS_NESTJS_TOKEN` with the PAT value.
+3. The workflow will automatically checkout `boundlessfi/boundless-nestjs` into the `boundless-nestjs` path and the sync script will copy `src/schema.gql` from there.
+
+If you do not want to provide cross-repo access, two alternatives are supported:
+
+- Set the `CANONICAL_SCHEMA` environment variable (or repository secret) to a path or URL where the canonical `schema.gql` can be found, or
+- Keep a copied `lib/graphql/schema.graphql` file in this repo and update it manually when the backend schema changes.
+
+Local commands:
+
+```bash
+# copy the canonical schema into this repo (useful for local development)
+npm run sync-schema
+
+# CI-friendly check (fails if out-of-sync)
+npm run check-schema
+```
+
 ## Acknowledgments
 
 Built with:

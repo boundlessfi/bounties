@@ -14,16 +14,18 @@ export interface FilterState {
 // Project status
 export type ProjectStatus = "active" | "completed" | "paused";
 
-// Bounty status — aligned with backend GraphQL enum
-export type BountyStatus =
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED"
-  | "DRAFT"
-  | "SUBMITTED"
-  | "UNDER_REVIEW"
-  | "DISPUTED";
+// Re-export canonical Bounty types from the central types folder
+export type {
+  Bounty,
+  BountyType,
+  BountyStatus,
+  BountyOrganization,
+  BountyProject,
+  BountySubmission,
+  BountyWindowType,
+  BountySubmissionUser,
+  BountyCount,
+} from "../types/bounty";
 
 // Project interface
 export interface Project {
@@ -40,27 +42,7 @@ export interface Project {
   completedMilestones?: number;
 }
 
-// Bounty interface — aligned with backend GraphQL Bounty type
-export interface Bounty {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  status: BountyStatus;
-
-  organizationId: string;
-  projectId?: string | null;
-
-  githubIssueUrl: string;
-  githubIssueNumber?: number | null;
-
-  rewardAmount: number;
-  rewardCurrency: string;
-
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// Bounty types are provided by `types/bounty.ts` (re-exported above)
 
 // Available tags
 export const AVAILABLE_TAGS = [

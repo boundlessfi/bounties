@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bounty, BountyStatus } from "@/lib/types";
+import { Bounty, BountyStatus } from "@/types/bounty";
 import { formatDistanceToNow } from "date-fns";
 
 interface BountyCardProps {

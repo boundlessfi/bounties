@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { RatingModal } from "../rating/rating-modal";
+import { bountiesApi } from "@/lib/api/bounties";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import type { Bounty } from "@/types/bounty";
@@ -53,30 +54,20 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
     }
   };
 
-  const handleAction = async (
-    endpoint: string,
-    body: object = {},
-  ): Promise<boolean> => {
+  // Generic action helper removed — unused. Keep specific handlers like `handleClaim`.
+
+  const handleClaim = async (): Promise<boolean> => {
     setLoading(true);
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contributorId: CURRENT_USER_ID, ...body }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        alert(error.error || "Action failed");
-        return false;
-      }
-
+      await bountiesApi.claim(bounty.id, CURRENT_USER_ID);
       toast("Action completed successfully");
       window.location.reload();
       return true;
     } catch (error) {
-      console.error("Action error:", error);
-      alert("Something went wrong");
+      console.error("Claim error:", error);
+      // Attempt to surface backend message
+      const message = error instanceof Error ? error.message : "Action failed";
+      alert(message);
       return false;
     } finally {
       setLoading(false);
@@ -89,6 +80,11 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
   const [lastRating, setLastRating] = useState<number | null>(null);
   const [reputationGain, setReputationGain] = useState<number | null>(null);
   const [hasRated, setHasRated] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<{
+    id: string;
+    name: string;
+    reputation: number;
+  } | null>(null);
 
   const handleMarkCompleted = async () => {
     if (!IS_MAINTAINER) {
@@ -100,6 +96,19 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
     setTimeout(() => {
       setLoading(false);
       setCompleted(true);
+      // Determine the contributor to rate: prefer submission's submitter
+      const submission =
+        bounty.submissions && bounty.submissions.length > 0
+          ? bounty.submissions[0]
+          : null;
+      const contributorId = submission?.submittedBy ?? bounty.createdBy ?? "";
+      const contributorName =
+        submission?.submittedByUser?.name ?? "Contributor";
+      setRatingTarget({
+        id: contributorId,
+        name: contributorName,
+        reputation: 100 + (reputationGain || 0),
+      });
       setShowRating(true);
     }, 1000);
   };
@@ -124,12 +133,9 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
     setReputationGain(rating * 10);
     setHasRated(true);
     setShowRating(false);
-    toast.success(
-      `You have been rated ${rating} star${rating > 1 ? "s" : ""} and gained +${rating * 10} reputation!`,
-      {
-        description: "Congratulations on your contribution!",
-      },
-    );
+    toast.success("Rating submitted", {
+      description: `You rated the contributor ${rating} star${rating > 1 ? "s" : ""}.`,
+    });
   };
 
   const renderActionButton = () => {
@@ -168,7 +174,7 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
 
     return (
       <Button
-        onClick={() => handleAction(`/api/bounties/${bounty.id}/claim`)}
+        onClick={() => void handleClaim()}
         disabled={loading}
         className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
       >
@@ -181,13 +187,9 @@ export function BountySidebar({ bounty }: BountySidebarProps) {
   return (
     <div className="sticky top-4 rounded-xl border border-gray-800 bg-background-card p-6 space-y-4">
       {/* Sidebar UI */}
-      {showRating && !hasRated && (
+      {showRating && !hasRated && ratingTarget && (
         <RatingModal
-          contributor={{
-            id: bounty.createdBy || "",
-            name: "Contributor",
-            reputation: 100 + (reputationGain || 0),
-          }}
+          contributor={ratingTarget}
           bounty={{ id: bounty.id, title: bounty.title }}
           onSubmit={handleSubmitRating}
           onClose={() => setShowRating(false)}

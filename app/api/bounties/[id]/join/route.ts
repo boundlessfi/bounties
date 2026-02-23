@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { BountyStore } from "@/lib/store";
 import { MilestoneParticipation } from "@/types/participation";
+import { getCurrentUser } from "@/lib/server-auth";
 
 const generateId = () => crypto.randomUUID();
 
@@ -11,15 +12,12 @@ export async function POST(
   const { id: bountyId } = await params;
 
   try {
-    const body = await request.json();
-    const { contributorId } = body;
-
-    if (!contributorId) {
-      return NextResponse.json(
-        { error: "Missing contributorId" },
-        { status: 400 },
-      );
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const contributorId = user.id;
 
     const bounty = BountyStore.getBountyById(bountyId);
     if (!bounty) {
@@ -31,6 +29,11 @@ export async function POST(
         { error: "Invalid bounty type" },
         { status: 400 },
       );
+    }
+
+    // Only allow joining when bounty is open
+    if (bounty.status !== "OPEN") {
+      return NextResponse.json({ error: "Bounty not open" }, { status: 400 });
     }
 
     // Check if already joined

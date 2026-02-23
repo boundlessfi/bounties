@@ -1,3 +1,5 @@
+// Codegen reads the canonical schema from ../boundless-nestjs/src/schema.gql
+// If you need a local copy in this repo, run: `npm run sync-schema`
 import type { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {

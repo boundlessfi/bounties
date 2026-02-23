@@ -25,6 +25,9 @@ export async function POST(
       );
     }
 
+    // Use the validated contributorId or default to the authenticated user
+    const finalContributorId = contributorId ?? user.id;
+
     const bounty = BountyStore.getBountyById(bountyId);
     if (!bounty) {
       return NextResponse.json({ error: "Bounty not found" }, { status: 404 });
@@ -48,6 +51,8 @@ export async function POST(
     const updates = {
       status: "IN_PROGRESS" as const,
       updatedAt: now.toISOString(),
+      claimedBy: finalContributorId,
+      claimedAt: now.toISOString(),
     };
 
     const updatedBounty = BountyStore.updateBounty(bountyId, updates);

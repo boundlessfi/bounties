@@ -10,7 +10,9 @@
     "test": "jest",
     "codegen": "graphql-codegen",
     "codegen:watch": "graphql-codegen --watch",
-    "prepare": "husky"
+    "prepare": "husky",
+    "sync-schema": "node ./scripts/sync-schema.js",
+    "check-schema": "node ./scripts/sync-schema.js --check"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

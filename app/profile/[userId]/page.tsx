@@ -12,6 +12,7 @@ import { AlertCircle, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
+import { useCompletionHistory } from "@/hooks/use-reputation";
 
 export default function ProfilePage() {
   const params = useParams();
@@ -23,36 +24,13 @@ export default function ProfilePage() {
   } = useContributorReputation(userId);
   const { data: bountyResponse } = useBounties();
 
-  const MAX_MOCK_HISTORY = 50;
+  const {
+    data: completionData,
+    isLoading: historyLoading,
+    isError: historyError,
+  } = useCompletionHistory(userId);
 
-  const mockHistory = useMemo(() => {
-    if (!reputation) return [];
-    const count = Math.min(
-      reputation.stats.totalCompleted ?? 0,
-      MAX_MOCK_HISTORY,
-    );
-    return Array(count)
-      .fill(null)
-      .map((_, i) => ({
-        id: `bounty-${i}`,
-        bountyId: `b-${i}`,
-        bountyTitle: `Implemented feature #${100 + i}`,
-        projectName: "Drips Protocol",
-        projectLogoUrl: null,
-        difficulty: ["BEGINNER", "INTERMEDIATE", "ADVANCED"][i % 3] as
-          | "BEGINNER"
-          | "INTERMEDIATE"
-          | "ADVANCED",
-        rewardAmount: 500,
-        rewardCurrency: "USDC",
-        claimedAt: "2023-01-01T00:00:00Z",
-        completedAt: "2024-01-15T12:00:00Z",
-        completionTimeHours: 48,
-        maintainerRating: 5,
-        maintainerFeedback: "Great work!",
-        pointsEarned: 150,
-      }));
-  }, [reputation]);
+  const records = completionData?.records ?? [];
 
   const myClaims = useMemo<MyClaim[]>(() => {
     const bounties = bountyResponse?.data ?? [];
@@ -60,14 +38,22 @@ export default function ProfilePage() {
     return bounties
       .filter((bounty) => bounty.createdBy === userId)
       .map((bounty) => {
-        let status = "active";
+        let status = "unknown";
 
         if (bounty.status === "COMPLETED") {
           status = "completed";
         } else if (bounty.status === "IN_PROGRESS") {
-          status = "in-review";
+          status = "in-progress";
         } else if (bounty.status === "CANCELLED") {
-          status = "completed";
+          status = "cancelled";
+        } else if (bounty.status === "DRAFT") {
+          status = "draft";
+        } else if (bounty.status === "SUBMITTED") {
+          status = "submitted";
+        } else if (bounty.status === "DISPUTED") {
+          status = "disputed";
+        } else if (bounty.status === "OPEN") {
+          status = "open";
         }
 
         return {
@@ -190,10 +176,18 @@ export default function ProfilePage() {
 
             <TabsContent value="history" className="mt-6">
               <h2 className="text-xl font-bold mb-4">Activity History</h2>
-              <CompletionHistory
-                records={mockHistory}
-                description={`Showing the last ${mockHistory.length} completed bounties.`}
-              />
+              {historyLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : historyError ? (
+                <div className="text-center text-muted-foreground">
+                  Unable to load activity.
+                </div>
+              ) : (
+                <CompletionHistory
+                  records={records}
+                  description={`Showing the last ${records.length} completed bounties.`}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="analytics" className="mt-6">
