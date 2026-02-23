@@ -1,3 +1,5 @@
+"use client";
+
 import { GraphQLClient } from "graphql-request";
 import { isAuthStatus } from "./errors";
 

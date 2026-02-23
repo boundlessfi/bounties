@@ -5,6 +5,10 @@ import { useBounties } from "@/hooks/use-bounties";
 import { ReputationCard } from "@/components/reputation/reputation-card";
 import { CompletionHistory } from "@/components/reputation/completion-history";
 import { MyClaims, type MyClaim } from "@/components/reputation/my-claims";
+import {
+  EarningsSummary,
+  type EarningsSummary as EarningsSummaryType,
+} from "@/components/reputation/earnings-summary";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,7 +26,11 @@ export default function ProfilePage() {
     isLoading,
     error,
   } = useContributorReputation(userId);
-  const { data: bountyResponse } = useBounties();
+  const {
+    data: bountyResponse,
+    isLoading: isBountiesLoading,
+    error: bountiesError,
+  } = useBounties();
 
   const {
     data: completionData,
@@ -65,7 +73,37 @@ export default function ProfilePage() {
       });
   }, [bountyResponse?.data, userId]);
 
-  if (isLoading) {
+  const earningsSummary = useMemo<EarningsSummaryType>(() => {
+    const bounties = bountyResponse?.data ?? [];
+
+    const summary: EarningsSummaryType = {
+      totalEarned: 0,
+      pendingAmount: 0,
+      currency: "USDC",
+      payoutHistory: [],
+    };
+
+    bounties.forEach((bounty) => {
+      if (bounty.status === "COMPLETED") {
+        const amount = Number(bounty.rewardAmount) || 0;
+        summary.totalEarned += amount;
+        summary.payoutHistory.push({
+          amount,
+          date: bounty.updatedAt || bounty.createdAt,
+          status: "completed",
+        });
+      } else if (
+        bounty.status === "SUBMITTED" ||
+        bounty.status === "DISPUTED"
+      ) {
+        summary.pendingAmount += Number(bounty.rewardAmount) || 0;
+      }
+    });
+
+    return summary;
+  }, [bountyResponse?.data]);
+
+  if (isLoading || isBountiesLoading) {
     return (
       <div className="container mx-auto py-8">
         <Skeleton className="h-10 w-32 mb-8" />
@@ -78,7 +116,6 @@ export default function ProfilePage() {
   }
 
   if (error) {
-    // Check if it's a 404 (Not Found)
     const apiError = error as { status?: number; message?: string };
     const isNotFound =
       apiError?.status === 404 || apiError?.message?.includes("404");
@@ -98,7 +135,6 @@ export default function ProfilePage() {
       );
     }
 
-    // Generic Error
     return (
       <div className="container mx-auto py-16 text-center">
         <AlertCircle className="w-12 h-12 mx-auto text-destructive mb-4" />
@@ -146,8 +182,6 @@ export default function ProfilePage() {
         {/* Left Sidebar: Reputation Card */}
         <div className="lg:col-span-4 space-y-6">
           <ReputationCard reputation={reputation} />
-
-          {/* Additional Sidebar Info could go here */}
         </div>
 
         {/* Main Content: Activity & History */}
@@ -198,7 +232,21 @@ export default function ProfilePage() {
 
             <TabsContent value="claims" className="mt-6">
               <h2 className="text-xl font-bold mb-4">My Claims</h2>
-              <MyClaims claims={myClaims} />
+              {bountiesError ? (
+                <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  Failed to load claims and earnings. Please try again.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <p className="text-xs text-muted-foreground">
+                    Earnings shown in {earningsSummary.currency} only. Bounties
+                    in other currencies are not included.
+                  </p>
+                  <EarningsSummary earnings={earningsSummary} />
+                  <MyClaims claims={myClaims} />
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>
