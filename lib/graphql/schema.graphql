@@ -1,438 +1,194 @@
-# =============================================================================
-# Bounties GraphQL Schema
-# =============================================================================
-# This schema mirrors the existing REST API structure for bounties and projects,
-# implements the Connection pattern for pagination, and establishes subscriptions
-# to replace WebSocket events for real-time updates.
-# =============================================================================
+# ------------------------------------------------------
+# GENERATED FILE — DO NOT EDIT DIRECTLY
+# Source: ../boundless-nestjs/src/schema.gql
+# To update, run: npm run sync-schema
+# ------------------------------------------------------
 
-# -----------------------------------------------------------------------------
-# Enumerations
-# -----------------------------------------------------------------------------
-
-"""
-Type of bounty task, matching the BountyType from types/bounty.ts
-"""
-enum BountyType {
-  FEATURE
-  BUG
-  DOCUMENTATION
-  REFACTOR
-  OTHER
-}
-
-"""
-Current status of a bounty
-"""
-enum BountyStatus {
-  OPEN
-  CLAIMED
-  CLOSED
-}
-
-"""
-Difficulty level for bounties
-"""
-enum DifficultyLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
-
-"""
-Status of a project, matching types/project.ts
-"""
-enum ProjectStatus {
-  ACTIVE
-  ENDED
-  DRAFT
-}
-
-"""
-Sort order for queries
-"""
-enum SortOrder {
-  ASC
-  DESC
-}
-
-# -----------------------------------------------------------------------------
-# Core Object Types
-# -----------------------------------------------------------------------------
-
-"""
-A bounty represents a task or issue with an associated reward.
-Fields align with the TypeScript interface in types/bounty.ts.
-"""
 type Bounty {
-  id: ID!
-  type: BountyType!
-
-  projectId: String!
-  projectName: String!
-  projectLogoUrl: String
-
-  issueTitle: String!
-  issueNumber: Int!
-  githubRepo: String!
+  _count: BountyCount
+  bountyWindow: BountyWindowType
+  bountyWindowId: String
+  createdAt: DateTime!
+  createdBy: String!
+  description: String!
+  githubIssueNumber: Int
   githubIssueUrl: String!
-
-  description: String!
-  rewardAmount: Float
+  id: ID!
+  organization: BountyOrganization
+  organizationId: String!
+  project: BountyProject
+  projectId: String
+  rewardAmount: Float!
   rewardCurrency: String!
-
-  difficulty: DifficultyLevel
-  tags: [String!]!
-
-  status: BountyStatus!
-
-  createdAt: String!
-  updatedAt: String!
-
-  # Optional fields for detailed view
-  requirements: [String!]
-  scope: String
+  status: String!
+  submissions: [BountySubmissionType!]
+  title: String!
+  type: String!
+  updatedAt: DateTime!
 }
 
-"""
-A project that can have multiple bounties.
-Fields align with the TypeScript type in types/project.ts.
-"""
-type Project {
+type BountyCount {
+  submissions: Int!
+}
+
+type BountyOrganization {
   id: ID!
+  logo: String
   name: String!
-  logoUrl: String
-  description: String!
-  tags: [String!]!
-  bountyCount: Int!
-  openBountyCount: Int!
-  creatorName: String!
-  creatorAvatarUrl: String
-  prizeAmount: String!
-  status: ProjectStatus!
-  bannerUrl: String
-  createdAt: String!
-  updatedAt: String!
+  slug: String
 }
 
-"""
-User type based on better-auth's implicit structure.
-Kept minimal since User operations are handled by better-auth.
-"""
-type User {
+type BountyProject {
+  description: String
   id: ID!
-  email: String!
-  name: String
+  title: String!
+}
+
+input BountyQueryInput {
+  bountyWindowId: String
+  limit: Int = 20
+  organizationId: String
+  page: Int = 1
+  projectId: String
+  search: String
+  sortBy: String = "createdAt"
+  sortOrder: String = "desc"
+  status: BountyStatus
+  type: BountyType
+}
+
+enum BountyStatus {
+  CANCELLED
+  COMPLETED
+  DISPUTED
+  DRAFT
+  IN_PROGRESS
+  OPEN
+  SUBMITTED
+  UNDER_REVIEW
+}
+
+type BountySubmissionType {
+  bountyId: String!
+  createdAt: DateTime!
+  githubPullRequestUrl: String
+  id: ID!
+  paidAt: DateTime
+  reviewComments: String
+  reviewedAt: DateTime
+  reviewedBy: String
+  reviewedByUser: BountySubmissionUser
+  rewardTransactionHash: String
+  status: String!
+  submittedBy: String!
+  submittedByUser: BountySubmissionUser
+  updatedAt: DateTime!
+}
+
+type BountySubmissionUser {
+  email: String
+  id: ID!
   image: String
-  emailVerified: Boolean
-  createdAt: String!
-  updatedAt: String!
-}
-
-# -----------------------------------------------------------------------------
-# Pagination Types (Connection Pattern)
-# -----------------------------------------------------------------------------
-
-"""
-Pagination metadata for connection-based responses.
-"""
-type PageInfo {
-  hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
-  startCursor: String
-  endCursor: String
-}
-
-"""
-Input for offset-style pagination queries.
-Supports hybrid approach: offset-style parameters with Connection response structure.
-"""
-input PaginationInput {
-  page: Int
-  limit: Int
-}
-
-"""
-An edge in the bounty connection, containing the node and its cursor.
-"""
-type BountyEdge {
-  node: Bounty!
-  cursor: String!
-}
-
-"""
-A connection to a list of bounties with pagination support.
-"""
-type BountyConnection {
-  edges: [BountyEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-"""
-An edge in the project connection, containing the node and its cursor.
-"""
-type ProjectEdge {
-  node: Project!
-  cursor: String!
-}
-
-"""
-A connection to a list of projects with pagination support.
-"""
-type ProjectConnection {
-  edges: [ProjectEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-# -----------------------------------------------------------------------------
-# Input Types for Mutations
-# -----------------------------------------------------------------------------
-
-"""
-Input for creating a new bounty.
-Excludes system-generated fields: id, createdAt, updatedAt, status.
-"""
-input CreateBountyInput {
-  type: BountyType!
-
-  projectId: String!
-  projectName: String!
-  projectLogoUrl: String
-
-  issueTitle: String!
-  issueNumber: Int!
-  githubRepo: String!
-  githubIssueUrl: String!
-
-  description: String!
-  rewardAmount: Float
-  rewardCurrency: String!
-
-  difficulty: DifficultyLevel
-  tags: [String!]!
-
-  requirements: [String!]
-  scope: String
-}
-
-"""
-Input for updating an existing bounty.
-All fields are optional to support partial updates.
-"""
-input UpdateBountyInput {
-  type: BountyType
-
-  projectId: String
-  projectName: String
-  projectLogoUrl: String
-
-  issueTitle: String
-  issueNumber: Int
-  githubRepo: String
-  githubIssueUrl: String
-
-  description: String
-  rewardAmount: Float
-  rewardCurrency: String
-
-  difficulty: DifficultyLevel
-  tags: [String!]
-
-  status: BountyStatus
-
-  requirements: [String!]
-  scope: String
-}
-
-"""
-Input for creating a new project.
-"""
-input CreateProjectInput {
-  name: String!
-  logoUrl: String
-  description: String!
-  tags: [String!]!
-  creatorName: String!
-  creatorAvatarUrl: String
-  prizeAmount: String!
-  status: ProjectStatus!
-  bannerUrl: String
-}
-
-"""
-Input for updating an existing project.
-All fields are optional to support partial updates.
-"""
-input UpdateProjectInput {
   name: String
-  logoUrl: String
-  description: String
-  tags: [String!]
-  creatorName: String
-  creatorAvatarUrl: String
-  prizeAmount: String
-  status: ProjectStatus
-  bannerUrl: String
 }
 
-# -----------------------------------------------------------------------------
-# Filter and Sort Input Types
-# -----------------------------------------------------------------------------
+enum BountyType {
+  COMPETITION
+  FIXED_PRICE
+  MILESTONE_BASED
+}
 
-"""
-Input for filtering bounty queries.
-"""
-input BountyFilterInput {
-  status: BountyStatus
-  type: BountyType
-  difficulty: DifficultyLevel
+type BountyWindowType {
+  endDate: DateTime
+  id: ID!
+  name: String!
+  startDate: DateTime
+  status: String!
+}
+
+input CreateBountyInput {
+  bountyWindowId: String
+  description: String!
+  githubIssueNumber: Int
+  githubIssueUrl: String!
+  organizationId: String!
   projectId: String
-  search: String
+  rewardAmount: Float!
+  rewardCurrency: String!
+  title: String!
+  type: BountyType!
+}
+
+input CreateSubmissionInput {
+  bountyId: String!
+  comments: String
+  githubPullRequestUrl: String!
 }
 
 """
-Input for sorting bounty queries.
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
-input BountySortInput {
-  sortBy: String
-  sortOrder: SortOrder
-}
-
-"""
-Input for filtering project queries.
-"""
-input ProjectFilterInput {
-  status: ProjectStatus
-  tags: [String!]
-  hasOpenBounties: Boolean
-  search: String
-}
-
-"""
-Input for sorting project queries.
-"""
-input ProjectSortInput {
-  sortBy: String
-  sortOrder: SortOrder
-}
-
-# -----------------------------------------------------------------------------
-# Query Operations
-# -----------------------------------------------------------------------------
-
-type Query {
-  # Bounty Queries
-  """
-  Retrieve a paginated list of bounties with optional filtering and sorting.
-  """
-  bounties(
-    filter: BountyFilterInput
-    sort: BountySortInput
-    pagination: PaginationInput
-  ): BountyConnection!
-
-  """
-  Retrieve a single bounty by its ID.
-  Returns null if the bounty is not found.
-  """
-  bounty(id: ID!): Bounty
-
-  # Project Queries
-  """
-  Retrieve a paginated list of projects with optional filtering and sorting.
-  """
-  projects(
-    filter: ProjectFilterInput
-    sort: ProjectSortInput
-    pagination: PaginationInput
-  ): ProjectConnection!
-
-  """
-  Retrieve a single project by its ID.
-  Returns null if the project is not found.
-  """
-  project(id: ID!): Project
-
-  """
-  Retrieve all unique project tags for filtering UI.
-  """
-  projectTags: [String!]!
-}
-
-# -----------------------------------------------------------------------------
-# Mutation Operations
-# -----------------------------------------------------------------------------
+scalar DateTime
 
 type Mutation {
-  # Bounty Mutations
-  """
-  Create a new bounty.
-  """
+  """Create a new bounty (organization members only)"""
   createBounty(input: CreateBountyInput!): Bounty!
 
-  """
-  Update an existing bounty by ID.
-  """
-  updateBounty(id: ID!, input: UpdateBountyInput!): Bounty!
-
-  """
-  Delete a bounty by ID.
-  Returns true if successfully deleted.
-  """
+  """Delete a bounty (organization admins/owners only)"""
   deleteBounty(id: ID!): Boolean!
 
-  """
-  Claim a bounty by ID.
-  Updates the bounty status to CLAIMED.
-  """
-  claimBounty(id: ID!): Bounty!
+  """Mark a submission as paid (organization admins/owners only)"""
+  markSubmissionPaid(submissionId: ID!, transactionHash: String!): BountySubmissionType!
 
-  # Project Mutations
-  """
-  Create a new project.
-  """
-  createProject(input: CreateProjectInput!): Project!
+  """Review a bounty submission (organization members only)"""
+  reviewSubmission(input: ReviewSubmissionInput!): BountySubmissionType!
 
-  """
-  Update an existing project by ID.
-  """
-  updateProject(id: ID!, input: UpdateProjectInput!): Project!
+  """Submit to a bounty (any authenticated user)"""
+  submitToBounty(input: CreateSubmissionInput!): BountySubmissionType!
 
-  """
-  Delete a project by ID.
-  Returns true if successfully deleted.
-  """
-  deleteProject(id: ID!): Boolean!
+  """Update an existing bounty (organization members only)"""
+  updateBounty(input: UpdateBountyInput!): Bounty!
 }
 
-# -----------------------------------------------------------------------------
-# Subscription Operations
-# -----------------------------------------------------------------------------
-# These subscriptions replace WebSocket events from lib/socket/client.ts
-# for real-time updates using GraphQL subscriptions.
+type PaginatedBounties {
+  bounties: [Bounty!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
 
-type Subscription {
-  """
-  Emitted when a new bounty is created.
-  Replaces the 'bounty.created' WebSocket event.
-  Optionally filter by projectId for scoped updates.
-  """
-  bountyCreated(projectId: String): Bounty!
+type Query {
+  """Get all currently active bounties"""
+  activeBounties: [Bounty!]!
 
-  """
-  Emitted when a bounty is updated.
-  Replaces the 'bounty.updated' WebSocket event.
-  Optionally filter by projectId for scoped updates.
-  """
-  bountyUpdated(projectId: String): Bounty!
+  """Get paginated list of bounties with filtering"""
+  bounties(query: BountyQueryInput): PaginatedBounties!
 
-  """
-  Emitted when a bounty is deleted.
-  Replaces the 'bounty.deleted' WebSocket event.
-  Returns the ID of the deleted bounty.
-  Optionally filter by projectId for scoped updates.
-  """
-  bountyDeleted(projectId: String): ID!
+  """Get a single bounty by ID"""
+  bounty(id: ID!): Bounty!
+
+  """Get bounties for a specific organization"""
+  organizationBounties(organizationId: ID!): [Bounty!]!
+
+  """Get bounties for a specific project"""
+  projectBounties(projectId: ID!): [Bounty!]!
+}
+
+input ReviewSubmissionInput {
+  reviewComments: String
+  status: String!
+  submissionId: ID!
+}
+
+input UpdateBountyInput {
+  bountyWindowId: String
+  description: String
+  githubIssueNumber: Int
+  githubIssueUrl: String
+  id: ID!
+  rewardAmount: Float
+  rewardCurrency: String
+  status: String
+  title: String
+  type: BountyType
 }

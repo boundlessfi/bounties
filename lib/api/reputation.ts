@@ -2,7 +2,6 @@ import { get, post } from "./client";
 import {
   ContributorReputation,
   RateContributorInput,
-  ReputationHistoryParams,
   ReputationHistoryResponse,
 } from "@/types/reputation";
 
@@ -13,19 +12,6 @@ export const reputationApi = {
     userId: string,
   ): Promise<ContributorReputation> => {
     return get<ContributorReputation>(`${REPUTATION_ENDPOINT}/${userId}`);
-  },
-
-  fetchCompletionHistory: async (
-    userId: string,
-    params?: Pick<ReputationHistoryParams, "limit" | "offset">,
-  ): Promise<ReputationHistoryResponse> => {
-    const queryParams: Record<string, string> = {};
-    if (params?.limit != null) queryParams.limit = String(params.limit);
-    if (params?.offset != null) queryParams.offset = String(params.offset);
-    return get<ReputationHistoryResponse>(
-      `${REPUTATION_ENDPOINT}/${userId}/completion-history`,
-      { params: Object.keys(queryParams).length ? queryParams : undefined },
-    );
   },
 
   fetchContributorByWallet: async (
@@ -55,5 +41,15 @@ export const reputationApi = {
       `${REPUTATION_ENDPOINT}/link-wallet`,
       data,
     );
+  },
+  fetchCompletionHistory: async (
+    userId: string,
+    params?: { limit?: number; offset?: number },
+  ): Promise<ReputationHistoryResponse> => {
+    const query = new URLSearchParams();
+    if (params?.limit != null) query.set("limit", String(params.limit));
+    if (params?.offset != null) query.set("offset", String(params.offset));
+    const url = `${REPUTATION_ENDPOINT}/${userId}/history${query.toString() ? `?${query.toString()}` : ""}`;
+    return get<ReputationHistoryResponse>(url);
   },
 };

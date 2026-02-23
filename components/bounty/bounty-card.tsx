@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { Bounty } from "@/types/bounty";
+import { Bounty, BountyStatus } from "@/types/bounty";
 
 interface BountyCardProps {
   bounty: Bounty;
@@ -20,21 +20,53 @@ interface BountyCardProps {
   variant?: "grid" | "list";
 }
 
-const statusConfig = {
-  open: {
-    variant: "default" as const,
+const statusConfig: Record<
+  BountyStatus,
+  {
+    variant: "default" | "secondary" | "outline" | "destructive";
+    label: string;
+    dotColor: string;
+  }
+> = {
+  OPEN: {
+    variant: "default",
     label: "Open",
     dotColor: "bg-emerald-500",
   },
-  claimed: {
-    variant: "secondary" as const,
-    label: "Claimed",
+  IN_PROGRESS: {
+    variant: "secondary",
+    label: "In Progress",
+    dotColor: "bg-blue-500",
+  },
+  COMPLETED: {
+    variant: "outline",
+    label: "Completed",
+    dotColor: "bg-slate-400",
+  },
+  CANCELLED: {
+    variant: "destructive",
+    label: "Cancelled",
+    dotColor: "bg-red-500",
+  },
+  DRAFT: {
+    variant: "outline",
+    label: "Draft",
+    dotColor: "bg-gray-400",
+  },
+  SUBMITTED: {
+    variant: "secondary",
+    label: "Submitted",
+    dotColor: "bg-yellow-500",
+  },
+  UNDER_REVIEW: {
+    variant: "secondary",
+    label: "Under Review",
     dotColor: "bg-amber-500",
   },
-  closed: {
-    variant: "outline" as const,
-    label: "Closed",
-    dotColor: "bg-slate-400",
+  DISPUTED: {
+    variant: "destructive",
+    label: "Disputed",
+    dotColor: "bg-red-600",
   },
 };
 
@@ -43,10 +75,13 @@ export function BountyCard({
   onClick,
   variant = "grid",
 }: BountyCardProps) {
-  const status = statusConfig[bounty.status];
+  const status = statusConfig[bounty.status] || statusConfig.COMPLETED;
   const timeLeft = bounty.updatedAt
     ? formatDistanceToNow(new Date(bounty.updatedAt), { addSuffix: true })
     : "N/A";
+
+  const orgName = bounty.organization?.name ?? "Unknown";
+  const orgLogo = bounty.organization?.logo;
 
   return (
     <Card
@@ -89,7 +124,7 @@ export function BountyCard({
           </div>
 
           <CardTitle className="text-base font-semibold line-clamp-2 mb-2 leading-snug">
-            {bounty.issueTitle}
+            {bounty.title}
           </CardTitle>
 
           <CardDescription className="line-clamp-2 text-sm mb-4">
@@ -98,18 +133,8 @@ export function BountyCard({
 
           <div className="flex flex-wrap gap-2">
             <Badge variant="outline" className="text-xs px-2.5 py-1 ">
-              {bounty.type}
+              {bounty.type.replace(/_/g, " ")}
             </Badge>
-            {bounty.difficulty && (
-              <Badge variant="outline" className="text-xs px-2.5 py-1 ">
-                {bounty.difficulty}
-              </Badge>
-            )}
-            {bounty.tags.length > 0 && (
-              <Badge variant="outline" className="text-xs px-2.5 py-1 ">
-                {bounty.tags.slice(0, 1).join(", ")}
-              </Badge>
-            )}
           </div>
         </CardHeader>
 
@@ -125,17 +150,15 @@ export function BountyCard({
 
       <CardFooter className="border-t flex items-center justify-between gap-3 py-3 px-5">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          {bounty.projectLogoUrl && (
+          {orgLogo && (
             <Avatar className="h-5 w-5 border shrink-0">
-              <AvatarImage src={bounty.projectLogoUrl || "/placeholder.svg"} />
+              <AvatarImage src={orgLogo || "/placeholder.svg"} />
               <AvatarFallback className="text-[10px] font-medium">
-                {bounty.projectName?.[0]?.toUpperCase()}
+                {orgName?.[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
           )}
-          <span className="truncate text-xs font-medium">
-            {bounty.projectName}
-          </span>
+          <span className="truncate text-xs font-medium">{orgName}</span>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">

@@ -32,79 +32,69 @@ export default function BountiesPage() {
   const { data, isLoading, isError, error, refetch } = useBounties();
   const allBounties = useMemo(() => data?.data ?? [], [data?.data]);
 
-  const projects = useMemo(
-    () => Array.from(new Set(allBounties.map((b) => b.projectName))).sort(),
-    [allBounties],
-  );
-  const allTags = useMemo(
-    () => Array.from(new Set(allBounties.flatMap((b) => b.tags))).sort(),
+  const organizations = useMemo(
+    () =>
+      Array.from(
+        new Set(allBounties.map((b) => b.organization?.name).filter(Boolean)),
+      ).sort() as string[],
     [allBounties],
   );
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>(
-    [],
-  );
-  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [rewardRange, setRewardRange] = useState<[number, number]>([0, 5000]);
-  const [statusFilter, setStatusFilter] = useState<string>("open");
+  const [statusFilter, setStatusFilter] = useState<string>("OPEN");
   const [sortOption, setSortOption] = useState<string>("newest");
 
-  // Constants for filters
-  const BOUNTY_TYPES = ["feature", "bug", "documentation", "refactor", "other"];
-  const DIFFICULTIES = ["beginner", "intermediate", "advanced"];
-  const STATUSES = ["open", "claimed", "closed", "all"];
+  // Constants for filters — aligned with backend enums
+  const BOUNTY_TYPES = [
+    { value: "FIXED_PRICE", label: "Fixed Price" },
+    { value: "MILESTONE_BASED", label: "Milestone Based" },
+    { value: "COMPETITION", label: "Competition" },
+  ];
+  const STATUSES = [
+    { value: "OPEN", label: "Open" },
+    { value: "IN_PROGRESS", label: "In Progress" },
+    { value: "COMPLETED", label: "Completed" },
+    { value: "CANCELLED", label: "Cancelled" },
+    { value: "DRAFT", label: "Draft" },
+    { value: "SUBMITTED", label: "Submitted" },
+    { value: "UNDER_REVIEW", label: "Under Review" },
+    { value: "DISPUTED", label: "Disputed" },
+    { value: "all", label: "All Statuses" },
+  ];
 
   // Filter Logic
   const filteredBounties = useMemo(() => {
     return allBounties
       .filter((bounty) => {
-        // Search (Title, Description) - removed tags/project from search text logic if specific filters are used?
-        // Better to keep search broad or restrict? Let's keep it checking main text fields.
         const searchLower = searchQuery.toLowerCase();
         const matchesSearch =
           searchQuery === "" ||
-          bounty.issueTitle.toLowerCase().includes(searchLower) ||
+          bounty.title.toLowerCase().includes(searchLower) ||
           bounty.description.toLowerCase().includes(searchLower);
 
-        // Type Filter
         const matchesType =
           selectedTypes.length === 0 || selectedTypes.includes(bounty.type);
 
-        // Difficulty Filter
-        const matchesDifficulty =
-          selectedDifficulties.length === 0 ||
-          (bounty.difficulty &&
-            selectedDifficulties.includes(bounty.difficulty));
+        const matchesOrg =
+          selectedOrgs.length === 0 ||
+          (bounty.organization?.name &&
+            selectedOrgs.includes(bounty.organization.name));
 
-        // Project Filter
-        const matchesProject =
-          selectedProjects.length === 0 ||
-          selectedProjects.includes(bounty.projectName);
-
-        // Tag Filter (Match ANY selected tag? or ALL? Usually ANY is friendlier)
-        const matchesTags =
-          selectedTags.length === 0 ||
-          selectedTags.some((tag) => bounty.tags.includes(tag));
-
-        // Reward Filter
         const amount = bounty.rewardAmount || 0;
         const matchesReward =
           amount >= rewardRange[0] && amount <= rewardRange[1];
 
-        // Status Filter
         const matchesStatus =
           statusFilter === "all" || bounty.status === statusFilter;
 
         return (
           matchesSearch &&
           matchesType &&
-          matchesDifficulty &&
-          matchesProject &&
-          matchesTags &&
+          matchesOrg &&
           matchesReward &&
           matchesStatus
         );
@@ -128,9 +118,7 @@ export default function BountiesPage() {
     allBounties,
     searchQuery,
     selectedTypes,
-    selectedDifficulties,
-    selectedProjects,
-    selectedTags,
+    selectedOrgs,
     rewardRange,
     statusFilter,
     sortOption,
@@ -143,34 +131,18 @@ export default function BountiesPage() {
     );
   };
 
-  const toggleDifficulty = (diff: string) => {
-    setSelectedDifficulties((prev) =>
-      prev.includes(diff) ? prev.filter((d) => d !== diff) : [...prev, diff],
-    );
-  };
-
-  const toggleProject = useCallback((project: string) => {
-    setSelectedProjects((prev) =>
-      prev.includes(project)
-        ? prev.filter((p) => p !== project)
-        : [...prev, project],
-    );
-  }, []);
-
-  const toggleTag = useCallback((tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
+  const toggleOrg = useCallback((org: string) => {
+    setSelectedOrgs((prev) =>
+      prev.includes(org) ? prev.filter((o) => o !== org) : [...prev, org],
     );
   }, []);
 
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedTypes([]);
-    setSelectedDifficulties([]);
-    setSelectedProjects([]);
-    setSelectedTags([]);
+    setSelectedOrgs([]);
     setRewardRange([0, 5000]);
-    setStatusFilter("open");
+    setStatusFilter("OPEN");
     setSortOption("newest");
   };
 
@@ -200,12 +172,10 @@ export default function BountiesPage() {
                   </h2>
                   {(searchQuery ||
                     selectedTypes.length > 0 ||
-                    selectedDifficulties.length > 0 ||
-                    selectedProjects.length > 0 ||
-                    selectedTags.length > 0 ||
+                    selectedOrgs.length > 0 ||
                     rewardRange[0] !== 0 ||
                     rewardRange[1] !== 5000 ||
-                    statusFilter !== "open") && (
+                    statusFilter !== "OPEN") && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -224,7 +194,7 @@ export default function BountiesPage() {
                     <div className="relative group">
                       <Search className="absolute left-3 top-2.5 size-4  group-focus-within:text-primary transition-colors" />
                       <Input
-                        placeholder="Keywords, tags..."
+                        placeholder="Keywords..."
                         className="pl-9 h-9 text-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -246,12 +216,8 @@ export default function BountiesPage() {
                       </SelectTrigger>
                       <SelectContent className="bg-background border-px border-primary/30">
                         {STATUSES.map((status) => (
-                          <SelectItem
-                            key={status}
-                            value={status}
-                            className="capitalize"
-                          >
-                            {status}
+                          <SelectItem key={status.value} value={status.value}>
+                            {status.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -275,20 +241,20 @@ export default function BountiesPage() {
                         <div className="space-y-2 pt-2">
                           {BOUNTY_TYPES.map((type) => (
                             <div
-                              key={type}
+                              key={type.value}
                               className="flex items-center space-x-2.5 group"
                             >
                               <Checkbox
-                                id={`type-${type}`}
-                                checked={selectedTypes.includes(type)}
-                                onCheckedChange={() => toggleType(type)}
+                                id={`type-${type.value}`}
+                                checked={selectedTypes.includes(type.value)}
+                                onCheckedChange={() => toggleType(type.value)}
                                 className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
                               <Label
-                                htmlFor={`type-${type}`}
-                                className="text-sm font-normal capitalize cursor-pointer transition-colors"
+                                htmlFor={`type-${type.value}`}
+                                className="text-sm font-normal cursor-pointer transition-colors"
                               >
-                                {type}
+                                {type.label}
                               </Label>
                             </div>
                           ))}
@@ -296,94 +262,33 @@ export default function BountiesPage() {
                       </AccordionContent>
                     </AccordionItem>
 
-                    {/* Difficulty */}
+                    {/* Organization */}
                     <AccordionItem
-                      value="difficulty"
+                      value="organization"
                       className="border-none mt-2"
                     >
                       <AccordionTrigger className="text-xs font-medium  hover:no-underline ">
-                        DIFFICULTY
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-2 pt-2">
-                          {DIFFICULTIES.map((diff) => (
-                            <div
-                              key={diff}
-                              className="flex items-center space-x-2.5 group"
-                            >
-                              <Checkbox
-                                id={`diff-${diff}`}
-                                checked={selectedDifficulties.includes(diff)}
-                                onCheckedChange={() => toggleDifficulty(diff)}
-                                className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                              />
-                              <Label
-                                htmlFor={`diff-${diff}`}
-                                className="text-sm font-normal cursor-pointer  transition-colors"
-                              >
-                                {diff}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    {/* Project */}
-                    <AccordionItem value="project" className="border-none mt-2">
-                      <AccordionTrigger className="text-xs font-medium  hover:no-underline ">
-                        PROJECT
+                        ORGANIZATION
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="space-y-2 pt-2 max-h-40 overflow-y-auto slim-scrollbar pr-2 leading-none">
-                          {projects.map((project) => (
+                          {organizations.map((org) => (
                             <div
-                              key={project}
+                              key={org}
                               className="flex items-center space-x-2.5 group py-0.5"
                             >
                               <Checkbox
-                                id={`proj-${project}`}
-                                checked={selectedProjects.includes(project)}
-                                onCheckedChange={() => toggleProject(project)}
+                                id={`org-${org}`}
+                                checked={selectedOrgs.includes(org)}
+                                onCheckedChange={() => toggleOrg(org)}
                                 className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                               />
                               <Label
-                                htmlFor={`proj-${project}`}
-                                className="text-sm font-normal capitalize cursor-pointer transition-colors truncate"
-                                title={project}
+                                htmlFor={`org-${org}`}
+                                className="text-sm font-normal cursor-pointer transition-colors truncate"
+                                title={org}
                               >
-                                {project}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-
-                    {/* Tags */}
-                    <AccordionItem value="tags" className="border-none mt-2">
-                      <AccordionTrigger className="text-xs font-medium  hover:no-underline ">
-                        TAGS
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-2 pt-2 max-h-40 overflow-y-auto slim-scrollbar pr-2 leading-none">
-                          {allTags.map((tag) => (
-                            <div
-                              key={tag}
-                              className="flex items-center space-x-2.5 group py-0.5"
-                            >
-                              <Checkbox
-                                id={`tag-${tag}`}
-                                checked={selectedTags.includes(tag)}
-                                onCheckedChange={() => toggleTag(tag)}
-                                className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                              />
-                              <Label
-                                htmlFor={`tag-${tag}`}
-                                className="text-sm font-normal lowercase cursor-pointer transition-colors truncate"
-                                title={tag}
-                              >
-                                {tag}
+                                {org}
                               </Label>
                             </div>
                           ))}

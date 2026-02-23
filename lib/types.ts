@@ -14,8 +14,18 @@ export interface FilterState {
 // Project status
 export type ProjectStatus = "active" | "completed" | "paused";
 
-// Bounty status
-export type BountyStatus = "open" | "in-progress" | "completed";
+// Re-export canonical Bounty types from the central types folder
+export type {
+  Bounty,
+  BountyType,
+  BountyStatus,
+  BountyOrganization,
+  BountyProject,
+  BountySubmission,
+  BountyWindowType,
+  BountySubmissionUser,
+  BountyCount,
+} from "../types/bounty";
 
 // Project interface
 export interface Project {
@@ -32,30 +42,7 @@ export interface Project {
   completedMilestones?: number;
 }
 
-// Bounty interface
-export interface Bounty {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  reward: number;
-  currency: string;
-  claimingModel: "single-claim" | "application" | "competition" | "multi-winner";
-  status: BountyStatus;
-  createdAt: string;
-  updatedAt: string;
-  creator: string;
-
-  // Status & Logic fields
-  claimedAt?: string;
-  claimedBy?: string;
-  lastActivityAt?: string;
-  claimExpiresAt?: string;
-  submissionsEndDate?: string;
-
-  difficulty: "beginner" | "intermediate" | "advanced";
-  deadline?: string;
-}
+// Bounty types are provided by `types/bounty.ts` (re-exported above)
 
 // Available tags
 export const AVAILABLE_TAGS = [

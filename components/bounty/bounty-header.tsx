@@ -1,41 +1,72 @@
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import type { Bounty, BountyType, BountyStatus, DifficultyLevel } from "@/types/bounty"
-import { Bug, Sparkles, FileText, RefreshCw, Circle } from "lucide-react"
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
+import type { Bounty, BountyType, BountyStatus } from "@/types/bounty";
+import { DollarSign, Milestone, Trophy } from "lucide-react";
 
-const typeConfig: Record<BountyType, { label: string; icon: React.ReactNode; className: string }> = {
-  bug: { label: "Bug", icon: <Bug className="size-3" />, className: "bg-destructive text-white border-transparent" },
-  feature: { label: "Feature", icon: <Sparkles className="size-3" />, className: "bg-primary text-primary-foreground border-transparent" },
-  documentation: { label: "Docs", icon: <FileText className="size-3" />, className: "bg-gray-500 text-white border-transparent" },
-  refactor: { label: "Refactor", icon: <RefreshCw className="size-3" />, className: "bg-gray-700 text-gray-100 border-transparent" },
-  other: { label: "Other", icon: <Circle className="size-3" />, className: "bg-gray-800 text-gray-300 border-gray-600" },
-}
+const typeConfig: Record<
+  BountyType,
+  { label: string; icon: React.ReactNode; className: string }
+> = {
+  FIXED_PRICE: {
+    label: "Fixed Price",
+    icon: <DollarSign className="size-3" />,
+    className: "bg-primary text-primary-foreground border-transparent",
+  },
+  MILESTONE_BASED: {
+    label: "Milestone",
+    icon: <Milestone className="size-3" />,
+    className: "bg-gray-700 text-gray-100 border-transparent",
+  },
+  COMPETITION: {
+    label: "Competition",
+    icon: <Trophy className="size-3" />,
+    className: "bg-destructive text-white border-transparent",
+  },
+};
 
-const statusConfig: Record<BountyStatus, { label: string; className: string }> = {
-  open: { label: "Open", className: "bg-green-500 text-white border-transparent" },
-  claimed: { label: "Claimed", className: "bg-orange-500 text-white border-transparent" },
-  closed: { label: "Closed", className: "bg-gray-700 text-gray-300 border-transparent" },
-}
-
-const difficultyConfig: Record<DifficultyLevel, { label: string; className: string }> = {
-  beginner: { label: "Beginner", className: "text-green-300" },
-  intermediate: { label: "Intermediate", className: "text-orange-300" },
-  advanced: { label: "Advanced", className: "text-destructive" },
-}
-
-import { cn } from "@/lib/utils"
+const statusConfig: Record<BountyStatus, { label: string; className: string }> =
+  {
+    OPEN: {
+      label: "Open",
+      className: "bg-green-500 text-white border-transparent",
+    },
+    IN_PROGRESS: {
+      label: "In Progress",
+      className: "bg-blue-500 text-white border-transparent",
+    },
+    COMPLETED: {
+      label: "Completed",
+      className: "bg-gray-700 text-gray-300 border-transparent",
+    },
+    CANCELLED: {
+      label: "Cancelled",
+      className: "bg-red-700 text-gray-200 border-transparent",
+    },
+    DRAFT: {
+      label: "Draft",
+      className: "bg-gray-600 text-gray-300 border-transparent",
+    },
+    SUBMITTED: {
+      label: "Submitted",
+      className: "bg-yellow-500 text-white border-transparent",
+    },
+    UNDER_REVIEW: {
+      label: "Under Review",
+      className: "bg-orange-500 text-white border-transparent",
+    },
+    DISPUTED: {
+      label: "Disputed",
+      className: "bg-red-500 text-white border-transparent",
+    },
+  };
 
 interface BountyHeaderProps {
-  bounty: Bounty
+  bounty: Bounty;
 }
 
 export function BountyHeader({ bounty }: BountyHeaderProps) {
-  const typeInfo = typeConfig[bounty.type]
-  const statusInfo = statusConfig[bounty.status]
-
-  // Handle potentially missing difficulty or map old values if needed, 
-  // but strictly we expect beginner/intermediate/advanced now.
-  const difficultyInfo = bounty.difficulty ? difficultyConfig[bounty.difficulty] : { label: "Unknown", className: "text-gray-500" }
+  const typeInfo = typeConfig[bounty.type];
+  const statusInfo = statusConfig[bounty.status];
 
   return (
     <div className="space-y-6">
@@ -44,62 +75,50 @@ export function BountyHeader({ bounty }: BountyHeaderProps) {
           {typeInfo.icon}
           {typeInfo.label}
         </Badge>
-        <Badge className={statusInfo.className}>
-          {statusInfo.label}
-        </Badge>
+        <Badge className={statusInfo.className}>{statusInfo.label}</Badge>
       </div>
 
       <div className="space-y-4">
         <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl leading-tight">
-          {bounty.issueTitle}
+          {bounty.title}
         </h1>
 
         <div className="flex items-center gap-3">
-          {bounty.projectLogoUrl ? (
+          {bounty.organization?.logo ? (
             <div className="relative size-6 shrink-0 overflow-hidden rounded bg-black">
               <Image
-                src={bounty.projectLogoUrl}
-                alt={bounty.projectName}
+                src={bounty.organization.logo}
+                alt={bounty.organization.name}
                 fill
                 className="object-cover"
               />
             </div>
           ) : (
             <div className="size-6 shrink-0 rounded bg-black flex items-center justify-center text-[10px] font-bold text-gray-400">
-              {bounty.projectName.substring(0, 2).toUpperCase()}
+              {(bounty.organization?.name ?? "??")
+                .substring(0, 2)
+                .toUpperCase()}
             </div>
           )}
-          <span className="text-sm font-medium">{bounty.projectName}</span>
+          <span className="text-sm font-medium">
+            {bounty.organization?.name ?? "Unknown"}
+          </span>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-6 pt-2">
-        {(bounty.rewardAmount !== null && bounty.rewardAmount !== undefined) ? (
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold uppercase tracking-widest">Reward</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-3xl font-bold text-primary tabular-nums tracking-tight">
-                {bounty.rewardAmount.toLocaleString()}
-              </span>
-              <span className="text-sm font-medium">{bounty.rewardCurrency}</span>
-            </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold uppercase tracking-widest">
+            Reward
+          </span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-3xl font-bold text-primary tabular-nums tracking-tight">
+              {bounty.rewardAmount.toLocaleString()}
+            </span>
+            <span className="text-sm font-medium">{bounty.rewardCurrency}</span>
           </div>
-        ) : (
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold uppercase tracking-widest">Reward</span>
-            <span className="text-lg font-medium ">-</span>
-          </div>
-        )}
-
-        {bounty.difficulty && (
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold uppercase tracking-widest">Difficulty</span>
-            <Badge variant="outline" className={cn("w-fit capitalize border-opacity-30", difficultyInfo.className)}>
-              {difficultyInfo.label}
-            </Badge>
-          </div>
-        )}
+        </div>
       </div>
     </div>
-  )
+  );
 }

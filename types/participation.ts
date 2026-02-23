@@ -20,13 +20,7 @@ export interface Submission {
   bountyId: string;
   contributorId: string;
   contributorName?: string;
-  /** @deprecated Use explanation. Kept for backward compatibility with consumers that expect a generic content field. */
-  content: string;
-  githubUrl?: string;
-  demoUrl?: string;
-  explanation: string;
-  attachments?: string[];
-  walletAddress: string;
+  content: string; // URL or text description
   status: SubmissionStatus;
   submittedAt: string;
   reviewedAt?: string;

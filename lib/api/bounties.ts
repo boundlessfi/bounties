@@ -1,68 +1,73 @@
 import { z } from "zod";
 import { get, post, put, del } from "./client";
 import type { PaginatedResponse, PaginationParams, SortParams } from "./types";
-import type { SubmissionFormValue } from "@/components/bounty/forms/schemas";
-import type { Submission } from "@/types/participation";
 
-// Bounty schemas
+// Bounty schemas — aligned with backend GraphQL enums
 const bountyTypeSchema = z.enum([
-  "feature",
-  "bug",
-  "documentation",
-  "refactor",
-  "other",
+  "FIXED_PRICE",
+  "MILESTONE_BASED",
+  "COMPETITION",
 ]);
-const bountyStatusSchema = z.enum(["open", "claimed", "closed"]);
-const difficultySchema = z.enum(["beginner", "intermediate", "advanced"]);
-const claimingModelSchema = z.enum([
-  "single-claim",
-  "application",
-  "competition",
-  "multi-winner",
+const bountyStatusSchema = z.enum([
+  "OPEN",
+  "IN_PROGRESS",
+  "COMPLETED",
+  "CANCELLED",
+  "DRAFT",
+  "SUBMITTED",
+  "UNDER_REVIEW",
+  "DISPUTED",
 ]);
+
+const bountyOrganizationSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  logo: z.string().nullable(),
+  slug: z.string().nullable(),
+});
+
+const bountyProjectSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+});
 
 export const bountySchema = z.object({
   id: z.string(),
-  type: bountyTypeSchema,
-  projectId: z.string(),
-  projectName: z.string(),
-  projectLogoUrl: z.string().nullable(),
-  issueTitle: z.string(),
-  issueNumber: z.number(),
-  githubRepo: z.string(),
-  githubIssueUrl: z.string().url(),
+  title: z.string(),
   description: z.string(),
-  rewardAmount: z.number().nullable(),
-  rewardCurrency: z.string(),
-  claimingModel: claimingModelSchema,
-  difficulty: difficultySchema.nullable(),
-  tags: z.array(z.string()),
+  type: bountyTypeSchema,
   status: bountyStatusSchema,
+
+  organizationId: z.string(),
+  organization: bountyOrganizationSchema.nullable().optional(),
+  projectId: z.string().nullable(),
+  project: bountyProjectSchema.nullable().optional(),
+
+  githubIssueUrl: z.string(),
+  githubIssueNumber: z.number().nullable(),
+
+  rewardAmount: z.number(),
+  rewardCurrency: z.string(),
+
+  bountyWindowId: z.string().nullable().optional(),
+
+  createdBy: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  claimedAt: z.string().optional(),
-  claimedBy: z.string().optional(),
-  lastActivityAt: z.string().optional(),
-  claimExpiresAt: z.string().optional(),
-  submissionsEndDate: z.string().optional(),
-
-  requirements: z.array(z.string()).optional(),
-  scope: z.string().optional(),
 });
 
 export type Bounty = z.infer<typeof bountySchema>;
 export type BountyType = z.infer<typeof bountyTypeSchema>;
 export type BountyStatus = z.infer<typeof bountyStatusSchema>;
-export type DifficultyLevel = z.infer<typeof difficultySchema>;
-export type ClaimingModel = z.infer<typeof claimingModelSchema>;
 
 // Query params
 export interface BountyListParams extends PaginationParams, SortParams {
   status?: BountyStatus;
   type?: BountyType;
-  difficulty?: DifficultyLevel;
+  organizationId?: string;
   projectId?: string;
-  tags?: string | string[];
+  bountyWindowId?: string;
   search?: string;
 }
 
@@ -72,6 +77,9 @@ export const createBountySchema = bountySchema.omit({
   createdAt: true,
   updatedAt: true,
   status: true,
+  createdBy: true,
+  organization: true,
+  project: true,
 });
 
 export type CreateBountyInput = z.infer<typeof createBountySchema>;
@@ -86,11 +94,7 @@ const BOUNTIES_ENDPOINT = "/api/bounties";
 
 export const bountiesApi = {
   list: (params?: BountyListParams): Promise<PaginatedResponse<Bounty>> => {
-    // Convert tags array to comma-separated string for query params
     const queryParams: Record<string, unknown> = { ...params };
-    if (queryParams.tags && Array.isArray(queryParams.tags)) {
-      queryParams.tags = queryParams.tags.join(",");
-    }
     return get<PaginatedResponse<Bounty>>(BOUNTIES_ENDPOINT, {
       params: queryParams,
     });
@@ -108,17 +112,10 @@ export const bountiesApi = {
   delete: (id: string): Promise<void> =>
     del<void>(`${BOUNTIES_ENDPOINT}/${id}`),
 
-  claim: (id: string): Promise<Bounty> =>
-    post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`),
-
-  submit: (
-    id: string,
-    data: SubmissionFormValue & { contributorId: string },
-  ): Promise<{ success: boolean; data: Submission }> =>
-    post<{ success: boolean; data: Submission }>(
-      `${BOUNTIES_ENDPOINT}/${id}/submit`,
-      data,
-    ),
+  claim: (id: string, contributorId?: string): Promise<Bounty> => {
+    const body = contributorId ? { contributorId } : {};
+    return post<Bounty>(`${BOUNTIES_ENDPOINT}/${id}/claim`, body);
+  },
 };
 
 // Parse and validate response (use when strict validation needed)

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { BountyList } from "@/components/bounty/bounty-list";
-import { useBounties } from "@/hooks/use-bounties";
 import { Badge } from "@/components/ui/badge";
-import type { BountyType, DifficultyLevel, BountyStatus } from "@/types/bounty";
+import type { BountyType, BountyStatus } from "@/types/bounty";
 import { cn } from "@/lib/utils";
 
 interface ProjectBountiesProps {
@@ -13,67 +12,42 @@ interface ProjectBountiesProps {
 
 const bountyTypes: { value: BountyType | "all"; label: string }[] = [
   { value: "all", label: "All Types" },
-  { value: "feature", label: "Feature" },
-  { value: "bug", label: "Bug" },
-  { value: "documentation", label: "Docs" },
-  { value: "refactor", label: "Refactor" },
-  { value: "other", label: "Other" },
-];
-
-const difficulties: { value: DifficultyLevel | "all"; label: string }[] = [
-  { value: "all", label: "All Levels" },
-  { value: "beginner", label: "Beginner" },
-  { value: "intermediate", label: "Intermediate" },
-  { value: "advanced", label: "Advanced" },
+  { value: "FIXED_PRICE", label: "Fixed Price" },
+  { value: "MILESTONE_BASED", label: "Milestone" },
+  { value: "COMPETITION", label: "Competition" },
 ];
 
 const statuses: { value: BountyStatus | "all"; label: string }[] = [
   { value: "all", label: "All Status" },
-  { value: "open", label: "Open" },
-  { value: "claimed", label: "Claimed" },
-  { value: "closed", label: "Closed" },
+  { value: "OPEN", label: "Open" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+  { value: "DRAFT", label: "Draft" },
+  { value: "SUBMITTED", label: "Submitted" },
+  { value: "UNDER_REVIEW", label: "Under Review" },
+  { value: "DISPUTED", label: "Disputed" },
 ];
 
 export function ProjectBounties({ projectId }: ProjectBountiesProps) {
   const [selectedType, setSelectedType] = useState<BountyType | "all">("all");
-  const [selectedDifficulty, setSelectedDifficulty] = useState<DifficultyLevel | "all">("all");
-  const [selectedStatus, setSelectedStatus] = useState<BountyStatus | "all">("all");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<BountyStatus | "all">(
+    "all",
+  );
 
-  // Get all bounties for this project to extract available tags
-  const { data: allBountiesData } = useBounties({ projectId });
-  const availableTags = useMemo(() => {
-    if (!allBountiesData?.data) return [];
-    const tagSet = new Set<string>();
-    allBountiesData.data.forEach(bounty => {
-      bounty.tags.forEach(tag => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  }, [allBountiesData]);
+  // Get all bounties for this project
 
   const params = {
     projectId,
     ...(selectedType !== "all" && { type: selectedType }),
-    ...(selectedDifficulty !== "all" && { difficulty: selectedDifficulty }),
     ...(selectedStatus !== "all" && { status: selectedStatus }),
-    ...(selectedTags.length > 0 && { tags: selectedTags }),
   };
 
-  const hasFilters = selectedType !== "all" || selectedDifficulty !== "all" || selectedStatus !== "all" || selectedTags.length > 0;
+  const hasFilters = selectedType !== "all" || selectedStatus !== "all";
 
   const clearFilters = () => {
     setSelectedType("all");
-    setSelectedDifficulty("all");
     setSelectedStatus("all");
-    setSelectedTags([]);
-  };
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
   };
 
   return (
@@ -104,7 +78,8 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
                 variant="outline"
                 className={cn(
                   "cursor-pointer transition-all",
-                  selectedType === type.value && "bg-primary text-primary-foreground border-primary"
+                  selectedType === type.value &&
+                    "bg-primary text-primary-foreground border-primary",
                 )}
               >
                 <button
@@ -113,32 +88,6 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
                   aria-pressed={selectedType === type.value}
                 >
                   {type.label}
-                </button>
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Difficulty Filter */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Difficulty</label>
-          <div className="flex flex-wrap gap-2">
-            {difficulties.map((difficulty) => (
-              <Badge
-                key={difficulty.value}
-                asChild
-                variant="outline"
-                className={cn(
-                  "cursor-pointer transition-all",
-                  selectedDifficulty === difficulty.value && "bg-primary text-primary-foreground border-primary"
-                )}
-              >
-                <button
-                  type="button"
-                  onClick={() => setSelectedDifficulty(difficulty.value)}
-                  aria-pressed={selectedDifficulty === difficulty.value}
-                >
-                  {difficulty.label}
                 </button>
               </Badge>
             ))}
@@ -156,7 +105,8 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
                 variant="outline"
                 className={cn(
                   "cursor-pointer transition-all",
-                  selectedStatus === status.value && "bg-primary text-primary-foreground border-primary"
+                  selectedStatus === status.value &&
+                    "bg-primary text-primary-foreground border-primary",
                 )}
               >
                 <button
@@ -170,38 +120,14 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
             ))}
           </div>
         </div>
-
-        {/* Tags Filter */}
-        {availableTags.length > 0 && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Tags</label>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <Badge
-                  key={tag}
-                  asChild
-                  variant="outline"
-                  className={cn(
-                    "cursor-pointer transition-all",
-                    selectedTags.includes(tag) && "bg-primary text-primary-foreground border-primary"
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    aria-pressed={selectedTags.includes(tag)}
-                  >
-                    {tag}
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Bounties List */}
-      <BountyList params={params} hasFilters={hasFilters} onClearFilters={clearFilters} />
+      <BountyList
+        params={params}
+        hasFilters={hasFilters}
+        onClearFilters={clearFilters}
+      />
     </div>
   );
 }

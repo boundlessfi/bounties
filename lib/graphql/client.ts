@@ -41,7 +41,10 @@ const url = process.env.NEXT_PUBLIC_GRAPHQL_URL || "/api/graphql";
 export const graphQLClient = new GraphQLClient(url);
 
 // A custom fetcher for @graphql-codegen/typescript-react-query
-export const fetcher = <TData, TVariables extends object = {}>(
+export const fetcher = <
+  TData,
+  TVariables extends object = Record<string, unknown>,
+>(
   query: string,
   variables?: TVariables,
 ) => {
@@ -53,12 +56,21 @@ export const fetcher = <TData, TVariables extends object = {}>(
     }
 
     try {
-      return await (graphQLClient.request as any)(query, variables, headers);
-    } catch (error: any) {
+      return await (
+        graphQLClient.request as unknown as (
+          q: string,
+          v?: TVariables,
+          h?: Record<string, string>,
+        ) => Promise<TData>
+      )(query, variables, headers);
+    } catch (error: unknown) {
       // Global error handling for auth failures (like Apollo ErrorLink)
-      if (error?.response?.errors) {
-        error.response.errors.forEach((err: any) => {
-          const status = (err?.extensions?.status as number) || 500;
+      const gqlError = error as {
+        response?: { errors?: Array<{ extensions?: { status?: number } }> };
+      };
+      if (gqlError?.response?.errors) {
+        gqlError.response.errors.forEach((err) => {
+          const status = err?.extensions?.status ?? 500;
           if (isAuthStatus(status)) {
             clearAccessToken();
             if (typeof window !== "undefined") {

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useContributorReputation,
-  useCompletionHistory,
-} from "@/hooks/use-reputation";
+import { useContributorReputation } from "@/hooks/use-reputation";
 import { useBounties } from "@/hooks/use-bounties";
 import { ReputationCard } from "@/components/reputation/reputation-card";
 import { CompletionHistory } from "@/components/reputation/completion-history";
@@ -15,6 +12,7 @@ import { AlertCircle, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
+import { useCompletionHistory } from "@/hooks/use-reputation";
 
 export default function ProfilePage() {
   const params = useParams();
@@ -25,34 +23,42 @@ export default function ProfilePage() {
     error,
   } = useContributorReputation(userId);
   const { data: bountyResponse } = useBounties();
-  const { data: completionData, isLoading: completionLoading } =
-    useCompletionHistory(userId);
 
-  const completionRecords = completionData?.records ?? [];
+  const {
+    data: completionData,
+    isLoading: historyLoading,
+    isError: historyError,
+  } = useCompletionHistory(userId);
+
+  const records = completionData?.records ?? [];
 
   const myClaims = useMemo<MyClaim[]>(() => {
     const bounties = bountyResponse?.data ?? [];
 
     return bounties
-      .filter((bounty) => bounty.claimedBy === userId)
+      .filter((bounty) => bounty.createdBy === userId)
       .map((bounty) => {
-        let status = "active";
+        let status = "unknown";
 
-        if (bounty.status === "closed") {
+        if (bounty.status === "COMPLETED") {
           status = "completed";
-        } else if (bounty.status === "claimed" && bounty.claimExpiresAt) {
-          const claimExpiry = new Date(bounty.claimExpiresAt);
-          if (
-            !Number.isNaN(claimExpiry.getTime()) &&
-            claimExpiry < new Date()
-          ) {
-            status = "expired";
-          }
+        } else if (bounty.status === "IN_PROGRESS") {
+          status = "in-progress";
+        } else if (bounty.status === "CANCELLED") {
+          status = "cancelled";
+        } else if (bounty.status === "DRAFT") {
+          status = "draft";
+        } else if (bounty.status === "SUBMITTED") {
+          status = "submitted";
+        } else if (bounty.status === "DISPUTED") {
+          status = "disputed";
+        } else if (bounty.status === "OPEN") {
+          status = "open";
         }
 
         return {
           bountyId: bounty.id,
-          title: bounty.issueTitle,
+          title: bounty.title,
           status,
           rewardAmount: bounty.rewardAmount ?? undefined,
         };
@@ -170,16 +176,16 @@ export default function ProfilePage() {
 
             <TabsContent value="history" className="mt-6">
               <h2 className="text-xl font-bold mb-4">Activity History</h2>
-              {completionLoading ? (
-                <Skeleton className="h-[400px] w-full" />
+              {historyLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : historyError ? (
+                <div className="text-center text-muted-foreground">
+                  Unable to load activity.
+                </div>
               ) : (
                 <CompletionHistory
-                  records={completionRecords}
-                  description={
-                    completionRecords.length > 0
-                      ? `Showing the last ${completionRecords.length} completed bounties.`
-                      : undefined
-                  }
+                  records={records}
+                  description={`Showing the last ${records.length} completed bounties.`}
                 />
               )}
             </TabsContent>

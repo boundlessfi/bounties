@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { mockProjects, mockBounties as rawMockBounties } from "@/lib/mock-data";
 import { FilterState, TabType } from "@/lib/types";
 import { PackageOpen, Coins } from "lucide-react";
-import { BountyLogic } from '@/lib/logic/bounty-logic';
+import { BountyLogic } from "@/lib/logic/bounty-logic";
 
 // Validation helpers
 const isValidTab = (value: string | null): value is TabType => {
@@ -118,14 +118,23 @@ export default function DiscoverPage() {
     // Apply sort (only valid sorts for projects)
     switch (filters.sort) {
       case "newest":
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
         break;
       case "recentlyUpdated":
-        result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        result.sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        );
         break;
       default:
         // Fallback to newest for unsupported sort values (e.g. "highestReward")
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
         break;
     }
 
@@ -135,7 +144,7 @@ export default function DiscoverPage() {
   // Filter and sort bounties
   const filteredBounties = useCallback(() => {
     // Process bounties for dynamic status (e.g. expiration)
-    let result = rawMockBounties.map(b => BountyLogic.processBountyStatus(b));
+    let result = rawMockBounties.map((b) => BountyLogic.processBountyStatus(b));
 
     // Apply search filter
     if (filters.search) {
@@ -143,28 +152,26 @@ export default function DiscoverPage() {
       result = result.filter(
         (b) =>
           b.title.toLowerCase().includes(searchLower) ||
-          b.description.toLowerCase().includes(searchLower) ||
-          b.tags.some((tag) => tag.toLowerCase().includes(searchLower)),
-      );
-    }
-
-    // Apply tags filter
-    if (filters.tags.length > 0) {
-      result = result.filter((b) =>
-        filters.tags.some((tag) => b.tags.includes(tag)),
+          b.description.toLowerCase().includes(searchLower),
       );
     }
 
     // Apply sort
     switch (filters.sort) {
       case "newest":
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        result.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        );
         break;
       case "recentlyUpdated":
-        result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        result.sort(
+          (a, b) =>
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+        );
         break;
       case "highestReward":
-        result.sort((a, b) => b.reward - a.reward);
+        result.sort((a, b) => b.rewardAmount - a.rewardAmount);
         break;
     }
 
@@ -177,7 +184,7 @@ export default function DiscoverPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="border-b border-border/50 bg-gradient-to-b from-background to-background-card">
+      <div className="border-b border-border/50 bg-linear-to-b from-background to-background-card">
         <div className="container mx-auto px-4 py-12 md:py-16">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 gradient-text-3">

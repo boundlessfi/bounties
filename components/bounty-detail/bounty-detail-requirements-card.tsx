@@ -1,10 +1,8 @@
-import type { Bounty } from "@/lib/api";
+// Requirements and Scope cards are kept as generic components
+// but no longer tied to the Bounty type since the backend
+// doesn't include requirements/scope on the Bounty model.
 
-export function RequirementsCard({
-  requirements,
-}: {
-  requirements: NonNullable<Bounty["requirements"]>;
-}) {
+export function RequirementsCard({ requirements }: { requirements: string[] }) {
   if (requirements.length === 0) return null;
 
   return (

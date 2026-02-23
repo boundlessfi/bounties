@@ -3,12 +3,7 @@
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  ClaimModelInfo,
-  MobileCTA,
-  SidebarCTA,
-} from "./bounty-detail-sidebar-cta";
-import { RequirementsCard, ScopeCard } from "./bounty-detail-requirements-card";
+import { MobileCTA, SidebarCTA } from "./bounty-detail-sidebar-cta";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
@@ -74,17 +69,12 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
       <div className="flex-1 min-w-0 space-y-6">
         <HeaderCard bounty={bounty} />
         <DescriptionCard description={bounty.description} />
-        {bounty.requirements && bounty.requirements.length > 0 && (
-          <RequirementsCard requirements={bounty.requirements} />
-        )}
-        {bounty.scope && <ScopeCard scope={bounty.scope} />}
       </div>
 
       {/* Sidebar */}
       <aside className="w-full lg:w-72 shrink-0">
         <div className="lg:sticky lg:top-24 space-y-4">
           <SidebarCTA bounty={bounty} />
-          <ClaimModelInfo claimingModel={bounty.claimingModel} />
         </div>
       </aside>
 

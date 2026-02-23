@@ -23,13 +23,36 @@ interface MyClaimsProps {
 }
 
 export const CLAIM_SECTIONS: { title: string; statuses: string[] }[] = [
-  { title: "Active Claims", statuses: ["active", "claimed", "in-progress"] },
+  // Active: open and ongoing claims
+  {
+    title: "Active Claims",
+    statuses: ["active", "claimed", "in-progress", "open"],
+  },
+  // Review/submission related statuses
   {
     title: "In Review",
-    statuses: ["in-review", "in review", "review", "pending", "under-review"],
+    statuses: [
+      "in-review",
+      "in review",
+      "review",
+      "pending",
+      "under-review",
+      "submitted",
+      "draft",
+    ],
   },
-  { title: "Completed", statuses: ["completed", "closed", "accepted", "done"] },
-  { title: "Expired", statuses: ["expired", "forfeited", "overdue"] },
+  // Completed / closed / flagged
+  {
+    title: "Completed",
+    statuses: [
+      "completed",
+      "closed",
+      "accepted",
+      "done",
+      "cancelled",
+      "disputed",
+    ],
+  },
 ];
 
 export function normalizeStatus(status: string) {
