@@ -43,7 +43,6 @@ fragment SubmissionFields on BountySubmissionType {
   submittedByUser {
     id
     name
-    email
     image
   }
   githubPullRequestUrl
@@ -55,10 +54,19 @@ fragment SubmissionFields on BountySubmissionType {
   reviewedByUser {
     id
     name
-    email
     image
   }
   reviewComments
   paidAt
   rewardTransactionHash
+}
+
+fragment SubmissionFieldsWithContact on BountySubmissionType {
+  ...SubmissionFields
+  submittedByUser {
+    email
+  }
+  reviewedByUser {
+    email
+  }
 }

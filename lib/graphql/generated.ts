@@ -458,14 +458,12 @@ export type BountyQuery = {
         __typename?: "BountySubmissionUser";
         id: string;
         name?: string | null;
-        email?: string | null;
         image?: string | null;
       } | null;
       reviewedByUser?: {
         __typename?: "BountySubmissionUser";
         id: string;
         name?: string | null;
-        email?: string | null;
         image?: string | null;
       } | null;
     }> | null;
@@ -691,14 +689,42 @@ export type SubmissionFieldsFragment = {
     __typename?: "BountySubmissionUser";
     id: string;
     name?: string | null;
-    email?: string | null;
     image?: string | null;
   } | null;
   reviewedByUser?: {
     __typename?: "BountySubmissionUser";
     id: string;
     name?: string | null;
+    image?: string | null;
+  } | null;
+};
+
+export type SubmissionFieldsWithContactFragment = {
+  __typename?: "BountySubmissionType";
+  id: string;
+  bountyId: string;
+  submittedBy: string;
+  githubPullRequestUrl?: string | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
+  reviewComments?: string | null;
+  paidAt?: string | null;
+  rewardTransactionHash?: string | null;
+  submittedByUser?: {
+    __typename?: "BountySubmissionUser";
     email?: string | null;
+    id: string;
+    name?: string | null;
+    image?: string | null;
+  } | null;
+  reviewedByUser?: {
+    __typename?: "BountySubmissionUser";
+    email?: string | null;
+    id: string;
+    name?: string | null;
     image?: string | null;
   } | null;
 };
@@ -727,14 +753,12 @@ export type SubmitToBountyMutation = {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
     reviewedByUser?: {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
   };
@@ -764,14 +788,12 @@ export type ReviewSubmissionMutation = {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
     reviewedByUser?: {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
   };
@@ -802,14 +824,12 @@ export type MarkSubmissionPaidMutation = {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
     reviewedByUser?: {
       __typename?: "BountySubmissionUser";
       id: string;
       name?: string | null;
-      email?: string | null;
       image?: string | null;
     } | null;
   };
@@ -862,7 +882,6 @@ export const SubmissionFieldsFragmentDoc = `
   submittedByUser {
     id
     name
-    email
     image
   }
   githubPullRequestUrl
@@ -874,7 +893,6 @@ export const SubmissionFieldsFragmentDoc = `
   reviewedByUser {
     id
     name
-    email
     image
   }
   reviewComments
@@ -882,6 +900,17 @@ export const SubmissionFieldsFragmentDoc = `
   rewardTransactionHash
 }
     `;
+export const SubmissionFieldsWithContactFragmentDoc = `
+    fragment SubmissionFieldsWithContact on BountySubmissionType {
+  ...SubmissionFields
+  submittedByUser {
+    email
+  }
+  reviewedByUser {
+    email
+  }
+}
+    ${SubmissionFieldsFragmentDoc}`;
 export const CreateBountyDocument = `
     mutation CreateBounty($input: CreateBountyInput!) {
   createBounty(input: $input) {
