@@ -1,0 +1,20 @@
+mutation SubmitToBounty($input: CreateSubmissionInput!) {
+  submitToBounty(input: $input) {
+    ...SubmissionFields
+  }
+}
+
+mutation ReviewSubmission($input: ReviewSubmissionInput!) {
+  reviewSubmission(input: $input) {
+    ...SubmissionFields
+  }
+}
+
+mutation MarkSubmissionPaid($submissionId: ID!, $transactionHash: String!) {
+  markSubmissionPaid(
+    submissionId: $submissionId
+    transactionHash: $transactionHash
+  ) {
+    ...SubmissionFields
+  }
+}

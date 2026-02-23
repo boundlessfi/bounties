@@ -1,0 +1,15 @@
+mutation CreateBounty($input: CreateBountyInput!) {
+  createBounty(input: $input) {
+    ...BountyFields
+  }
+}
+
+mutation UpdateBounty($input: UpdateBountyInput!) {
+  updateBounty(input: $input) {
+    ...BountyFields
+  }
+}
+
+mutation DeleteBounty($id: ID!) {
+  deleteBounty(id: $id)
+}

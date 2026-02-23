@@ -5,6 +5,7 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 const config: CodegenConfig = {
   schema: "../boundless-nestjs/src/schema.gql",
   documents: [
+    "lib/graphql/operations/**/*.graphql",
     "lib/graphql/operations/**/*.ts",
     "lib/graphql/operations/**/*.tsx",
   ],
@@ -22,6 +23,7 @@ const config: CodegenConfig = {
           isReactHook: false,
         },
         exposeQueryKeys: true,
+        reactQueryVersion: 5,
         scalars: {
           DateTime: "string",
           JSON: "Record<string, any>",
