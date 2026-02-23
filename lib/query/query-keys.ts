@@ -1,20 +1,16 @@
-import {
-  useBountiesQuery,
-  useBountyQuery,
-  type BountyQueryInput,
-} from "@/lib/graphql/generated";
+import { useBountyQuery, type BountyQueryInput } from "@/lib/graphql/generated";
 
 /**
  * Query Key Factory for Bounties
  */
 export const bountyKeys = {
   all: ["Bounties"] as const,
-  lists: () => ["Bounties"] as const,
+  lists: () => [...bountyKeys.all, "lists"] as const,
   list: (params?: BountyQueryInput) =>
-    useBountiesQuery.getKey({ query: params }),
+    [...bountyKeys.lists(), { query: params }] as const,
   infinite: (params?: Omit<BountyQueryInput, "page">) =>
-    useBountiesQuery.getKey({ query: params as BountyQueryInput }),
-  details: () => ["Bounty"] as const,
+    [...bountyKeys.lists(), "infinite", { query: params }] as const,
+  details: () => [...bountyKeys.all, "details"] as const,
   detail: (id: string) => useBountyQuery.getKey({ id }),
 };
 
