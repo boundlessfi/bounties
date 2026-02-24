@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MobileCTA, SidebarCTA } from "./bounty-detail-sidebar-cta";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
+import { BountyDetailSubmissionsCard } from "./bounty-detail-submissions-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
 import { useBountyDetail } from "@/hooks/use-bounty-detail";
 
@@ -69,6 +70,7 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
       <div className="flex-1 min-w-0 space-y-6">
         <HeaderCard bounty={bounty} />
         <DescriptionCard description={bounty.description} />
+        <BountyDetailSubmissionsCard bounty={bounty} />
       </div>
 
       {/* Sidebar */}
