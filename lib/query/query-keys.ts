@@ -21,19 +21,27 @@ export const bountyKeys = {
   lists: () => useBountiesQuery.getKey(),
   list: (params?: BountyQueryInput) =>
     useBountiesQuery.getKey({ query: params } as BountiesQueryVariables),
+
   // Infinite bounties queries - uses same base key as list since they fetch same data
   infinite: (params?: Omit<BountyQueryInput, "page">) =>
-    useBountiesQuery.getKey({ query: params } as BountiesQueryVariables),
+    [
+      ...useBountiesQuery.getKey({ query: params } as BountiesQueryVariables),
+      "infinite",
+    ] as const,
+
   // Single bounty detail - uses ["Bounty", variables]
   detail: (id: string) => useBountyQuery.getKey({ id } as BountyQueryVariables),
+
   // Active bounties - uses ["ActiveBounties"] or ["ActiveBounties", variables]
   active: (variables?: ActiveBountiesQueryVariables) =>
     useActiveBountiesQuery.getKey(variables),
+
   // Organization bounties - uses ["OrganizationBounties", variables]
   organization: (organizationId: string) =>
     useOrganizationBountiesQuery.getKey({
       organizationId,
     } as OrganizationBountiesQueryVariables),
+
   // Project bounties - uses ["ProjectBounties", variables]
   project: (projectId: string) =>
     useProjectBountiesQuery.getKey({
