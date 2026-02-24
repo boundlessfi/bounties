@@ -198,7 +198,8 @@ export function BountyDetailSubmissionsCard({
                 key={submission.id}
                 className="p-3 rounded-lg border border-gray-700 bg-gray-900/30 space-y-2"
               >
-                <div className="flex items-start justify-between">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium text-gray-200">
                       {submission.submittedByUser?.name ||
@@ -222,15 +223,51 @@ export function BountyDetailSubmissionsCard({
                       ))}
                   </div>
 
-                  <div
-                    className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeColor(
-                      submission.status,
-                    )}`}
-                  >
-                    {submission.status}
+                  <div className="flex flex-col items-end gap-2">
+                    <div
+                      className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeColor(
+                        submission.status,
+                      )}`}
+                    >
+                      {submission.status}
+                    </div>
+
+                    {/* Org-only Actions */}
+                    {isOrgMember && (
+                      <div className="flex gap-2">
+                        {!submission.reviewedAt && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedSubmission(submission);
+                              setReviewDialogOpen(true);
+                            }}
+                          >
+                            Review
+                          </Button>
+                        )}
+
+                        {submission.status === "APPROVED" &&
+                          !submission.paidAt && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleMarkPaid(submission)}
+                              disabled={markSubmissionPaid.isPending}
+                            >
+                              {markSubmissionPaid.isPending && (
+                                <Loader2 className="mr-2 size-3 animate-spin" />
+                              )}
+                              Mark Paid
+                            </Button>
+                          )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
+                {/* Review Info */}
                 {submission.reviewedAt && (
                   <div className="text-xs text-gray-400 space-y-1">
                     <p>
@@ -245,14 +282,15 @@ export function BountyDetailSubmissionsCard({
                   </div>
                 )}
 
-                {submission.paidAt ? (
+                {/* Payment Info */}
+                {submission.paidAt && (
                   <div className="flex items-center gap-2 text-xs text-emerald-400">
                     <DollarSign className="size-3" />
                     <span>
                       Paid on {new Date(submission.paidAt).toLocaleDateString()}
                     </span>
                   </div>
-                ) : null}
+                )}
               </div>
             ))}
           </div>
