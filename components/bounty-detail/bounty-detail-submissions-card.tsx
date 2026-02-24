@@ -44,10 +44,16 @@ export function BountyDetailSubmissionsCard({
 }: BountyDetailSubmissionsCardProps) {
   const { data: session } = authClient.useSession();
   const submissions = bounty.submissions || [];
+
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [markPaidDialogOpen, setMarkPaidDialogOpen] = useState(false);
+
   const [selectedSubmission, setSelectedSubmission] =
     useState<BountySubmissionType | null>(null);
+  const [selectedPaidSubmission, setSelectedPaidSubmission] =
+    useState<BountySubmissionType | null>(null);
+
   const [prUrl, setPrUrl] = useState("");
   const [comments, setComments] = useState("");
   const [reviewStatus, setReviewStatus] = useState("APPROVED");
@@ -99,6 +105,8 @@ export function BountyDetailSubmissionsCard({
     });
 
     setTransactionHash("");
+    setSelectedPaidSubmission(null);
+    setMarkPaidDialogOpen(false);
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -124,11 +132,13 @@ export function BountyDetailSubmissionsCard({
 
   return (
     <div className="space-y-6">
+      {/* Submit PR Section */}
       {bounty.status === "OPEN" && (
-        <div className="p-5 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm space-y-4">
+        <div className="p-5 rounded-xl border border-gray-800 bg-background-card space-y-4">
           <h3 className="text-sm font-semibold text-gray-200">
             Submit Your PR
           </h3>
+
           <Dialog open={submitDialogOpen} onOpenChange={setSubmitDialogOpen}>
             <DialogTrigger asChild>
               <Button className="w-full">Submit PR to Bounty</Button>
@@ -137,7 +147,7 @@ export function BountyDetailSubmissionsCard({
               <DialogHeader>
                 <DialogTitle>Submit Pull Request</DialogTitle>
                 <DialogDescription>
-                  Submit your GitHub pull request URL to claim this bounty.
+                  Submit your GitHub pull request URL.
                 </DialogDescription>
               </DialogHeader>
 
@@ -146,20 +156,17 @@ export function BountyDetailSubmissionsCard({
                   <Label htmlFor="pr-url">Pull Request URL</Label>
                   <Input
                     id="pr-url"
-                    placeholder="https://github.com/owner/repo/pull/123"
                     value={prUrl}
                     onChange={(e) => setPrUrl(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="comments">Comments (Optional)</Label>
+                  <Label htmlFor="comments">Comments</Label>
                   <Textarea
                     id="comments"
-                    placeholder="Add any additional context..."
                     value={comments}
                     onChange={(e) => setComments(e.target.value)}
-                    rows={3}
                   />
                 </div>
 
@@ -186,8 +193,9 @@ export function BountyDetailSubmissionsCard({
         </div>
       )}
 
+      {/* Submissions */}
       {submissions.length > 0 && (
-        <div className="p-5 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm space-y-4">
+        <div className="p-5 rounded-xl border border-gray-800 bg-background-card space-y-4">
           <h3 className="text-sm font-semibold text-gray-200">
             Submissions ({submissions.length})
           </h3>
@@ -198,7 +206,6 @@ export function BountyDetailSubmissionsCard({
                 key={submission.id}
                 className="p-3 rounded-lg border border-gray-700 bg-gray-900/30 space-y-2"
               >
-                {/* Header */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 space-y-1">
                     <p className="text-sm font-medium text-gray-200">
@@ -232,7 +239,6 @@ export function BountyDetailSubmissionsCard({
                       {submission.status}
                     </div>
 
-                    {/* Org-only Actions */}
                     {isOrgMember && (
                       <div className="flex gap-2">
                         {!submission.reviewedAt && (
@@ -253,12 +259,11 @@ export function BountyDetailSubmissionsCard({
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleMarkPaid(submission)}
-                              disabled={markSubmissionPaid.isPending}
+                              onClick={() => {
+                                setSelectedPaidSubmission(submission);
+                                setMarkPaidDialogOpen(true);
+                              }}
                             >
-                              {markSubmissionPaid.isPending && (
-                                <Loader2 className="mr-2 size-3 animate-spin" />
-                              )}
                               Mark Paid
                             </Button>
                           )}
@@ -267,28 +272,10 @@ export function BountyDetailSubmissionsCard({
                   </div>
                 </div>
 
-                {/* Review Info */}
-                {submission.reviewedAt && (
-                  <div className="text-xs text-gray-400 space-y-1">
-                    <p>
-                      Reviewed by:{" "}
-                      {submission.reviewedByUser?.name || submission.reviewedBy}
-                    </p>
-                    {submission.reviewComments && (
-                      <p className="italic text-gray-500">
-                        &quot;{submission.reviewComments}&quot;
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Payment Info */}
                 {submission.paidAt && (
                   <div className="flex items-center gap-2 text-xs text-emerald-400">
                     <DollarSign className="size-3" />
-                    <span>
-                      Paid on {new Date(submission.paidAt).toLocaleDateString()}
-                    </span>
+                    Paid on {new Date(submission.paidAt).toLocaleDateString()}
                   </div>
                 )}
               </div>
@@ -297,13 +284,72 @@ export function BountyDetailSubmissionsCard({
         </div>
       )}
 
-      {submissions.length === 0 && bounty.status === "OPEN" && (
-        <div className="p-8 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm text-center">
-          <p className="text-sm text-gray-400">
-            No submissions yet. Be the first to submit!
-          </p>
-        </div>
-      )}
+      {/* Review Dialog */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Review Submission</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Add review feedback..."
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setReviewDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleReviewSubmission}>Submit Review</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Mark Paid Dialog */}
+      <Dialog open={markPaidDialogOpen} onOpenChange={setMarkPaidDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Mark Submission as Paid</DialogTitle>
+            <DialogDescription>Enter the transaction hash.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Input
+              value={transactionHash}
+              onChange={(e) => setTransactionHash(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setMarkPaidDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() =>
+                  selectedPaidSubmission &&
+                  handleMarkPaid(selectedPaidSubmission)
+                }
+                disabled={
+                  !transactionHash.trim() || markSubmissionPaid.isPending
+                }
+              >
+                {markSubmissionPaid.isPending && (
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                )}
+                Confirm
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
