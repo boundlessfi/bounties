@@ -757,6 +757,19 @@ export type ContactOrganizersInput = {
   subject: Scalars['String']['input'];
 };
 
+export type ContributorStats = {
+  __typename?: 'ContributorStats';
+  averageCompletionTime: Scalars['Float']['output'];
+  completionRate: Scalars['Float']['output'];
+  currentStreak: Scalars['Int']['output'];
+  currentTierPoints?: Maybe<Scalars['Float']['output']>;
+  earningsCurrency: Scalars['String']['output'];
+  longestStreak: Scalars['Int']['output'];
+  nextTierThreshold?: Maybe<Scalars['Float']['output']>;
+  totalCompleted: Scalars['Int']['output'];
+  totalEarnings: Scalars['Float']['output'];
+};
+
 export type CreateBlogPostDto = {
   categories?: InputMaybe<Array<Scalars['String']['input']>>;
   content: Scalars['String']['input'];
@@ -847,6 +860,53 @@ export enum HackathonStatus {
   Cancelled = 'CANCELLED',
   Draft = 'DRAFT',
   Published = 'PUBLISHED'
+}
+
+export type LeaderboardContributor = {
+  __typename?: 'LeaderboardContributor';
+  avatarUrl?: Maybe<Scalars['String']['output']>;
+  displayName: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  lastActiveAt: Scalars['DateTime']['output'];
+  stats: ContributorStats;
+  tier: ReputationTier;
+  topTags: Array<Scalars['String']['output']>;
+  totalScore: Scalars['Float']['output'];
+  userId: Scalars['String']['output'];
+  walletAddress?: Maybe<Scalars['String']['output']>;
+};
+
+export type LeaderboardEntry = {
+  __typename?: 'LeaderboardEntry';
+  contributor: LeaderboardContributor;
+  previousRank?: Maybe<Scalars['Int']['output']>;
+  rank: Scalars['Int']['output'];
+  rankChange?: Maybe<Scalars['Int']['output']>;
+};
+
+export type LeaderboardFilters = {
+  tags?: InputMaybe<Array<Scalars['String']['input']>>;
+  tier?: InputMaybe<ReputationTier>;
+  timeframe: LeaderboardTimeframe;
+};
+
+export type LeaderboardPagination = {
+  limit: Scalars['Int']['input'];
+  page: Scalars['Int']['input'];
+};
+
+export type LeaderboardResponse = {
+  __typename?: 'LeaderboardResponse';
+  currentUserRank?: Maybe<Scalars['Int']['output']>;
+  entries: Array<LeaderboardEntry>;
+  lastUpdatedAt: Scalars['DateTime']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export enum LeaderboardTimeframe {
+  AllTime = 'ALL_TIME',
+  ThisMonth = 'THIS_MONTH',
+  ThisWeek = 'THIS_WEEK'
 }
 
 export enum MilestoneReviewStatusEnum {
@@ -1159,10 +1219,16 @@ export type Query = {
   bounties: PaginatedBounties;
   /** Get a single bounty by ID */
   bounty: Bounty;
+  /** Get leaderboard with filtering and pagination */
+  leaderboard: LeaderboardResponse;
   /** Get bounties for a specific organization */
   organizationBounties: Array<Bounty>;
   /** Get bounties for a specific project */
   projectBounties: Array<Bounty>;
+  /** Get top contributors */
+  topContributors: Array<LeaderboardContributor>;
+  /** Get user's rank in leaderboard */
+  userLeaderboardRank?: Maybe<UserLeaderboardRankResponse>;
 };
 
 
@@ -1285,6 +1351,12 @@ export type QueryBountyArgs = {
 };
 
 
+export type QueryLeaderboardArgs = {
+  filters: LeaderboardFilters;
+  pagination: LeaderboardPagination;
+};
+
+
 export type QueryOrganizationBountiesArgs = {
   organizationId: Scalars['ID']['input'];
 };
@@ -1294,10 +1366,28 @@ export type QueryProjectBountiesArgs = {
   projectId: Scalars['ID']['input'];
 };
 
+
+export type QueryTopContributorsArgs = {
+  count?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryUserLeaderboardRankArgs = {
+  userId: Scalars['ID']['input'];
+};
+
 export type RejectRewardDistributionDto = {
   adminNote?: InputMaybe<Scalars['String']['input']>;
   reason: Scalars['String']['input'];
 };
+
+export enum ReputationTier {
+  Contributor = 'CONTRIBUTOR',
+  Established = 'ESTABLISHED',
+  Expert = 'EXPERT',
+  Legend = 'LEGEND',
+  Newcomer = 'NEWCOMER'
+}
 
 export type ReviewSubmissionInput = {
   reviewComments?: InputMaybe<Scalars['String']['input']>;
@@ -1349,6 +1439,12 @@ export type UpdateBountyInput = {
 
 export type UpdateHackathonStatusInput = {
   status: HackathonStatus;
+};
+
+export type UserLeaderboardRankResponse = {
+  __typename?: 'UserLeaderboardRankResponse';
+  contributor: LeaderboardContributor;
+  rank: Scalars['Int']['output'];
 };
 
 export type CreateBountyMutationVariables = Exact<{
@@ -1410,6 +1506,28 @@ export type BountyFieldsFragment = { __typename?: 'Bounty', id: string, title: s
 export type SubmissionFieldsFragment = { __typename?: 'BountySubmissionType', id: string, bountyId: string, submittedBy: string, githubPullRequestUrl?: string | null, status: string, createdAt: string, updatedAt: string, reviewedAt?: string | null, reviewedBy?: string | null, reviewComments?: string | null, paidAt?: string | null, rewardTransactionHash?: string | null, submittedByUser?: { __typename?: 'BountySubmissionUser', id: string, name?: string | null, image?: string | null } | null, reviewedByUser?: { __typename?: 'BountySubmissionUser', id: string, name?: string | null, image?: string | null } | null };
 
 export type SubmissionFieldsWithContactFragment = { __typename?: 'BountySubmissionType', id: string, bountyId: string, submittedBy: string, githubPullRequestUrl?: string | null, status: string, createdAt: string, updatedAt: string, reviewedAt?: string | null, reviewedBy?: string | null, reviewComments?: string | null, paidAt?: string | null, rewardTransactionHash?: string | null, submittedByUser?: { __typename?: 'BountySubmissionUser', email?: string | null, id: string, name?: string | null, image?: string | null } | null, reviewedByUser?: { __typename?: 'BountySubmissionUser', email?: string | null, id: string, name?: string | null, image?: string | null } | null };
+
+export type LeaderboardQueryVariables = Exact<{
+  filters: LeaderboardFilters;
+  pagination: LeaderboardPagination;
+}>;
+
+
+export type LeaderboardQuery = { __typename?: 'Query', leaderboard: { __typename?: 'LeaderboardResponse', totalCount: number, currentUserRank?: number | null, lastUpdatedAt: string, entries: Array<{ __typename?: 'LeaderboardEntry', rank: number, previousRank?: number | null, rankChange?: number | null, contributor: { __typename?: 'LeaderboardContributor', id: string, userId: string, walletAddress?: string | null, displayName: string, avatarUrl?: string | null, totalScore: number, tier: ReputationTier, topTags: Array<string>, lastActiveAt: string, stats: { __typename?: 'ContributorStats', totalCompleted: number, totalEarnings: number, earningsCurrency: string, completionRate: number, averageCompletionTime: number, currentStreak: number, longestStreak: number, nextTierThreshold?: number | null, currentTierPoints?: number | null } } }> } };
+
+export type UserLeaderboardRankQueryVariables = Exact<{
+  userId: Scalars['ID']['input'];
+}>;
+
+
+export type UserLeaderboardRankQuery = { __typename?: 'Query', userLeaderboardRank?: { __typename?: 'UserLeaderboardRankResponse', rank: number, contributor: { __typename?: 'LeaderboardContributor', id: string, userId: string, walletAddress?: string | null, displayName: string, avatarUrl?: string | null, totalScore: number, tier: ReputationTier, topTags: Array<string>, lastActiveAt: string, stats: { __typename?: 'ContributorStats', totalCompleted: number, totalEarnings: number, earningsCurrency: string, completionRate: number, averageCompletionTime: number, currentStreak: number, longestStreak: number, nextTierThreshold?: number | null, currentTierPoints?: number | null } } } | null };
+
+export type TopContributorsQueryVariables = Exact<{
+  count?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type TopContributorsQuery = { __typename?: 'Query', topContributors: Array<{ __typename?: 'LeaderboardContributor', id: string, userId: string, walletAddress?: string | null, displayName: string, avatarUrl?: string | null, totalScore: number, tier: ReputationTier, topTags: Array<string>, lastActiveAt: string, stats: { __typename?: 'ContributorStats', totalCompleted: number, totalEarnings: number, earningsCurrency: string, completionRate: number, averageCompletionTime: number, currentStreak: number, longestStreak: number, nextTierThreshold?: number | null, currentTierPoints?: number | null } }> };
 
 export type SubmitToBountyMutationVariables = Exact<{
   input: CreateSubmissionInput;
@@ -1710,6 +1828,154 @@ export const useProjectBountiesQuery = <
     )};
 
 useProjectBountiesQuery.getKey = (variables: ProjectBountiesQueryVariables) => ['ProjectBounties', variables];
+
+export const LeaderboardDocument = `
+    query Leaderboard($filters: LeaderboardFilters!, $pagination: LeaderboardPagination!) {
+  leaderboard(filters: $filters, pagination: $pagination) {
+    entries {
+      rank
+      previousRank
+      rankChange
+      contributor {
+        id
+        userId
+        walletAddress
+        displayName
+        avatarUrl
+        totalScore
+        tier
+        stats {
+          totalCompleted
+          totalEarnings
+          earningsCurrency
+          completionRate
+          averageCompletionTime
+          currentStreak
+          longestStreak
+          nextTierThreshold
+          currentTierPoints
+        }
+        topTags
+        lastActiveAt
+      }
+    }
+    totalCount
+    currentUserRank
+    lastUpdatedAt
+  }
+}
+    `;
+
+export const useLeaderboardQuery = <
+      TData = LeaderboardQuery,
+      TError = unknown
+    >(
+      variables: LeaderboardQueryVariables,
+      options?: Omit<UseQueryOptions<LeaderboardQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<LeaderboardQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<LeaderboardQuery, TError, TData>(
+      {
+    queryKey: ['Leaderboard', variables],
+    queryFn: fetcher<LeaderboardQuery, LeaderboardQueryVariables>(LeaderboardDocument, variables),
+    ...options
+  }
+    )};
+
+useLeaderboardQuery.getKey = (variables: LeaderboardQueryVariables) => ['Leaderboard', variables];
+
+export const UserLeaderboardRankDocument = `
+    query UserLeaderboardRank($userId: ID!) {
+  userLeaderboardRank(userId: $userId) {
+    rank
+    contributor {
+      id
+      userId
+      walletAddress
+      displayName
+      avatarUrl
+      totalScore
+      tier
+      stats {
+        totalCompleted
+        totalEarnings
+        earningsCurrency
+        completionRate
+        averageCompletionTime
+        currentStreak
+        longestStreak
+        nextTierThreshold
+        currentTierPoints
+      }
+      topTags
+      lastActiveAt
+    }
+  }
+}
+    `;
+
+export const useUserLeaderboardRankQuery = <
+      TData = UserLeaderboardRankQuery,
+      TError = unknown
+    >(
+      variables: UserLeaderboardRankQueryVariables,
+      options?: Omit<UseQueryOptions<UserLeaderboardRankQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<UserLeaderboardRankQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<UserLeaderboardRankQuery, TError, TData>(
+      {
+    queryKey: ['UserLeaderboardRank', variables],
+    queryFn: fetcher<UserLeaderboardRankQuery, UserLeaderboardRankQueryVariables>(UserLeaderboardRankDocument, variables),
+    ...options
+  }
+    )};
+
+useUserLeaderboardRankQuery.getKey = (variables: UserLeaderboardRankQueryVariables) => ['UserLeaderboardRank', variables];
+
+export const TopContributorsDocument = `
+    query TopContributors($count: Int = 5) {
+  topContributors(count: $count) {
+    id
+    userId
+    walletAddress
+    displayName
+    avatarUrl
+    totalScore
+    tier
+    stats {
+      totalCompleted
+      totalEarnings
+      earningsCurrency
+      completionRate
+      averageCompletionTime
+      currentStreak
+      longestStreak
+      nextTierThreshold
+      currentTierPoints
+    }
+    topTags
+    lastActiveAt
+  }
+}
+    `;
+
+export const useTopContributorsQuery = <
+      TData = TopContributorsQuery,
+      TError = unknown
+    >(
+      variables?: TopContributorsQueryVariables,
+      options?: Omit<UseQueryOptions<TopContributorsQuery, TError, TData>, 'queryKey'> & { queryKey?: UseQueryOptions<TopContributorsQuery, TError, TData>['queryKey'] }
+    ) => {
+    
+    return useQuery<TopContributorsQuery, TError, TData>(
+      {
+    queryKey: variables === undefined ? ['TopContributors'] : ['TopContributors', variables],
+    queryFn: fetcher<TopContributorsQuery, TopContributorsQueryVariables>(TopContributorsDocument, variables),
+    ...options
+  }
+    )};
+
+useTopContributorsQuery.getKey = (variables?: TopContributorsQueryVariables) => variables === undefined ? ['TopContributors'] : ['TopContributors', variables];
 
 export const SubmitToBountyDocument = `
     mutation SubmitToBounty($input: CreateSubmissionInput!) {

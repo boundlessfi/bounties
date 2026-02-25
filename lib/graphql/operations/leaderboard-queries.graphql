@@ -1,0 +1,87 @@
+query Leaderboard($filters: LeaderboardFilters!, $pagination: LeaderboardPagination!) {
+  leaderboard(filters: $filters, pagination: $pagination) {
+    entries {
+      rank
+      previousRank
+      rankChange
+      contributor {
+        id
+        userId
+        walletAddress
+        displayName
+        avatarUrl
+        totalScore
+        tier
+        stats {
+          totalCompleted
+          totalEarnings
+          earningsCurrency
+          completionRate
+          averageCompletionTime
+          currentStreak
+          longestStreak
+          nextTierThreshold
+          currentTierPoints
+        }
+        topTags
+        lastActiveAt
+      }
+    }
+    totalCount
+    currentUserRank
+    lastUpdatedAt
+  }
+}
+
+query UserLeaderboardRank($userId: ID!) {
+  userLeaderboardRank(userId: $userId) {
+    rank
+    contributor {
+      id
+      userId
+      walletAddress
+      displayName
+      avatarUrl
+      totalScore
+      tier
+      stats {
+        totalCompleted
+        totalEarnings
+        earningsCurrency
+        completionRate
+        averageCompletionTime
+        currentStreak
+        longestStreak
+        nextTierThreshold
+        currentTierPoints
+      }
+      topTags
+      lastActiveAt
+    }
+  }
+}
+
+query TopContributors($count: Int = 5) {
+  topContributors(count: $count) {
+    id
+    userId
+    walletAddress
+    displayName
+    avatarUrl
+    totalScore
+    tier
+    stats {
+      totalCompleted
+      totalEarnings
+      earningsCurrency
+      completionRate
+      averageCompletionTime
+      currentStreak
+      longestStreak
+      nextTierThreshold
+      currentTierPoints
+    }
+    topTags
+    lastActiveAt
+  }
+}
