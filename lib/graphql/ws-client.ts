@@ -6,7 +6,7 @@ import { getAccessToken } from '@/lib/auth-utils';
  * It uses a singleton pattern to ensure only one connection is maintained.
  */
 export const wsClient = createClient({
-  url: process.env.NEXT_PUBLIC_GRAPHQL_WS_URL ?? 'ws://localhost:4000/graphql',
+  url: process.env.NEXT_PUBLIC_GRAPHQL_WS_URL ?? 'ws://localhost:8000/graphql',
   connectionParams: async () => {
     const token = await getAccessToken();
     return {

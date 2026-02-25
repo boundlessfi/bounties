@@ -4,6 +4,601 @@
 # To update, run: npm run sync-schema
 # ------------------------------------------------------
 
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input AdminAddDisputeNoteDto {
+  isInternal: Boolean = false
+  message: String!
+}
+
+input AdminAddMilestoneReviewNoteDto {
+  note: String!
+}
+
+input AdminApproveMilestoneDto {
+  notes: String
+}
+
+input AdminAssignDisputeDto {
+  adminId: String!
+}
+
+type AdminBlogAuthorObject {
+  email: String
+  id: String!
+  image: String
+  name: String
+  role: String
+  username: String
+}
+
+type AdminBlogMetaDto {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type AdminBlogPostDto {
+  author: AdminBlogAuthorObject!
+  categories: [String!]!
+  content: String!
+  coverImage: String
+  createdAt: DateTime!
+  deletedAt: DateTime
+  excerpt: String
+  id: String!
+  isFeatured: Boolean!
+  isPinned: Boolean!
+  publishedAt: DateTime
+  readingTime: Int!
+  scheduledFor: DateTime
+  slug: String!
+  status: BlogPostStatus!
+  tags: [AdminBlogPostTagObject!]!
+  title: String!
+  updatedAt: DateTime!
+  viewCount: Int!
+}
+
+type AdminBlogPostTagObject {
+  tag: AdminBlogTagObject!
+}
+
+type AdminBlogPostsResponseDto {
+  data: [AdminBlogPostDto!]!
+  meta: AdminBlogMetaDto!
+}
+
+type AdminBlogTagObject {
+  id: String!
+  name: String!
+  slug: String!
+}
+
+type AdminCampaignDto {
+  createdAt: DateTime!
+  currentFunding: Float!
+  fundingGoal: Float!
+  id: ID!
+  image: String
+  role: String
+  shortDescription: String
+  status: String!
+  title: String!
+}
+
+enum AdminChangeType {
+  NEGATIVE
+  NEUTRAL
+  POSITIVE
+}
+
+type AdminChartDataPoint {
+  """Crowdfunding value"""
+  crowdfunding: Int!
+
+  """Date in ISO format"""
+  date: String!
+
+  """Hackathons value"""
+  hackathons: Int!
+}
+
+input AdminCrowdfundingAssignDto {
+  reviewerId: String!
+}
+
+input AdminCrowdfundingListQueryDto {
+  assignedReviewerId: String
+  limit: Int = 20
+  page: Int = 1
+  search: String
+  sortBy: String = "createdAt"
+  sortOrder: String = "asc"
+}
+
+input AdminCrowdfundingNoteDto {
+  note: String!
+}
+
+type AdminCrowdfundingPaginationDto {
+  hasNext: Boolean!
+  hasPrev: Boolean!
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input AdminCrowdfundingRejectDto {
+  reason: String
+}
+
+input AdminCrowdfundingRequestRevisionDto {
+  message: String!
+  reasons: [String!]
+}
+
+type AdminCrowdfundingResponseDto {
+  data: [AdminCampaignDto!]!
+  pagination: AdminCrowdfundingPaginationDto!
+}
+
+type AdminDisputeDto {
+  campaignId: String!
+  createdAt: DateTime!
+  description: String!
+  id: ID!
+  milestoneId: String
+  reason: DisputeReasonEnum!
+  resolution: String
+  status: DisputeStatusEnum!
+}
+
+type AdminDisputeMetaDto {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input AdminDisputeQueryDto {
+  campaignId: String
+  limit: Int = 20
+  page: Int = 1
+  status: DisputeStatusEnum
+}
+
+type AdminDisputeResponseDto {
+  data: [AdminDisputeDto!]!
+  meta: AdminDisputeMetaDto!
+}
+
+input AdminEscalateDisputeDto {
+  reason: String!
+}
+
+type AdminEscrowInfoDto {
+  escrowBalance: Float!
+  escrowContractAddress: String
+  escrowStatus: String!
+  transactions: [AdminEscrowTransactionDto!]!
+}
+
+type AdminEscrowTransactionDto {
+  amount: Float!
+  campaignId: String!
+  createdAt: DateTime!
+  id: ID!
+  status: String!
+  toAddress: String
+  transactionHash: String
+  transactionType: String!
+}
+
+type AdminHackathonCountDto {
+  jury: Int
+  participants: Int!
+  submissions: Int!
+}
+
+type AdminHackathonDto {
+  _count: AdminHackathonCountDto!
+  banner: String
+  categories: [String!]
+  city: String
+  contactEmail: String
+  country: String
+  createdAt: DateTime!
+  description: String
+  discord: String
+  enabledTabs: [String!]!
+  endDate: DateTime
+  escrow: AdminHackathonEscrowDto
+  escrowAddress: String
+  id: String!
+  judgingCriteria: String
+  judgingEnd: DateTime
+  judgingStart: DateTime
+  name: String!
+  organization: AdminHackathonOrganizationDto!
+  participantType: String
+  participants: [AdminUserDto!]!
+  phases: String
+  prizePool: Float!
+  prizeTiers: String
+  registrationDeadline: DateTime
+  requireDemoVideo: Boolean!
+  requireGithub: Boolean!
+  requireOtherLinks: Boolean!
+  rules: String
+  slug: String
+  socialLinks: [String!]!
+  startDate: DateTime
+  state: String
+  status: HackathonStatus!
+  submissionDeadline: DateTime
+  submissionStatusVisibility: String!
+  submissionVisibility: String!
+  submissions: [AdminHackathonSubmissionDto!]!
+  tagline: String
+  teamMax: Int
+  teamMin: Int
+  telegram: String
+  timezone: String
+  updatedAt: DateTime!
+  venueAddress: String
+  venueName: String
+  venueType: String
+  winnersAnnouncedAt: DateTime
+}
+
+type AdminHackathonEscrowDto {
+  remaining: Float!
+  totalLocked: Float!
+  totalReleased: Float!
+  transactions: [AdminHackathonEscrowTransactionDto!]!
+}
+
+type AdminHackathonEscrowTransactionDto {
+  amount: Float!
+  createdAt: DateTime!
+  id: String!
+  participantId: String!
+  status: String!
+  transactionHash: String
+  type: String!
+}
+
+type AdminHackathonMetricData {
+  """Additional hackathon info"""
+  additionalInfo: String
+
+  """Percentage change"""
+  change: Float!
+
+  """Type of change"""
+  changeType: AdminChangeType!
+
+  """Additional description"""
+  description: String
+
+  """Metric label"""
+  label: String!
+
+  """The metric value"""
+  value: Int!
+}
+
+type AdminHackathonOrganizationDto {
+  id: String!
+  logo: String
+  name: String!
+}
+
+type AdminHackathonPaginationDto {
+  hasNext: Boolean!
+  hasPrev: Boolean!
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input AdminHackathonQueryDto {
+  limit: Int = 20
+  page: Int = 1
+  search: String
+  status: HackathonStatus
+}
+
+type AdminHackathonSubmissionDto {
+  category: String!
+  createdAt: DateTime!
+  description: String!
+  id: String!
+  logo: String
+  participant: AdminUserDto!
+  projectName: String!
+  status: String!
+  updatedAt: DateTime!
+  videoUrl: String
+}
+
+type AdminHackathonsResponseDto {
+  data: [AdminHackathonDto!]!
+  pagination: AdminHackathonPaginationDto!
+}
+
+input AdminManualEscrowActionDto {
+  action: EscrowActionType!
+  amount: Float
+  notes: String
+  recipientAddress: String
+}
+
+type AdminMetricData {
+  """Percentage change"""
+  change: Float!
+
+  """Type of change"""
+  changeType: AdminChangeType!
+
+  """Additional description"""
+  description: String
+
+  """Metric label"""
+  label: String!
+
+  """The metric value"""
+  value: Int!
+}
+
+type AdminMilestoneCampaignDto {
+  fundingGoal: Float!
+  id: ID!
+  title: String!
+}
+
+type AdminMilestoneDto {
+  campaign: AdminMilestoneCampaignDto!
+  completedAt: DateTime
+  createdAt: DateTime!
+  description: String!
+  id: ID!
+  reviewStatus: MilestoneReviewStatusEnum!
+  submittedAt: DateTime
+  title: String!
+}
+
+type AdminMilestoneMetaDto {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+input AdminMilestoneQueryDto {
+  campaignId: String
+  limit: Int = 20
+  page: Int = 1
+  sortBy: MilestoneSortByEnum = SUBMITTED_AT
+  status: MilestoneReviewStatusEnum
+}
+
+type AdminMilestonesResponseDto {
+  data: [AdminMilestoneDto!]!
+  meta: AdminMilestoneMetaDto!
+}
+
+type AdminOrganizationCountDto {
+  hackathons: Int!
+  invitations: Int!
+  members: Int!
+  projects: Int!
+}
+
+type AdminOrganizationDto {
+  _count: AdminOrganizationCountDto!
+  createdAt: DateTime!
+  id: String!
+  logo: String
+  members: [AdminOrganizationMemberDto!]!
+  name: String!
+  slug: String
+}
+
+type AdminOrganizationMemberDto {
+  id: String!
+  role: String!
+  user: AdminOrganizationMemberUserDto!
+}
+
+type AdminOrganizationMemberUserDto {
+  id: String!
+  image: String
+  name: String
+  username: String
+}
+
+type AdminOrganizationPaginationDto {
+  hasNext: Boolean!
+  hasPrev: Boolean!
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type AdminOrganizationsResponseDto {
+  data: [AdminOrganizationDto!]!
+  pagination: AdminOrganizationPaginationDto!
+}
+
+type AdminOverviewChartData {
+  data: [AdminChartDataPoint!]!
+
+  """Time range for the chart"""
+  timeRange: AdminTimeRange!
+}
+
+type AdminOverviewMetrics {
+  hackathons: AdminHackathonMetricData!
+  organizations: AdminMetricData!
+  projects: AdminMetricData!
+  totalUsers: AdminMetricData!
+}
+
+input AdminOverviewQueryDto {
+  timeRange: AdminTimeRange = SEVEN_DAYS
+}
+
+type AdminOverviewResponse {
+  chart: AdminOverviewChartData!
+
+  """Last updated timestamp"""
+  lastUpdated: String!
+  metrics: AdminOverviewMetrics!
+}
+
+input AdminRejectMilestoneDto {
+  feedback: String!
+  reason: String!
+  resubmissionDeadline: String
+}
+
+input AdminRequestMilestoneResubmissionDto {
+  feedback: String!
+  resubmissionDeadline: String!
+}
+
+input AdminResolveDisputeDto {
+  resolution: DisputeResolutionEnum!
+  resolutionNotes: String!
+}
+
+type AdminRewardDistributionResponseDto {
+  adminDecisionAt: DateTime
+  adminNote: String
+  adminUserId: String
+  distributionId: ID
+  rejectionReason: String
+  snapshot: AdminRewardDistributionSnapshot!
+  status: RewardDistributionStatus!
+  triggeredAt: String!
+  updatedAt: String
+}
+
+type AdminRewardDistributionSnapshot {
+  currency: String!
+  escrowAddress: String!
+  idempotencyKey: ID!
+  organizerNote: String
+  platformFee: Float!
+  snapshotAt: String!
+  totalPrizePool: Float!
+  totalRequired: Float!
+  winners: [AdminWinnerSnapshot!]!
+  winnersChecksum: String!
+}
+
+type AdminRewardQueueItemDto {
+  adminNote: String
+  distributionId: ID!
+  hackathonId: ID!
+  hackathonName: String!
+  organizationId: ID!
+  organizationName: String!
+  status: RewardDistributionStatus!
+  totalRequired: Float!
+  triggeredAt: String!
+  triggeredByUserId: ID!
+  winnerCount: Int!
+}
+
+type AdminRewardQueueResponseDto {
+  items: [AdminRewardQueueItemDto!]!
+  limit: Int!
+  offset: Int!
+  total: Int!
+}
+
+enum AdminTimeRange {
+  NINETY_DAYS
+  SEVEN_DAYS
+  THIRTY_DAYS
+}
+
+type AdminUserCountDto {
+  activities: Int!
+  comments: Int!
+  projects: Int!
+  votes: Int!
+}
+
+type AdminUserDto {
+  _count: AdminUserCountDto!
+  banned: Boolean
+  createdAt: DateTime!
+  email: String!
+  id: String!
+  image: String
+  lastLoginMethod: String
+  name: String
+  role: String
+  updatedAt: DateTime!
+  username: String
+}
+
+type AdminUserPaginationDto {
+  limit: Int!
+  page: Int!
+  total: Int!
+  totalPages: Int!
+}
+
+type AdminUsersResponseDto {
+  pagination: AdminUserPaginationDto!
+  users: [AdminUserDto!]!
+}
+
+type AdminWinnerSnapshot {
+  prizeAmount: Float!
+  prizeTierName: String!
+  rank: Int!
+  submissionId: ID!
+  submissionTitle: String!
+  walletAddresses: String!
+}
+
+input ApproveRewardDistributionDto {
+  adminNote: String
+}
+
+input BlogPostQueryDto {
+  authorId: String
+  categories: String
+  includePinned: Boolean = true
+  isFeatured: Boolean = false
+  limit: Int = 20
+  page: Int = 1
+  search: String
+  sortBy: String = "createdAt"
+  sortOrder: String = "desc"
+  status: BlogPostStatus
+  tags: String
+}
+
+enum BlogPostStatus {
+  ARCHIVED
+  DRAFT
+  PUBLISHED
+  SCHEDULED
+}
+
 type Bounty {
   _count: BountyCount
   bountyWindow: BountyWindowType
@@ -106,6 +701,29 @@ type BountyWindowType {
   status: String!
 }
 
+input ContactOrganizersInput {
+  message: String!
+  subject: String!
+}
+
+input CreateBlogPostDto {
+  categories: [String!]
+  content: String!
+  coverImage: String
+  excerpt: String
+  generateAI: Boolean = false
+  isFeatured: Boolean = false
+  isPinned: Boolean = false
+  readingTime: Float
+  scheduledFor: String
+  seoDescription: String
+  seoKeywords: [String!]
+  seoTitle: String
+  status: BlogPostStatus = DRAFT
+  tags: [String!]
+  title: String!
+}
+
 input CreateBountyInput {
   bountyWindowId: String
   description: String!
@@ -130,15 +748,157 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+enum DisputeReasonEnum {
+  COMMUNICATION_ISSUES
+  DEADLINE_MISSED
+  MILESTONE_NOT_DELIVERED
+  MISUSE_OF_FUNDS
+  OTHER
+  POOR_QUALITY_WORK
+  SCOPE_CHANGE
+}
+
+enum DisputeResolutionEnum {
+  APPROVED_WITH_CONDITIONS
+  ARBITRATION
+  DISMISSED
+  FULL_REFUND
+  PARTIAL_REFUND
+  REQUIRE_RESUBMISSION
+}
+
+enum DisputeStatusEnum {
+  AWAITING_RESPONSE
+  CLOSED
+  ESCALATED
+  OPEN
+  RESOLVED
+  UNDER_REVIEW
+}
+
+type EmailActionResponseDto {
+  message: String!
+  success: Boolean!
+  totalSent: Int
+}
+
+input EmailParticipantsInput {
+  message: String!
+  subject: String!
+  targetGroup: String!
+}
+
+enum EscrowActionType {
+  PAUSE
+  REFUND
+  RELEASE
+  RESUME
+}
+
+enum HackathonStatus {
+  ARCHIVED
+  CANCELLED
+  DRAFT
+  PUBLISHED
+}
+
+enum MilestoneReviewStatusEnum {
+  APPROVED
+  PENDING
+  REJECTED
+  RESUBMISSION_REQUIRED
+  SUBMITTED
+  UNDER_REVIEW
+}
+
+enum MilestoneSortByEnum {
+  CAMPAIGN_SIZE
+  CREATOR_REPUTATION
+  DATE
+  SUBMITTED_AT
+}
+
 type Mutation {
+  """Add an admin review note for a campaign (Admin only)"""
+  addCrowdfundingReviewNote(id: ID!, input: AdminCrowdfundingNoteDto!): Boolean!
+
+  """Add a note or message to a dispute (Admin only)"""
+  addDisputeNote(id: ID!, input: AdminAddDisputeNoteDto!): Boolean!
+
+  """Add a review note to a milestone (Admin only)"""
+  addMilestoneReviewNote(id: ID!, input: AdminAddMilestoneReviewNoteDto!): Boolean!
+
+  """Approve a crowdfunding campaign (Admin only)"""
+  approveCrowdfundingCampaign(id: ID!): AdminCampaignDto!
+
+  """Approve a milestone submission (Admin only)"""
+  approveMilestone(id: ID!, input: AdminApproveMilestoneDto): AdminMilestoneDto!
+
+  """Approve reward distribution (Admin only)"""
+  approveRewardDistribution(distributionId: ID!, hackathonId: ID!, input: ApproveRewardDistributionDto): AdminRewardDistributionResponseDto!
+
+  """Assign a reviewer to a campaign (Admin only)"""
+  assignCrowdfundingReviewer(id: ID!, input: AdminCrowdfundingAssignDto!): Boolean!
+
+  """Assign a dispute to an admin (Admin only)"""
+  assignDispute(id: ID!, input: AdminAssignDisputeDto!): AdminDisputeDto!
+
+  """Contact hackathon organizers (Admin only)"""
+  contactOrganizers(id: ID!, input: ContactOrganizersInput!): EmailActionResponseDto!
+
+  """Create a new blog post (Admin only)"""
+  createAdminBlogPost(input: CreateBlogPostDto!): AdminBlogPostDto!
+
   """Create a new bounty (organization members only)"""
   createBounty(input: CreateBountyInput!): Bounty!
+
+  """Soft delete a blog post (Admin only)"""
+  deleteAdminBlogPost(id: ID!): Boolean!
 
   """Delete a bounty (organization admins/owners only)"""
   deleteBounty(id: ID!): Boolean!
 
+  """Delete all unused tags (Admin only)"""
+  deleteUnusedBlogTags: Int!
+
+  """Send email to hackathon participants (Admin only)"""
+  emailParticipants(id: ID!, input: EmailParticipantsInput!): EmailActionResponseDto!
+
+  """Escalate a dispute to arbitration (Admin only)"""
+  escalateDispute(id: ID!, input: AdminEscalateDisputeDto!): AdminDisputeDto!
+
+  """Execute a manual escrow action (Admin only)"""
+  executeManualEscrowAction(campaignId: ID!, input: AdminManualEscrowActionDto!): AdminEscrowTransactionDto!
+
   """Mark a submission as paid (organization admins/owners only)"""
   markSubmissionPaid(submissionId: ID!, transactionHash: String!): BountySubmissionType!
+
+  """Permanently delete a blog post (Admin only)"""
+  permanentlyDeleteAdminBlogPost(id: ID!): Boolean!
+
+  """Manually trigger publishing of scheduled posts (Admin only)"""
+  publishScheduledBlogPosts: Int!
+
+  """Reject a crowdfunding campaign (Admin only)"""
+  rejectCrowdfundingCampaign(id: ID!, input: AdminCrowdfundingRejectDto): Boolean!
+
+  """Reject a milestone submission (Admin only)"""
+  rejectMilestone(id: ID!, input: AdminRejectMilestoneDto!): AdminMilestoneDto!
+
+  """Reject reward distribution (Admin only)"""
+  rejectRewardDistribution(distributionId: ID!, hackathonId: ID!, input: RejectRewardDistributionDto!): AdminRewardDistributionResponseDto!
+
+  """Request revisions for a crowdfunding campaign (Admin only)"""
+  requestCrowdfundingRevision(id: ID!, input: AdminCrowdfundingRequestRevisionDto!): Boolean!
+
+  """Request resubmission of a milestone (Admin only)"""
+  requestMilestoneResubmission(id: ID!, input: AdminRequestMilestoneResubmissionDto!): AdminMilestoneDto!
+
+  """Resolve a dispute (Admin only)"""
+  resolveDispute(id: ID!, input: AdminResolveDisputeDto!): AdminDisputeDto!
+
+  """Restore a soft-deleted blog post (Admin only)"""
+  restoreAdminBlogPost(id: ID!): AdminBlogPostDto!
 
   """Review a bounty submission (organization members only)"""
   reviewSubmission(input: ReviewSubmissionInput!): BountySubmissionType!
@@ -146,8 +906,14 @@ type Mutation {
   """Submit to a bounty (any authenticated user)"""
   submitToBounty(input: CreateSubmissionInput!): BountySubmissionType!
 
+  """Update a blog post (Admin only)"""
+  updateAdminBlogPost(id: ID!, input: UpdateBlogPostDto!): AdminBlogPostDto!
+
   """Update an existing bounty (organization members only)"""
   updateBounty(input: UpdateBountyInput!): Bounty!
+
+  """Update hackathon status (Admin only)"""
+  updateHackathonStatus(id: ID!, input: UpdateHackathonStatusInput!): AdminHackathonDto!
 }
 
 type PaginatedBounties {
@@ -160,6 +926,63 @@ type PaginatedBounties {
 type Query {
   """Get all currently active bounties"""
   activeBounties: [Bounty!]!
+
+  """Get blog post by ID (Admin only)"""
+  adminBlogPost(id: ID!): AdminBlogPostDto!
+
+  """List all blog posts including drafts (Admin only)"""
+  adminBlogPosts(query: BlogPostQueryDto): AdminBlogPostsResponseDto!
+
+  """Get all tags with post counts (Admin only)"""
+  adminBlogTags(limit: Int): [AdminBlogTagObject!]!
+
+  """Get crowdfunding campaign by ID (Admin only)"""
+  adminCrowdfundingCampaign(id: ID!): AdminCampaignDto!
+
+  """List all crowdfunding campaigns (Admin only)"""
+  adminCrowdfundingCampaigns(query: AdminCrowdfundingListQueryDto): AdminCrowdfundingResponseDto!
+
+  """Get detailed dispute information (Admin only)"""
+  adminDisputeDetail(id: ID!): AdminDisputeDto!
+
+  """List disputes with filtering (Admin only)"""
+  adminDisputes(query: AdminDisputeQueryDto): AdminDisputeResponseDto!
+
+  """Get escrow info for a campaign (Admin only)"""
+  adminEscrowInfo(campaignId: ID!): AdminEscrowInfoDto!
+
+  """Get hackathon detail (Admin only)"""
+  adminHackathonDetail(id: ID!): AdminHackathonDto!
+
+  """List all hackathons (Admin only)"""
+  adminHackathons(query: AdminHackathonQueryDto): AdminHackathonsResponseDto!
+
+  """Get milestone details for review (Admin only)"""
+  adminMilestoneForReview(id: ID!): AdminMilestoneDto!
+
+  """Get all organizations with pagination and search"""
+  adminOrganizations(limit: Int, page: Int, search: String): AdminOrganizationsResponseDto!
+
+  """Get admin overview data"""
+  adminOverview(query: AdminOverviewQueryDto): AdminOverviewResponse!
+
+  """List crowdfunding campaigns pending admin review (Admin only)"""
+  adminPendingCrowdfundingCampaigns(limit: Int = 20, page: Int = 1, sortBy: String = "createdAt", sortOrder: String = "asc"): AdminCrowdfundingResponseDto!
+
+  """List milestones pending admin review (Admin only)"""
+  adminPendingMilestones(query: AdminMilestoneQueryDto): AdminMilestonesResponseDto!
+
+  """Get reward distribution detail (Admin only)"""
+  adminRewardDistributionDetail(distributionId: ID!, hackathonId: ID!): AdminRewardDistributionResponseDto!
+
+  """Get reward distribution queue (Admin only)"""
+  adminRewardQueue(limit: Int = 50, offset: Int = 0, status: String): AdminRewardQueueResponseDto!
+
+  """List crowdfunding campaigns by user (Admin only)"""
+  adminUserCrowdfundingCampaigns(limit: Int = 20, page: Int = 1, usernameOrId: String!): AdminCrowdfundingResponseDto!
+
+  """Get all users with pagination and filtering"""
+  adminUsers(isActive: Boolean, limit: Int, page: Int, role: String, search: String): AdminUsersResponseDto!
 
   """Get paginated list of bounties with filtering"""
   bounties(query: BountyQueryInput): PaginatedBounties!
@@ -174,10 +997,44 @@ type Query {
   projectBounties(projectId: ID!): [Bounty!]!
 }
 
+input RejectRewardDistributionDto {
+  adminNote: String
+  reason: String!
+}
+
 input ReviewSubmissionInput {
   reviewComments: String
   status: String!
   submissionId: ID!
+}
+
+enum RewardDistributionStatus {
+  APPROVED
+  COMPLETED
+  EXECUTING
+  FAILED
+  NOT_TRIGGERED
+  PARTIAL_SUCCESS
+  PENDING_ADMIN_REVIEW
+  REJECTED
+}
+
+input UpdateBlogPostDto {
+  categories: [String!]
+  content: String
+  coverImage: String
+  excerpt: String
+  generateAI: Boolean = false
+  isFeatured: Boolean = false
+  isPinned: Boolean = false
+  readingTime: Float
+  scheduledFor: String
+  seoDescription: String
+  seoKeywords: [String!]
+  seoTitle: String
+  status: BlogPostStatus = DRAFT
+  tags: [String!]
+  title: String
 }
 
 input UpdateBountyInput {
@@ -191,4 +1048,8 @@ input UpdateBountyInput {
   status: String
   title: String
   type: BountyType
+}
+
+input UpdateHackathonStatusInput {
+  status: HackathonStatus!
 }

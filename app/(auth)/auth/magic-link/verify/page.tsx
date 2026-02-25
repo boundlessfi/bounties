@@ -47,7 +47,6 @@ function VerifyContent() {
         const { error } = await authClient.magicLink.verify({
           query: {
             token,
-            callbackURL: validatedCallback,
           },
         });
 
