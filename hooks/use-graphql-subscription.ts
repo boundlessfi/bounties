@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { wsClient } from '@/lib/graphql/ws-client';
 import { type DocumentNode, print } from 'graphql';
 
@@ -18,17 +18,29 @@ export function useGraphQLSubscription<T>(
     onData: (data: T) => void,
     onError?: (error: unknown) => void
 ) {
-    useEffect(() => {
-        // Stringify query if it's a DocumentNode
-        const queryString = typeof query === 'string' ? query : print(query);
+    // Hold latest callbacks in refs so we don't restart the subscription when they change
+    const onDataRef = useRef(onData);
+    const onErrorRef = useRef(onError);
 
+    useEffect(() => {
+        onDataRef.current = onData;
+        onErrorRef.current = onError;
+    }, [onData, onError]);
+
+    // Track variables as a string to avoid reference-based flapping
+    const variablesString = JSON.stringify(variables);
+
+    // Track query as a string
+    const queryString = typeof query === 'string' ? query : print(query);
+
+    useEffect(() => {
         const unsubscribe = wsClient.subscribe<T>(
-            { query: queryString, variables },
+            { query: queryString, variables: JSON.parse(variablesString) },
             {
-                next: ({ data }) => data && onData(data),
+                next: ({ data }) => data && onDataRef.current(data),
                 error: (err) => {
                     console.error('[GraphQL Subscription] Error:', err);
-                    onError?.(err);
+                    onErrorRef.current?.(err);
                 },
                 complete: () => { },
             }
@@ -37,5 +49,5 @@ export function useGraphQLSubscription<T>(
         return () => {
             unsubscribe();
         };
-    }, [query, variables, onData, onError]);
+    }, [queryString, variablesString]);
 }
