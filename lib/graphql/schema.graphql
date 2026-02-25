@@ -995,6 +995,15 @@ type Query {
 
   """Get bounties for a specific project"""
   projectBounties(projectId: ID!): [Bounty!]!
+
+  """Get leaderboard with filtering and pagination"""
+  leaderboard(filters: LeaderboardFilters!, pagination: LeaderboardPagination!): LeaderboardResponse!
+
+  """Get user's rank in leaderboard"""
+  userLeaderboardRank(userId: ID!): UserLeaderboardRankResponse
+
+  """Get top contributors"""
+  topContributors(count: Int = 5): [LeaderboardContributor!]!
 }
 
 input RejectRewardDistributionDto {
@@ -1052,4 +1061,74 @@ input UpdateBountyInput {
 
 input UpdateHackathonStatusInput {
   status: HackathonStatus!
+}
+
+# Leaderboard Types
+enum ReputationTier {
+  NEWCOMER
+  CONTRIBUTOR
+  ESTABLISHED
+  EXPERT
+  LEGEND
+}
+
+enum LeaderboardTimeframe {
+  ALL_TIME
+  THIS_MONTH
+  THIS_WEEK
+}
+
+type ContributorStats {
+  totalCompleted: Int!
+  totalEarnings: Float!
+  earningsCurrency: String!
+  completionRate: Float!
+  averageCompletionTime: Float!
+  currentStreak: Int!
+  longestStreak: Int!
+  nextTierThreshold: Float
+  currentTierPoints: Float
+}
+
+type LeaderboardContributor {
+  id: ID!
+  userId: String!
+  walletAddress: String
+  displayName: String!
+  avatarUrl: String
+  totalScore: Float!
+  tier: ReputationTier!
+  stats: ContributorStats!
+  topTags: [String!]!
+  lastActiveAt: DateTime!
+}
+
+type LeaderboardEntry {
+  rank: Int!
+  previousRank: Int
+  rankChange: Int
+  contributor: LeaderboardContributor!
+}
+
+type LeaderboardResponse {
+  entries: [LeaderboardEntry!]!
+  totalCount: Int!
+  currentUserRank: Int
+  lastUpdatedAt: DateTime!
+}
+
+input LeaderboardFilters {
+  timeframe: LeaderboardTimeframe!
+  tier: ReputationTier
+  tags: [String!]
+}
+
+input LeaderboardPagination {
+  page: Int!
+  limit: Int!
+}
+
+type UserLeaderboardRankResponse {
+  rank: Int!
+  contributor: LeaderboardContributor!
 }

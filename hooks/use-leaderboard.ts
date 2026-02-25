@@ -1,6 +1,14 @@
 import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { leaderboardApi } from '@/lib/api/leaderboard';
-import { LeaderboardFilters } from '@/types/leaderboard';
+import { fetcher } from '@/lib/graphql/client';
+import { 
+  LeaderboardQuery,
+  LeaderboardQueryVariables,
+  UserLeaderboardRankQuery,
+  UserLeaderboardRankQueryVariables,
+  TopContributorsQuery,
+  TopContributorsQueryVariables
+} from '@/lib/graphql/generated';
+import { LeaderboardFilters, LeaderboardResponse } from '@/types/leaderboard';
 
 export const LEADERBOARD_KEYS = {
     all: ['leaderboard'] as const,
@@ -13,9 +21,13 @@ export const LEADERBOARD_KEYS = {
 export const useLeaderboard = (filters: LeaderboardFilters, limit: number = 20) => {
     return useInfiniteQuery({
         queryKey: LEADERBOARD_KEYS.list(filters),
-        queryFn: ({ pageParam = 1 }) =>
-            leaderboardApi.fetchLeaderboard(filters, { page: pageParam, limit }),
-        getNextPageParam: (lastPage, allPages) => {
+        queryFn: ({ pageParam = 1 }) => {
+            return fetcher<LeaderboardQuery, LeaderboardQueryVariables>(
+                require('@/lib/graphql/generated').LeaderboardDocument,
+                { filters, pagination: { page: pageParam as number, limit } }
+            )().then(data => data.leaderboard);
+        },
+        getNextPageParam: (lastPage: LeaderboardResponse, allPages: LeaderboardResponse[]) => {
             // Optimization: Use simple math instead of iterating all entries
             if (allPages.length * limit < lastPage.totalCount) {
                 return allPages.length + 1;
@@ -30,7 +42,13 @@ export const useLeaderboard = (filters: LeaderboardFilters, limit: number = 20) 
 export const useUserRank = (userId?: string) => {
     return useQuery({
         queryKey: LEADERBOARD_KEYS.user(userId || ''),
-        queryFn: () => leaderboardApi.fetchUserRank(userId),
+        queryFn: () => {
+            if (!userId) return null;
+            return fetcher<UserLeaderboardRankQuery, UserLeaderboardRankQueryVariables>(
+                require('@/lib/graphql/generated').UserLeaderboardRankDocument,
+                { userId }
+            )().then(data => data.userLeaderboardRank);
+        },
         enabled: !!userId,
     });
 };
@@ -38,7 +56,12 @@ export const useUserRank = (userId?: string) => {
 export const useTopContributors = (count: number = 5) => {
     return useQuery({
         queryKey: LEADERBOARD_KEYS.top(count),
-        queryFn: () => leaderboardApi.fetchTopContributors(count),
+        queryFn: () => {
+            return fetcher<TopContributorsQuery, TopContributorsQueryVariables>(
+                require('@/lib/graphql/generated').TopContributorsDocument,
+                { count }
+            )().then(data => data.topContributors);
+        },
         staleTime: 1000 * 60 * 15, // 15 minutes
     });
 };
@@ -49,10 +72,15 @@ export const usePrefetchLeaderboardPage = () => {
     return (filters: LeaderboardFilters, page: number, limit: number) => {
         queryClient.prefetchInfiniteQuery({
             queryKey: LEADERBOARD_KEYS.list(filters),
-            queryFn: ({ pageParam }) => leaderboardApi.fetchLeaderboard(filters, { page: pageParam as number, limit }),
+            queryFn: ({ pageParam }: { pageParam?: number }) => {
+                return fetcher<LeaderboardQuery, LeaderboardQueryVariables>(
+                    require('@/lib/graphql/generated').LeaderboardDocument,
+                    { filters, pagination: { page: pageParam as number, limit } }
+                )().then(data => data.leaderboard);
+            },
             initialPageParam: 1,
-            getNextPageParam: (lastPage, allPages) => {
-                const loadedCount = allPages.flatMap(p => p.entries).length;
+            getNextPageParam: (lastPage: LeaderboardResponse, allPages: LeaderboardResponse[]) => {
+                const loadedCount = allPages.flatMap((p: LeaderboardResponse) => p.entries).length;
                 if (loadedCount < lastPage.totalCount) {
                     return allPages.length + 1;
                 }

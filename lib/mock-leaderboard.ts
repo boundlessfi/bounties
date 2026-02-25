@@ -1,4 +1,5 @@
-import { LeaderboardContributor, ReputationTier } from "@/types/leaderboard";
+import { LeaderboardContributor } from "@/types/leaderboard";
+import { ReputationTier } from "@/lib/graphql/generated";
 
 const generateMockContributor = (
     id: string,
@@ -27,19 +28,19 @@ const generateMockContributor = (
 });
 
 export const mockLeaderboardData: LeaderboardContributor[] = [
-    generateMockContributor("1", 1, "LEGEND", 15000),
-    generateMockContributor("2", 2, "LEGEND", 14500),
-    generateMockContributor("3", 3, "EXPERT", 12000),
-    generateMockContributor("4", 4, "EXPERT", 11500),
-    generateMockContributor("5", 5, "ESTABLISHED", 9000),
-    generateMockContributor("6", 6, "ESTABLISHED", 8500),
-    generateMockContributor("7", 7, "CONTRIBUTOR", 5000),
-    generateMockContributor("8", 8, "CONTRIBUTOR", 4500),
-    generateMockContributor("9", 9, "NEWCOMER", 1000),
-    generateMockContributor("10", 10, "NEWCOMER", 800),
+    generateMockContributor("1", 1, ReputationTier.Legend, 15000),
+    generateMockContributor("2", 2, ReputationTier.Legend, 14500),
+    generateMockContributor("3", 3, ReputationTier.Expert, 12000),
+    generateMockContributor("4", 4, ReputationTier.Expert, 11500),
+    generateMockContributor("5", 5, ReputationTier.Established, 9000),
+    generateMockContributor("6", 6, ReputationTier.Established, 8500),
+    generateMockContributor("7", 7, ReputationTier.Contributor, 5000),
+    generateMockContributor("8", 8, ReputationTier.Contributor, 4500),
+    generateMockContributor("9", 9, ReputationTier.Newcomer, 1000),
+    generateMockContributor("10", 10, ReputationTier.Newcomer, 800),
     // Generate some more for pagination testing
     ...Array.from({ length: 40 }).map((_, i) =>
-        generateMockContributor(`${i + 11}`, i + 11, "NEWCOMER", 500 - i * 10)
+        generateMockContributor(`${i + 11}`, i + 11, ReputationTier.Newcomer, 500 - i * 10)
     )
 ];
 
