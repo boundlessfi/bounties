@@ -6,7 +6,10 @@ import {
   UserLeaderboardRankQuery,
   UserLeaderboardRankQueryVariables,
   TopContributorsQuery,
-  TopContributorsQueryVariables
+  TopContributorsQueryVariables,
+  LeaderboardDocument,
+  UserLeaderboardRankDocument,
+  TopContributorsDocument
 } from '@/lib/graphql/generated';
 import { LeaderboardFilters, LeaderboardResponse } from '@/types/leaderboard';
 
@@ -23,7 +26,7 @@ export const useLeaderboard = (filters: LeaderboardFilters, limit: number = 20) 
         queryKey: LEADERBOARD_KEYS.list(filters),
         queryFn: ({ pageParam = 1 }) => {
             return fetcher<LeaderboardQuery, LeaderboardQueryVariables>(
-                require('@/lib/graphql/generated').LeaderboardDocument,
+                LeaderboardDocument,
                 { filters, pagination: { page: pageParam as number, limit } }
             )().then(data => data.leaderboard);
         },
@@ -45,7 +48,7 @@ export const useUserRank = (userId?: string) => {
         queryFn: () => {
             if (!userId) return null;
             return fetcher<UserLeaderboardRankQuery, UserLeaderboardRankQueryVariables>(
-                require('@/lib/graphql/generated').UserLeaderboardRankDocument,
+                UserLeaderboardRankDocument,
                 { userId }
             )().then(data => data.userLeaderboardRank);
         },
@@ -58,7 +61,7 @@ export const useTopContributors = (count: number = 5) => {
         queryKey: LEADERBOARD_KEYS.top(count),
         queryFn: () => {
             return fetcher<TopContributorsQuery, TopContributorsQueryVariables>(
-                require('@/lib/graphql/generated').TopContributorsDocument,
+                TopContributorsDocument,
                 { count }
             )().then(data => data.topContributors);
         },
@@ -74,7 +77,7 @@ export const usePrefetchLeaderboardPage = () => {
             queryKey: LEADERBOARD_KEYS.list(filters),
             queryFn: ({ pageParam }: { pageParam?: number }) => {
                 return fetcher<LeaderboardQuery, LeaderboardQueryVariables>(
-                    require('@/lib/graphql/generated').LeaderboardDocument,
+                    LeaderboardDocument,
                     { filters, pagination: { page: pageParam as number, limit } }
                 )().then(data => data.leaderboard);
             },
