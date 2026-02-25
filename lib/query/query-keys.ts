@@ -47,6 +47,14 @@ export const bountyKeys = {
     useProjectBountiesQuery.getKey({
       projectId,
     } as ProjectBountiesQueryVariables),
+
+  // Aggregated keys for broad invalidation across different list types
+  allListKeys: [
+    ["Bounties"],
+    ["ActiveBounties"],
+    ["OrganizationBounties"],
+    ["ProjectBounties"],
+  ],
 };
 
 // Type helpers for query keys
