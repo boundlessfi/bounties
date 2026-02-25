@@ -9,6 +9,14 @@ import {
 } from '@/lib/graphql/subscriptions';
 import { bountyKeys } from '@/lib/query/query-keys';
 
+interface MockDocumentNode {
+    loc: {
+        source: {
+            body: string;
+        };
+    };
+}
+
 // Mock dependencies
 jest.mock('@tanstack/react-query', () => ({
     useQueryClient: jest.fn(),
@@ -39,7 +47,7 @@ jest.mock('graphql-tag', () => ({
 
 // Mock graphql print
 jest.mock('graphql', () => ({
-    print: jest.fn((query: any) => query.loc.source.body),
+    print: jest.fn((query: MockDocumentNode) => query.loc.source.body),
 }));
 
 describe('useBountySubscription', () => {
@@ -68,9 +76,9 @@ describe('useBountySubscription', () => {
 
         // Check if it subscribes with the correct queries
         const subscribedQueries = mockSubscribe.mock.calls.map(call => call[0].query);
-        expect(subscribedQueries).toContain((BOUNTY_CREATED_SUBSCRIPTION as any).loc?.source?.body);
-        expect(subscribedQueries).toContain((BOUNTY_UPDATED_SUBSCRIPTION as any).loc?.source?.body);
-        expect(subscribedQueries).toContain((BOUNTY_DELETED_SUBSCRIPTION as any).loc?.source?.body);
+        expect(subscribedQueries).toContain((BOUNTY_CREATED_SUBSCRIPTION as unknown as MockDocumentNode).loc.source.body);
+        expect(subscribedQueries).toContain((BOUNTY_UPDATED_SUBSCRIPTION as unknown as MockDocumentNode).loc.source.body);
+        expect(subscribedQueries).toContain((BOUNTY_DELETED_SUBSCRIPTION as unknown as MockDocumentNode).loc.source.body);
     });
 
     it('should cleanup subscriptions on unmount', () => {
