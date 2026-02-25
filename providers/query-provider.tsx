@@ -41,11 +41,19 @@ interface QueryProviderProps {
   children: ReactNode;
 }
 
+import { useBountySubscription } from "@/hooks/use-bounty-subscription";
+
+function RealtimeSync() {
+  useBountySubscription();
+  return null;
+}
+
 export function QueryProvider({ children }: QueryProviderProps) {
   const [queryClient] = useState(getQueryClient);
 
   return (
     <QueryClientProvider client={queryClient}>
+      <RealtimeSync />
       <QueryErrorBoundary>{children}</QueryErrorBoundary>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools

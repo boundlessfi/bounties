@@ -47,6 +47,7 @@ Boundless Bounty is an open-source bounty platform built on Stellar that support
 - Node.js/Express
 - PostgreSQL
 - Redis (caching)
+- **GraphQL Subscriptions** via `graphql-ws` (replaces Socket.IO for real-time sync)
 
 **Integrations:**
 
