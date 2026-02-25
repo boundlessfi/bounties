@@ -11,6 +11,13 @@ export const bountyKeys = {
   infinite: (params?: Omit<BountyQueryInput, "page">) =>
     [...bountyKeys.lists(), "infinite", { query: params }] as const,
   detail: (id: string) => useBountyQuery.getKey({ id }),
+  // Aggregated keys for broad invalidation
+  allListKeys: [
+    ["Bounties", "lists"],
+    ["ActiveBounties"],
+    ["OrganizationBounties"],
+    ["ProjectBounties"],
+  ],
 };
 
 // Type helpers for query keys

@@ -17,21 +17,26 @@ import { bountyKeys } from '@/lib/query/query-keys';
 export function useBountySubscription() {
     const queryClient = useQueryClient();
 
+    const invalidateAllLists = () => {
+        bountyKeys.allListKeys.forEach(queryKey => {
+            queryClient.invalidateQueries({ queryKey });
+        });
+    };
+
     // Handle bountyCreated: invalidate all bounty list queries
     useGraphQLSubscription<BountyCreatedData>(BOUNTY_CREATED_SUBSCRIPTION, {}, () => {
-        queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
+        invalidateAllLists();
     });
 
-    // Handle bountyUpdated: invalidate the specific bounty detail query
+    // Handle bountyUpdated: invalidate the specific bounty detail query and all lists
     useGraphQLSubscription<BountyUpdatedData>(BOUNTY_UPDATED_SUBSCRIPTION, {}, (data) => {
         queryClient.invalidateQueries({ queryKey: bountyKeys.detail(data.bountyUpdated.id) });
-        // Also invalidate lists to ensure consistency across the application
-        queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
+        invalidateAllLists();
     });
 
-    // Handle bountyDeleted: invalidate both the bounty detail and lists
+    // Handle bountyDeleted: remove the specific detail and invalidate all lists
     useGraphQLSubscription<BountyDeletedData>(BOUNTY_DELETED_SUBSCRIPTION, {}, (data) => {
         queryClient.removeQueries({ queryKey: bountyKeys.detail(data.bountyDeleted.id) });
-        queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
+        invalidateAllLists();
     });
 }

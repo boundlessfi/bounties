@@ -25,6 +25,12 @@ jest.mock('@/lib/query/query-keys', () => ({
     bountyKeys: {
         lists: jest.fn(() => ['Bounties', 'lists']),
         detail: jest.fn((id: string) => ['Bounty', { id }]),
+        allListKeys: [
+            ['Bounties', 'lists'],
+            ['ActiveBounties'],
+            ['OrganizationBounties'],
+            ['ProjectBounties'],
+        ],
     },
 }));
 
@@ -99,8 +105,12 @@ describe('useBountySubscription', () => {
             }
         });
 
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(4); // Once for each entry in allListKeys
         expect(mockInvalidateQueries).toHaveBeenCalledWith({
-            queryKey: bountyKeys.lists()
+            queryKey: ['Bounties', 'lists']
+        });
+        expect(mockInvalidateQueries).toHaveBeenCalledWith({
+            queryKey: ['ActiveBounties']
         });
     });
 
@@ -127,9 +137,7 @@ describe('useBountySubscription', () => {
         expect(mockInvalidateQueries).toHaveBeenCalledWith({
             queryKey: bountyKeys.detail('bounty-1')
         });
-        expect(mockInvalidateQueries).toHaveBeenCalledWith({
-            queryKey: bountyKeys.lists()
-        });
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(5); // 4 for lists + 1 for detail
     });
 
     it('should remove detail and invalidate lists when bountyDeleted arrives', () => {
@@ -149,8 +157,6 @@ describe('useBountySubscription', () => {
         expect(mockRemoveQueries).toHaveBeenCalledWith({
             queryKey: bountyKeys.detail('bounty-1')
         });
-        expect(mockInvalidateQueries).toHaveBeenCalledWith({
-            queryKey: bountyKeys.lists()
-        });
+        expect(mockInvalidateQueries).toHaveBeenCalledTimes(4);
     });
 });
