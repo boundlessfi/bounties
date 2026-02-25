@@ -31,7 +31,6 @@ import { MiniLeaderboard } from "@/components/leaderboard/mini-leaderboard";
 export default function BountiesPage() {
   const { data, isLoading, isError, error, refetch } = useBounties();
   const allBounties = useMemo(() => data?.data ?? [], [data?.data]);
-
   const organizations = useMemo(
     () =>
       Array.from(
@@ -45,7 +44,7 @@ export default function BountiesPage() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [rewardRange, setRewardRange] = useState<[number, number]>([0, 5000]);
-  const [statusFilter, setStatusFilter] = useState<string>("OPEN");
+  const [statusFilter, setStatusFilter] = useState<string>("open");
   const [sortOption, setSortOption] = useState<string>("newest");
 
   // Constants for filters — aligned with backend enums
@@ -55,14 +54,14 @@ export default function BountiesPage() {
     { value: "COMPETITION", label: "Competition" },
   ];
   const STATUSES = [
-    { value: "OPEN", label: "Open" },
-    { value: "IN_PROGRESS", label: "In Progress" },
-    { value: "COMPLETED", label: "Completed" },
-    { value: "CANCELLED", label: "Cancelled" },
-    { value: "DRAFT", label: "Draft" },
-    { value: "SUBMITTED", label: "Submitted" },
-    { value: "UNDER_REVIEW", label: "Under Review" },
-    { value: "DISPUTED", label: "Disputed" },
+    { value: "open", label: "Open" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
+    { value: "draft", label: "Draft" },
+    { value: "submitted", label: "Submitted" },
+    { value: "under_review", label: "Under Review" },
+    { value: "disputed", label: "Disputed" },
     { value: "all", label: "All Statuses" },
   ];
 
@@ -142,7 +141,7 @@ export default function BountiesPage() {
     setSelectedTypes([]);
     setSelectedOrgs([]);
     setRewardRange([0, 5000]);
-    setStatusFilter("OPEN");
+    setStatusFilter("open");
     setSortOption("newest");
   };
 

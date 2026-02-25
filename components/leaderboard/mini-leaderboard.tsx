@@ -9,6 +9,7 @@ import { TierBadge } from "@/components/reputation/tier-badge";
 import { Trophy, ChevronRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { LeaderboardContributor } from "@/types/leaderboard";
 
 interface MiniLeaderboardProps {
     className?: string;
@@ -61,7 +62,7 @@ export function MiniLeaderboard({
                     </div>
                 ) : (
                     <div className="flex flex-col">
-                        {contributors?.map((contributor, index) => (
+                        {contributors?.map((contributor: LeaderboardContributor, index: number) => (
                             <Link
                                 key={contributor.id}
                                 href={`/profile/${contributor.userId}`}

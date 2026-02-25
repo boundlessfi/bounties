@@ -57,9 +57,9 @@ export function BountyDetailSubmissionsCard({
     useState<BountySubmissionType | null>(null);
 
   const [prUrl, setPrUrl] = useState("");
-  const [submitComments, setSubmitComments] = useState("");
-  const [reviewComments, setReviewComments] = useState("");
-  const [reviewStatus, setReviewStatus] = useState("APPROVED");
+    const [submitComments, setSubmitComments] = useState("");
+    const [reviewComments, setReviewComments] = useState("");
+  const reviewStatus = "APPROVED";
   const [transactionHash, setTransactionHash] = useState("");
 
   const submitToBounty = useSubmitToBounty();

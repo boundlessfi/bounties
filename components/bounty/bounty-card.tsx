@@ -28,42 +28,42 @@ const statusConfig: Record<
     dotColor: string;
   }
 > = {
-  OPEN: {
+  open: {
     variant: "default",
     label: "Open",
     dotColor: "bg-emerald-500",
   },
-  IN_PROGRESS: {
+  in_progress: {
     variant: "secondary",
     label: "In Progress",
     dotColor: "bg-blue-500",
   },
-  COMPLETED: {
+  completed: {
     variant: "outline",
     label: "Completed",
     dotColor: "bg-slate-400",
   },
-  CANCELLED: {
+  cancelled: {
     variant: "destructive",
     label: "Cancelled",
     dotColor: "bg-red-500",
   },
-  DRAFT: {
+  draft: {
     variant: "outline",
     label: "Draft",
     dotColor: "bg-gray-400",
   },
-  SUBMITTED: {
+  submitted: {
     variant: "secondary",
     label: "Submitted",
     dotColor: "bg-yellow-500",
   },
-  UNDER_REVIEW: {
+  under_review: {
     variant: "secondary",
     label: "Under Review",
     dotColor: "bg-amber-500",
   },
-  DISPUTED: {
+  disputed: {
     variant: "destructive",
     label: "Disputed",
     dotColor: "bg-red-600",
@@ -75,7 +75,7 @@ export function BountyCard({
   onClick,
   variant = "grid",
 }: BountyCardProps) {
-  const status = statusConfig[bounty.status] || statusConfig.COMPLETED;
+  const status = statusConfig[bounty.status];
   const timeLeft = bounty.updatedAt
     ? formatDistanceToNow(new Date(bounty.updatedAt), { addSuffix: true })
     : "N/A";

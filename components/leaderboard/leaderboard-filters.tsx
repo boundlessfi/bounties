@@ -9,10 +9,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    LeaderboardFilters as FiltersType,
-    LeaderboardTimeframe,
-    ReputationTier
+    LeaderboardFilters as FiltersType
 } from "@/types/leaderboard";
+import { LeaderboardTimeframe, ReputationTier } from "@/lib/graphql/generated";
 import { FilterX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -38,17 +37,17 @@ interface LeaderboardFiltersProps {
 }
 
 export const TIMEFRAMES: { value: LeaderboardTimeframe; label: string }[] = [
-    { value: "ALL_TIME", label: "All Time" },
-    { value: "THIS_MONTH", label: "This Month" },
-    { value: "THIS_WEEK", label: "This Week" },
+    { value: LeaderboardTimeframe.AllTime, label: "All Time" },
+    { value: LeaderboardTimeframe.ThisMonth, label: "This Month" },
+    { value: LeaderboardTimeframe.ThisWeek, label: "This Week" },
 ];
 
 export const TIERS: { value: ReputationTier; label: string }[] = [
-    { value: "LEGEND", label: "Legend" },
-    { value: "EXPERT", label: "Expert" },
-    { value: "ESTABLISHED", label: "Established" },
-    { value: "CONTRIBUTOR", label: "Contributor" },
-    { value: "NEWCOMER", label: "Newcomer" },
+    { value: ReputationTier.Legend, label: "Legend" },
+    { value: ReputationTier.Expert, label: "Expert" },
+    { value: ReputationTier.Established, label: "Established" },
+    { value: ReputationTier.Contributor, label: "Contributor" },
+    { value: ReputationTier.Newcomer, label: "Newcomer" },
 ];
 
 // Mock available tags for filter - in real app could be passed as prop
@@ -72,13 +71,13 @@ export function LeaderboardFilters({ filters, onFilterChange }: LeaderboardFilte
 
     const clearFilters = () => {
         onFilterChange({
-            timeframe: "ALL_TIME",
+            timeframe: LeaderboardTimeframe.AllTime,
             tier: undefined,
             tags: [],
         });
     };
 
-    const hasActiveFilters = filters.timeframe !== "ALL_TIME" || filters.tier || (filters.tags?.length || 0) > 0;
+    const hasActiveFilters = filters.timeframe !== LeaderboardTimeframe.AllTime || filters.tier || (filters.tags?.length || 0) > 0;
 
     return (
         <div className="flex flex-wrap items-center gap-3 text-foreground">

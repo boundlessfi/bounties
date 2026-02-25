@@ -5,6 +5,7 @@ import { LeaderboardTable } from "@/components/leaderboard/leaderboard-table";
 import { LeaderboardFilters } from "@/components/leaderboard/leaderboard-filters";
 import { UserRankSidebar } from "@/components/leaderboard/user-rank-sidebar";
 import { LeaderboardFilters as FiltersType, ReputationTier } from "@/types/leaderboard";
+import { LeaderboardTimeframe } from "@/lib/graphql/generated";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { TIMEFRAMES, TIERS } from "@/components/leaderboard/leaderboard-filters";
@@ -22,7 +23,7 @@ export default function LeaderboardPage() {
 
     const initialTimeframe = TIMEFRAMES.some(t => t.value === rawTimeframe)
         ? (rawTimeframe as FiltersType["timeframe"])
-        : "ALL_TIME";
+        : LeaderboardTimeframe.AllTime;
 
     const initialTier = TIERS.some(t => t.value === rawTier)
         ? (rawTier as ReputationTier)
@@ -65,7 +66,7 @@ export default function LeaderboardPage() {
     // Sync debounced filters to URL
     useEffect(() => {
         const params = new URLSearchParams();
-        if (debouncedFilters.timeframe !== "ALL_TIME") params.set("timeframe", debouncedFilters.timeframe);
+        if (debouncedFilters.timeframe !== LeaderboardTimeframe.AllTime) params.set("timeframe", debouncedFilters.timeframe);
         if (debouncedFilters.tier) params.set("tier", debouncedFilters.tier);
         if (debouncedFilters.tags && debouncedFilters.tags.length > 0) {
             params.set("tags", debouncedFilters.tags.join(","));
