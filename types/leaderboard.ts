@@ -1,7 +1,10 @@
 // Re-export GraphQL generated types for convenience
-export type {
+export {
   ReputationTier,
-  LeaderboardTimeframe,
+  LeaderboardTimeframe
+} from '@/lib/graphql/generated';
+
+export type {
   ContributorStats,
   LeaderboardContributor,
   LeaderboardEntry,

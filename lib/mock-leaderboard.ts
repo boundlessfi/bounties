@@ -1,5 +1,4 @@
-import { LeaderboardContributor } from "@/types/leaderboard";
-import { ReputationTier } from "@/lib/graphql/generated";
+import { LeaderboardContributor, ReputationTier } from "@/types/leaderboard";
 
 const generateMockContributor = (
     id: string,

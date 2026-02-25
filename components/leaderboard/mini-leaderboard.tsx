@@ -9,7 +9,7 @@ import { TierBadge } from "@/components/reputation/tier-badge";
 import { Trophy, ChevronRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { LeaderboardContributor } from "@/lib/graphql/generated";
+import { LeaderboardContributor } from "@/types/leaderboard";
 
 interface MiniLeaderboardProps {
     className?: string;

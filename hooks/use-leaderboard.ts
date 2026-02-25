@@ -31,8 +31,9 @@ export const useLeaderboard = (filters: LeaderboardFilters, limit: number = 20) 
             )().then(data => data.leaderboard);
         },
         getNextPageParam: (lastPage: LeaderboardResponse, allPages: LeaderboardResponse[]) => {
-            // Optimization: Use simple math instead of iterating all entries
-            if (allPages.length * limit < lastPage.totalCount) {
+            // Use actual loaded entries count instead of optimistic calculation
+            const loadedCount = allPages.flatMap(p => p.entries).length;
+            if (loadedCount < lastPage.totalCount) {
                 return allPages.length + 1;
             }
             return undefined;
@@ -72,13 +73,13 @@ export const useTopContributors = (count: number = 5) => {
 export const usePrefetchLeaderboardPage = () => {
     const queryClient = useQueryClient();
 
-    return (filters: LeaderboardFilters, page: number, limit: number) => {
-        queryClient.prefetchInfiniteQuery({
+    return (filters: LeaderboardFilters, page: number, limit: number): Promise<void> => {
+        return queryClient.prefetchInfiniteQuery({
             queryKey: LEADERBOARD_KEYS.list(filters),
-            queryFn: ({ pageParam }: { pageParam?: number }) => {
+            queryFn: ({ pageParam }: { pageParam: number }) => {
                 return fetcher<LeaderboardQuery, LeaderboardQueryVariables>(
                     LeaderboardDocument,
-                    { filters, pagination: { page: pageParam as number, limit } }
+                    { filters, pagination: { page: pageParam, limit } }
                 )().then(data => data.leaderboard);
             },
             initialPageParam: 1,
