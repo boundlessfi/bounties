@@ -56,6 +56,24 @@ export type BountyQueryKey =
   | ReturnType<typeof bountyKeys.detail>;
 
 /**
+ * Query Key Factory for Submissions
+ */
+export const submissionKeys = {
+  all: ["Submissions"] as const,
+  lists: () => [...submissionKeys.all, "lists"] as const,
+  list: (bountyId: string) =>
+    [...submissionKeys.lists(), { bountyId }] as const,
+  detail: (id: string) => [...submissionKeys.all, "detail", id] as const,
+  byBounty: (bountyId: string) =>
+    [...submissionKeys.all, "byBounty", bountyId] as const,
+};
+
+export type SubmissionQueryKey =
+  | ReturnType<typeof submissionKeys.list>
+  | ReturnType<typeof submissionKeys.detail>
+  | ReturnType<typeof submissionKeys.byBounty>;
+
+/**
  * Query Key Factory for Authentication
  *
  * Hierarchical structure for auth/user cache management:

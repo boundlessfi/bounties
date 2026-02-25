@@ -1,5 +1,6 @@
 import {
   useBountyQuery,
+  type BountyQuery,
   type BountyFieldsFragment,
 } from "@/lib/graphql/generated";
 
@@ -12,6 +13,8 @@ export function useBountyDetail(id: string) {
 
   return {
     ...rest,
-    data: data?.bounty as BountyFieldsFragment | undefined,
+    data: data?.bounty as
+      | (BountyFieldsFragment & Partial<BountyQuery["bounty"]>)
+      | undefined,
   };
 }
