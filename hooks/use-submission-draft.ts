@@ -7,7 +7,10 @@ const AUTO_SAVE_DELAY = 1000;
 
 export function useSubmissionDraft(bountyId: string) {
   const draftKey = `${DRAFT_KEY_PREFIX}${bountyId}`;
-  const [draft, setDraft] = useLocalStorage<SubmissionDraft | null>(draftKey, null);
+  const [draft, setDraft] = useLocalStorage<SubmissionDraft | null>(
+    draftKey,
+    null,
+  );
 
   const saveDraft = useCallback(
     (formData: SubmissionForm) => {
@@ -19,7 +22,7 @@ export function useSubmissionDraft(bountyId: string) {
       };
       setDraft(newDraft);
     },
-    [bountyId, setDraft]
+    [bountyId, setDraft],
   );
 
   const clearDraft = useCallback(() => {
@@ -29,13 +32,11 @@ export function useSubmissionDraft(bountyId: string) {
   const autoSave = useCallback(
     (formData: SubmissionForm) => {
       const timer = setTimeout(() => {
-        if (formData.githubPullRequestUrl || formData.comments) {
-          saveDraft(formData);
-        }
+        saveDraft(formData);
       }, AUTO_SAVE_DELAY);
       return () => clearTimeout(timer);
     },
-    [saveDraft]
+    [saveDraft],
   );
 
   return {
