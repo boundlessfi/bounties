@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { useLocalStorage } from "./use-local-storage";
 import type { SubmissionDraft, SubmissionForm } from "@/types/submission-draft";
 

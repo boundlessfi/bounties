@@ -11,16 +11,8 @@ import { useSubmissionDraft } from "@/hooks/use-submission-draft";
 export function SubmissionFormExample({ bountyId }: { bountyId: string }) {
   const { draft, clearDraft, autoSave } = useSubmissionDraft(bountyId);
   
-  const [prUrl, setPrUrl] = useState("");
-  const [comments, setComments] = useState("");
-
-  // 1. Load draft when component mounts
-  useEffect(() => {
-    if (draft?.formData) {
-      setPrUrl(draft.formData.githubPullRequestUrl);
-      setComments(draft.formData.comments);
-    }
-  }, [draft]);
+  const [prUrl, setPrUrl] = useState(draft?.formData.githubPullRequestUrl || "");
+  const [comments, setComments] = useState(draft?.formData.comments || "");
 
   // 2. Auto-save when form changes
   useEffect(() => {
