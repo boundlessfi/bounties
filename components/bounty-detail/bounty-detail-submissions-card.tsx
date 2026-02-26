@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +21,7 @@ import {
   useMarkSubmissionPaid,
 } from "@/hooks/use-submission-mutations";
 import { authClient } from "@/lib/auth-client";
+import { useSubmissionDraft } from "@/hooks/use-submission-draft";
 
 interface ExtendedUser {
   id: string;
@@ -44,6 +45,7 @@ export function BountyDetailSubmissionsCard({
 }: BountyDetailSubmissionsCardProps) {
   const { data: session } = authClient.useSession();
   const submissions = bounty.submissions || [];
+  const { draft, clearDraft, autoSave } = useSubmissionDraft(bounty.id);
 
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
@@ -64,6 +66,24 @@ export function BountyDetailSubmissionsCard({
   const reviewSubmission = useReviewSubmission();
   const markSubmissionPaid = useMarkSubmissionPaid();
 
+  const hasHydratedDraft = useRef(false);
+
+  // Load draft on mount
+  useEffect(() => {
+    if (draft?.formData) {
+      setPrUrl(draft.formData.githubPullRequestUrl);
+      setSubmitComments(draft.formData.comments);
+    }
+    hasHydratedDraft.current = true;
+  }, [draft]);
+
+  // Auto-save on form changes
+  useEffect(() => {
+    if (!hasHydratedDraft.current) return;
+    const cleanup = autoSave({ githubPullRequestUrl: prUrl, comments: submitComments });
+    return cleanup;
+  }, [prUrl, submitComments, autoSave]);
+
   const isOrgMember =
     (session?.user as ExtendedUser)?.organizations?.includes(
       bounty.organizationId,
@@ -77,6 +97,7 @@ export function BountyDetailSubmissionsCard({
         githubPullRequestUrl: prUrl,
         comments: submitComments.trim() || undefined,
       });
+      clearDraft();
     } catch (err) {
       // Replace with toast or error UI as needed
       console.error("Submit PR failed:", err);
@@ -161,6 +182,11 @@ export function BountyDetailSubmissionsCard({
                 <DialogTitle>Submit Pull Request</DialogTitle>
                 <DialogDescription>
                   Submit your GitHub pull request URL.
+                  {draft && (
+                    <span className="block mt-1 text-xs text-blue-400">
+                      Draft restored from {new Date(draft.updatedAt).toLocaleString()}
+                    </span>
+                  )}
                 </DialogDescription>
               </DialogHeader>
 
