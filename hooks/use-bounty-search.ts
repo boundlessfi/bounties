@@ -10,9 +10,60 @@ import {
 } from "@/lib/graphql/generated";
 import { bountyKeys } from "@/lib/query/query-keys";
 
+/** LocalStorage key for persisting recent searches */
 const RECENT_SEARCHES_KEY = "bounties-recent-searches";
+/** Maximum number of recent searches to persist */
 const MAX_RECENT_SEARCHES = 5;
 
+/**
+ * Hook for searching bounties with debounced GraphQL queries
+ *
+ * Provides a complete search experience with:
+ * - Debounced search queries (300ms delay)
+ * - Recent searches persistence using localStorage
+ * - Loading and fetching state management
+ * - Keyboard-friendly open/close toggle
+ *
+ * The search is disabled until the user opens the search dialog and enters text,
+ * preventing unnecessary API calls.
+ *
+ * @returns Object containing search state, results, and management functions:
+ *   - searchTerm: Current search input text
+ *   - setSearchTerm: Update search text
+ *   - debouncedSearch: Debounced search term sent to API
+ *   - isOpen: Whether search dialog is open
+ *   - setIsOpen: Set search dialog visibility
+ *   - toggleOpen: Toggle search dialog open/closed
+ *   - results: Array of bounty results from GraphQL API
+ *   - isLoading: Whether initial query is loading
+ *   - recentSearches: Array of previously searched terms
+ *   - addRecentSearch: Save a term to recent searches
+ *   - removeRecentSearch: Remove a term from recent searches
+ *   - clearRecentSearches: Clear all recent searches
+ *
+ * @example
+ * const {
+ *   searchTerm,
+ *   setSearchTerm,
+ *   results,
+ *   isLoading,
+ *   recentSearches
+ * } = useBountySearch();
+ *
+ * return (
+ *   <SearchDialog>
+ *     <SearchInput value={searchTerm} onChange={setSearchTerm} />
+ *     {isLoading ? (
+ *       <Spinner />
+ *     ) : (
+ *       <>
+ *         {recentSearches.length > 0 && <RecentSearches items={recentSearches} />}
+ *         {results.length > 0 && <SearchResults items={results} />}
+ *       </>
+ *     )}
+ *   </SearchDialog>
+ * );
+ */
 export function useBountySearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
