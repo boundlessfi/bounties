@@ -49,7 +49,8 @@ describe("useSubmissionDraft", () => {
     expect(result.current.draft).toBeNull();
   });
 
-  it("should auto-save after delay", async () => {
+  it("should auto-save after delay", () => {
+    jest.useFakeTimers();
     const { result } = renderHook(() => useSubmissionDraft(bountyId));
     const formData = {
       githubPullRequestUrl: "https://github.com/test/pr/1",
@@ -60,12 +61,12 @@ describe("useSubmissionDraft", () => {
       result.current.autoSave(formData);
     });
 
-    await waitFor(
-      () => {
-        expect(result.current.draft?.formData).toEqual(formData);
-      },
-      { timeout: 1500 }
-    );
+    act(() => {
+      jest.advanceTimersByTime(1000); // AUTO_SAVE_DELAY
+    });
+
+    expect(result.current.draft?.formData).toEqual(formData);
+    jest.useRealTimers();
   });
 
   it("should persist draft across hook instances", () => {

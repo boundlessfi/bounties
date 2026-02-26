@@ -57,8 +57,8 @@ export function BountyDetailSubmissionsCard({
     useState<BountySubmissionType | null>(null);
 
   const [prUrl, setPrUrl] = useState("");
-    const [submitComments, setSubmitComments] = useState("");
-    const [reviewComments, setReviewComments] = useState("");
+  const [submitComments, setSubmitComments] = useState("");
+  const [reviewComments, setReviewComments] = useState("");
   const reviewStatus = "APPROVED";
   const [transactionHash, setTransactionHash] = useState("");
 
@@ -66,7 +66,7 @@ export function BountyDetailSubmissionsCard({
   const reviewSubmission = useReviewSubmission();
   const markSubmissionPaid = useMarkSubmissionPaid();
 
-  const hasHydratedDraft = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Load draft on mount
   useEffect(() => {
@@ -74,15 +74,18 @@ export function BountyDetailSubmissionsCard({
       setPrUrl(draft.formData.githubPullRequestUrl);
       setSubmitComments(draft.formData.comments);
     }
-    hasHydratedDraft.current = true;
+    setIsHydrated(true);
   }, [draft]);
 
   // Auto-save on form changes
   useEffect(() => {
-    if (!hasHydratedDraft.current) return;
-    const cleanup = autoSave({ githubPullRequestUrl: prUrl, comments: submitComments });
+    if (!isHydrated) return;
+    const cleanup = autoSave({
+      githubPullRequestUrl: prUrl,
+      comments: submitComments,
+    });
     return cleanup;
-  }, [prUrl, submitComments, autoSave]);
+  }, [prUrl, submitComments, autoSave, isHydrated]);
 
   const isOrgMember =
     (session?.user as ExtendedUser)?.organizations?.includes(
@@ -184,7 +187,8 @@ export function BountyDetailSubmissionsCard({
                   Submit your GitHub pull request URL.
                   {draft && (
                     <span className="block mt-1 text-xs text-blue-400">
-                      Draft restored from {new Date(draft.updatedAt).toLocaleString()}
+                      Draft restored from{" "}
+                      {new Date(draft.updatedAt).toLocaleString()}
                     </span>
                   )}
                 </DialogDescription>
