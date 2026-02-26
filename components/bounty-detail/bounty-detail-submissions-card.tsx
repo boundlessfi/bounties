@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Loader2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,16 +66,20 @@ export function BountyDetailSubmissionsCard({
   const reviewSubmission = useReviewSubmission();
   const markSubmissionPaid = useMarkSubmissionPaid();
 
+  const hasHydratedDraft = useRef(false);
+
   // Load draft on mount
   useEffect(() => {
     if (draft?.formData) {
       setPrUrl(draft.formData.githubPullRequestUrl);
       setSubmitComments(draft.formData.comments);
     }
+    hasHydratedDraft.current = true;
   }, [draft]);
 
   // Auto-save on form changes
   useEffect(() => {
+    if (!hasHydratedDraft.current) return;
     const cleanup = autoSave({ githubPullRequestUrl: prUrl, comments: submitComments });
     return cleanup;
   }, [prUrl, submitComments, autoSave]);
