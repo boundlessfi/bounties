@@ -63,6 +63,7 @@ export function FiltersSidebar({
   statuses,
   onClearFilters,
 }: FiltersSidebarProps) {
+  const maxReward = defaultRewardRange[1];
   const hasActiveFilters =
     searchQuery.length > 0 ||
     selectedTypes.length > 0 ||
@@ -162,26 +163,33 @@ export function FiltersSidebar({
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-2 pt-2 max-h-40 overflow-y-auto slim-scrollbar pr-2 leading-none">
-                {organizations.map((organization) => (
-                  <div
-                    key={organization}
-                    className="flex items-center space-x-2.5 group py-0.5"
-                  >
-                    <Checkbox
-                      id={`org-${organization}`}
-                      checked={selectedOrganizations.includes(organization)}
-                      onCheckedChange={() => onToggleOrganization(organization)}
-                      className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                    />
-                    <Label
-                      htmlFor={`org-${organization}`}
-                      className="text-sm font-normal cursor-pointer transition-colors truncate"
-                      title={organization}
+                {organizations.map((organization, index) => {
+                  const organizationId = `org-${organization
+                    .toLowerCase()
+                    .replace(/[^a-z0-9]+/g, "-")
+                    .replace(/^-+|-+$/g, "") || "unknown"}-${index}`;
+
+                  return (
+                    <div
+                      key={organizationId}
+                      className="flex items-center space-x-2.5 group py-0.5"
                     >
-                      {organization}
-                    </Label>
-                  </div>
-                ))}
+                      <Checkbox
+                        id={organizationId}
+                        checked={selectedOrganizations.includes(organization)}
+                        onCheckedChange={() => onToggleOrganization(organization)}
+                        className="border-gray-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                      />
+                      <Label
+                        htmlFor={organizationId}
+                        className="text-sm font-normal cursor-pointer transition-colors truncate"
+                        title={organization}
+                      >
+                        {organization}
+                      </Label>
+                    </div>
+                  );
+                })}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -207,7 +215,10 @@ export function FiltersSidebar({
                 />
                 <div className="flex items-center justify-between text-[10px] font-medium">
                   <span>${rewardRange[0]}</span>
-                  <span>${rewardRange[1]}+</span>
+                  <span>
+                    ${rewardRange[1]}
+                    {rewardRange[1] === maxReward ? "+" : ""}
+                  </span>
                 </div>
               </div>
             </AccordionContent>
