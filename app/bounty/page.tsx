@@ -13,7 +13,7 @@ import { SearchHeader } from "@/components/bounty/search-header";
 import { MiniLeaderboard } from "@/components/leaderboard/mini-leaderboard";
 
 const DEFAULT_REWARD_RANGE: [number, number] = [0, 5000];
-const DEFAULT_STATUS_FILTER = "open";
+const DEFAULT_STATUS_FILTER = "OPEN";
 const DEFAULT_SORT_OPTION = "newest";
 
 const BOUNTY_TYPES: FilterOption[] = [
@@ -23,14 +23,14 @@ const BOUNTY_TYPES: FilterOption[] = [
 ];
 
 const STATUSES: FilterOption[] = [
-  { value: "open", label: "Open" },
-  { value: "in_progress", label: "In Progress" },
-  { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
-  { value: "draft", label: "Draft" },
-  { value: "submitted", label: "Submitted" },
-  { value: "under_review", label: "Under Review" },
-  { value: "disputed", label: "Disputed" },
+  { value: "OPEN", label: "Open" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "CANCELLED", label: "Cancelled" },
+  { value: "DRAFT", label: "Draft" },
+  { value: "SUBMITTED", label: "Submitted" },
+  { value: "UNDER_REVIEW", label: "Under Review" },
+  { value: "DISPUTED", label: "Disputed" },
   { value: "all", label: "All Statuses" },
 ];
 
@@ -174,7 +174,9 @@ export default function BountiesPage() {
                 onToggleOrganization={toggleOrganization}
                 rewardRange={rewardRange}
                 onRewardRangeChange={setRewardRange}
+                defaultRewardRange={DEFAULT_REWARD_RANGE}
                 statusFilter={statusFilter}
+                defaultStatusFilter={DEFAULT_STATUS_FILTER}
                 onStatusFilterChange={setStatusFilter}
                 bountyTypes={BOUNTY_TYPES}
                 statuses={STATUSES}

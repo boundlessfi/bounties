@@ -36,7 +36,9 @@ interface FiltersSidebarProps {
   onToggleOrganization: (organization: string) => void;
   rewardRange: [number, number];
   onRewardRangeChange: (value: [number, number]) => void;
+  defaultRewardRange: [number, number];
   statusFilter: string;
+  defaultStatusFilter: string;
   onStatusFilterChange: (value: string) => void;
   bountyTypes: FilterOption[];
   statuses: FilterOption[];
@@ -53,7 +55,9 @@ export function FiltersSidebar({
   onToggleOrganization,
   rewardRange,
   onRewardRangeChange,
+  defaultRewardRange,
   statusFilter,
+  defaultStatusFilter,
   onStatusFilterChange,
   bountyTypes,
   statuses,
@@ -63,9 +67,9 @@ export function FiltersSidebar({
     searchQuery.length > 0 ||
     selectedTypes.length > 0 ||
     selectedOrganizations.length > 0 ||
-    rewardRange[0] !== 0 ||
-    rewardRange[1] !== 5000 ||
-    statusFilter !== "open";
+    rewardRange[0] !== defaultRewardRange[0] ||
+    rewardRange[1] !== defaultRewardRange[1] ||
+    statusFilter !== defaultStatusFilter;
 
   return (
     <div className="p-5 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm">
@@ -189,12 +193,15 @@ export function FiltersSidebar({
             <AccordionContent>
               <div className="space-y-4 pt-2 px-1">
                 <Slider
-                  defaultValue={[0, 5000]}
-                  max={5000}
+                  defaultValue={defaultRewardRange}
+                  max={defaultRewardRange[1]}
                   step={100}
                   value={[rewardRange[0], rewardRange[1]]}
                   onValueChange={(value) =>
-                    onRewardRangeChange([value[0], value[1] ?? 5000])
+                    onRewardRangeChange([
+                      value[0],
+                      value[1] ?? defaultRewardRange[1],
+                    ])
                   }
                   className="my-4"
                 />
