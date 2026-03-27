@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,7 @@ import {
 } from "@/hooks/use-submission-mutations";
 import { authClient } from "@/lib/auth-client";
 import { useSubmissionDraft } from "@/hooks/use-submission-draft";
+import { BountyDetailMilestoneFlowCard } from "./bounty-detail-milestone-flow-card";
 
 interface ExtendedUser {
   id: string;
@@ -34,13 +35,27 @@ interface ExtendedUser {
 interface BountyDetailSubmissionsCardProps {
   bounty: {
     id: string;
+    title: string;
+    type: string;
     status: string;
     organizationId: string;
+    rewardAmount?: number | null;
+    rewardCurrency?: string | null;
     submissions?: Array<BountySubmissionType> | null;
   };
 }
 
 export function BountyDetailSubmissionsCard({
+  bounty,
+}: BountyDetailSubmissionsCardProps) {
+  if (bounty.type === "MILESTONE_BASED") {
+    return <BountyDetailMilestoneFlowCard bounty={bounty} />;
+  }
+
+  return <BountyDetailStandardSubmissionsCard bounty={bounty} />;
+}
+
+function BountyDetailStandardSubmissionsCard({
   bounty,
 }: BountyDetailSubmissionsCardProps) {
   const { data: session } = authClient.useSession();

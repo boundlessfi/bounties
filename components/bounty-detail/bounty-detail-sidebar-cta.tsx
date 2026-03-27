@@ -35,6 +35,9 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
           return "Not Available";
       }
     }
+    if (bounty.type === "MILESTONE_BASED") {
+      return "Join Milestone Flow";
+    }
     return "Submit to Bounty";
   };
 
@@ -140,6 +143,9 @@ export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
         default:
           return "Not Available";
       }
+    }
+    if (bounty.type === "MILESTONE_BASED") {
+      return "Join Milestone Flow";
     }
     return "Submit to Bounty";
   };
