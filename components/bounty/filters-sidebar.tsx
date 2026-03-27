@@ -92,10 +92,11 @@ export function FiltersSidebar({
 
       <div className="space-y-6">
         <div className="space-y-2">
-          <Label className="text-xs font-medium">Search</Label>
+          <Label htmlFor="bounty-search-input" className="text-xs font-medium">Search</Label>
           <div className="relative group">
             <Search className="absolute left-3 top-2.5 size-4 group-focus-within:text-primary transition-colors" />
             <Input
+              id="bounty-search-input"
               placeholder="Keywords..."
               className="pl-9 h-9 text-sm"
               value={searchQuery}
@@ -105,9 +106,13 @@ export function FiltersSidebar({
         </div>
 
         <div className="space-y-2">
-          <Label className="text-xs font-medium text-gray-400">Status</Label>
+          <Label id="bounty-status-label" className="text-xs font-medium text-gray-400">Status</Label>
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9">
+            <SelectTrigger
+              id="bounty-status-trigger"
+              aria-labelledby="bounty-status-label bounty-status-trigger"
+              className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9"
+            >
               <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent className="bg-background border-px border-primary/30">
