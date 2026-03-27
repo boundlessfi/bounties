@@ -9,6 +9,9 @@ import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSubmissionsCard } from "./bounty-detail-submissions-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
 import { useBountyDetail } from "@/hooks/use-bounty-detail";
+import { CompetitionSubmission } from "@/components/bounty/competition-submission";
+import { CompetitionJudging } from "@/components/bounty/competition-judging";
+import { CompetitionStatus } from "@/components/bounty/competition-status";
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   const router = useRouter();
@@ -64,13 +67,29 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
     );
   }
 
+  const isCompetition = bounty.type === "COMPETITION";
+  const deadline = bounty.bountyWindow?.endDate ?? null;
+
   return (
     <div className="flex flex-col lg:flex-row gap-10">
       {/* Main content */}
       <div className="flex-1 min-w-0 space-y-6">
         <HeaderCard bounty={bounty} />
         <DescriptionCard description={bounty.description} />
-        <BountyDetailSubmissionsCard bounty={bounty} />
+        {isCompetition ? (
+          <>
+            <CompetitionSubmission bountyId={bounty.id} deadline={deadline} />
+            <CompetitionStatus bountyId={bounty.id} deadline={deadline} />
+            <CompetitionJudging
+              bountyId={bounty.id}
+              creatorId={bounty.createdBy}
+              deadline={deadline}
+              rewardAmount={bounty.rewardAmount}
+            />
+          </>
+        ) : (
+          <BountyDetailSubmissionsCard bounty={bounty} />
+        )}
       </div>
 
       {/* Sidebar */}

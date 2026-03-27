@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock } from "lucide-react";
+import { Clock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
@@ -82,6 +82,9 @@ export function BountyCard({
 
   const orgName = bounty.organization?.name ?? "Unknown";
   const orgLogo = bounty.organization?.logo;
+  const isCompetition = bounty.type === "COMPETITION";
+  const filledSlots = isCompetition ? (bounty._count?.submissions ?? 0) : 0;
+  const maxSlots = 5;
 
   return (
     <Card
@@ -135,6 +138,12 @@ export function BountyCard({
             <Badge variant="outline" className="text-xs px-2.5 py-1 ">
               {bounty.type.replace(/_/g, " ")}
             </Badge>
+            {isCompetition && (
+              <Badge variant="secondary" className="text-xs px-2.5 py-1 gap-1">
+                <Users className="size-3" />
+                {Math.min(filledSlots, maxSlots)}/{maxSlots} joined
+              </Badge>
+            )}
           </div>
         </CardHeader>
 

@@ -14,7 +14,10 @@ export default async function BountyDetailPage({ params }: Props) {
       {/* Ambient glow – matches BountiesPage */}
       <div className="fixed top-0 left-0 w-full h-125 bg-primary/5 rounded-full blur-[120px] -translate-y-1/2 pointer-events-none" />
 
-      <div className="container mx-auto px-4 py-10 relative z-10">
+      <div
+        className="container mx-auto px-4 py-10 relative z-10"
+        data-bounty-id={bountyId}
+      >
         {/* Breadcrumb */}
         <nav
           aria-label="Breadcrumb"

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Github, Copy, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { useCompetitionBounty } from "@/hooks/use-competition-bounty";
 
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
@@ -11,6 +12,12 @@ import { StatusBadge, TypeBadge } from "./bounty-badges";
 export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
   const [copied, setCopied] = useState(false);
   const canAct = bounty.status === "OPEN";
+  const isCompetition = bounty.type === "COMPETITION";
+  const { participantCount, maxParticipants } = useCompetitionBounty({
+    bountyId: bounty.id,
+    submissionDeadline: bounty.bountyWindow?.endDate ?? null,
+    maxParticipants: 5,
+  });
 
   const handleCopy = async () => {
     try {
@@ -35,7 +42,7 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
           return "Not Available";
       }
     }
-    return "Submit to Bounty";
+    return isCompetition ? "Join Competition" : "Submit to Bounty";
   };
 
   return (
@@ -87,6 +94,12 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
           {ctaLabel()}
         </Button>
 
+        {isCompetition && (
+          <p className="text-xs text-gray-500 text-center">
+            {participantCount}/{maxParticipants} slots filled
+          </p>
+        )}
+
         {!canAct && (
           <p className="flex items-center gap-1.5 text-xs text-gray-500 justify-center text-center">
             <AlertCircle className="size-3 shrink-0" />
@@ -129,6 +142,7 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
 
 export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
   const canAct = bounty.status === "OPEN";
+  const isCompetition = bounty.type === "COMPETITION";
 
   const label = () => {
     if (!canAct) {
@@ -141,7 +155,7 @@ export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
           return "Not Available";
       }
     }
-    return "Submit to Bounty";
+    return isCompetition ? "Join Competition" : "Submit to Bounty";
   };
 
   return (
