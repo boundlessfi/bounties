@@ -105,6 +105,12 @@ interface ContractResponse {
   mode: "contract" | "mock";
 }
 
+interface TxHashLike {
+  txHash?: unknown;
+  hash?: unknown;
+  transactionHash?: unknown;
+}
+
 type RegistryAdapter = Partial<{
   apply: (payload: Record<string, unknown>) => Promise<unknown>;
   select_applicant: (payload: Record<string, unknown>) => Promise<unknown>;
@@ -143,6 +149,23 @@ function writeStore(store: ApplicationStore) {
 
 function makeId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function resolveTxHash(result: unknown) {
+  if (!result || typeof result !== "object") {
+    return null;
+  }
+
+  const candidate = result as TxHashLike;
+  const values = [candidate.txHash, candidate.hash, candidate.transactionHash];
+
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  return null;
 }
 
 function hashSeed(value: string) {
@@ -200,9 +223,11 @@ async function invokeRegistryMethod(
   const fn = adapter?.[method];
 
   if (typeof fn === "function") {
-    await fn(payload);
+    const result = await fn(payload);
     return {
-      txHash: `0x${makeId("tx").replace("tx_", "").padEnd(16, "0")}`,
+      txHash:
+        resolveTxHash(result) ??
+        `0x${makeId("tx").replace("tx_", "").padEnd(16, "0")}`,
       mode: "contract",
     };
   }

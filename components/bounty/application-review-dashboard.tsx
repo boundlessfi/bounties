@@ -148,9 +148,9 @@ export function ApplicationReviewDashboard({
 
                     {application.proposal.portfolioLinks.length > 0 && (
                       <div className="flex flex-wrap gap-2">
-                        {application.proposal.portfolioLinks.map((link) => (
+                        {application.proposal.portfolioLinks.map((link, index) => (
                           <a
-                            key={link}
+                            key={`${link}-${index}`}
                             href={link}
                             target="_blank"
                             rel="noreferrer"
@@ -189,7 +189,9 @@ export function ApplicationReviewDashboard({
                       disabled={
                         isSelecting ||
                         Boolean(selectedApplicantId && !isSelected) ||
-                        application.status === "selected"
+                        application.status === "selected" ||
+                        application.status === "declined" ||
+                        application.status === "rejected"
                       }
                     >
                       <CheckCircle2 className="size-4" />

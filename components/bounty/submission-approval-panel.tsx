@@ -29,6 +29,16 @@ interface SubmissionApprovalPanelProps {
   isRequestingRevision?: boolean;
 }
 
+function normalizeWorkCidLink(workCid: string) {
+  const trimmed = workCid.trim();
+
+  if (/^https?:\/\//i.test(trimmed) || /^ipfs:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://ipfs.io/ipfs/${trimmed}`;
+}
+
 export function SubmissionApprovalPanel({
   submission,
   selectedApplication,
@@ -40,6 +50,9 @@ export function SubmissionApprovalPanel({
 }: SubmissionApprovalPanelProps) {
   const [points, setPoints] = useState("25");
   const [feedback, setFeedback] = useState("");
+  const normalizedWorkCidLink = normalizeWorkCidLink(submission.workCid);
+  const parsedPoints = Number(points);
+  const isValidPoints = Number.isInteger(parsedPoints) && parsedPoints > 0;
 
   return (
     <Card className="bg-card/70">
@@ -69,7 +82,7 @@ export function SubmissionApprovalPanel({
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Work CID</p>
             <a
-              href={submission.workCid}
+              href={normalizedWorkCidLink}
               target="_blank"
               rel="noreferrer"
               className="break-all text-sm text-primary hover:underline"
@@ -129,12 +142,8 @@ export function SubmissionApprovalPanel({
           </Button>
           <Button
             type="button"
-            onClick={() => void onApprove(Number(points))}
-            disabled={
-              !Number.isFinite(Number(points)) ||
-              Number(points) <= 0 ||
-              isApproving
-            }
+            onClick={() => void onApprove(parsedPoints)}
+            disabled={!isValidPoints || isApproving}
           >
             {isApproving ? (
               <Loader2 className="size-4 animate-spin" />

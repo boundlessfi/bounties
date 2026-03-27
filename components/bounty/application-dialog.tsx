@@ -30,6 +30,7 @@ export function ApplicationDialog({
 }: ApplicationDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [approach, setApproach] = useState("");
   const [timeline, setTimeline] = useState("");
@@ -59,6 +60,7 @@ export function ApplicationDialog({
     if (!isComplete) return;
 
     setLoading(true);
+    setErrorMessage("");
     try {
       const success = await onApply(proposal);
       if (success) {
@@ -68,9 +70,15 @@ export function ApplicationDialog({
         setRelevantExperience("");
         setPortfolioLinks("");
         setShowPreview(false);
+      } else {
+        setErrorMessage("Application submission failed. Please try again.");
       }
     } catch (error) {
-      console.error("Failed to submit application", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Application submission failed. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -130,9 +138,9 @@ export function ApplicationDialog({
                 <Label>Portfolio links</Label>
                 {proposal.portfolioLinks.length > 0 ? (
                   <div className="flex flex-col gap-1">
-                    {proposal.portfolioLinks.map((link) => (
+                    {proposal.portfolioLinks.map((link, index) => (
                       <a
-                        key={link}
+                        key={`${link}-${index}`}
                         href={link}
                         target="_blank"
                         rel="noreferrer"
@@ -198,6 +206,12 @@ export function ApplicationDialog({
                 />
               </div>
             </div>
+          )}
+
+          {errorMessage && (
+            <p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {errorMessage}
+            </p>
           )}
 
           <DialogFooter>
