@@ -58,6 +58,7 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
       "Amount",
       "Currency",
       "Date",
+      "Transaction",
       "Status",
     ];
     const rows = filteredActivity.map((item) => [
@@ -67,6 +68,7 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
       item.amount.toString(),
       item.currency,
       format(new Date(item.date), "yyyy-MM-dd HH:mm:ss"),
+      item.transactionHash || "",
       item.status,
     ]);
 
@@ -143,11 +145,11 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
                 <th className="text-right py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
                   Amount
                 </th>
-                <th className="text-left py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
-                  Transaction
-                </th>
                 <th className="text-right py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
                   Date
+                </th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
+                  Transaction
                 </th>
                 <th className="text-right py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
                   Status
@@ -206,7 +208,6 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
                       {item.transactionHash ? (
                         <TransactionLink
                           value={item.transactionHash}
-                          type="transaction"
                           maxLength={10}
                           showCopy={true}
                           className="text-xs"

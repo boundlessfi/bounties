@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TransactionLink } from "@/components/ui/stellar-link";
 import { Textarea } from "@/components/ui/textarea";
 import { useSubmissionDraft } from "@/hooks/use-submission-draft";
 import {
@@ -327,7 +328,6 @@ export function BountyDetailSubmissionsCard({
                     <span className="text-gray-400">Transaction:</span>
                     <TransactionLink
                       value={submission.rewardTransactionHash}
-                      type="transaction"
                       maxLength={10}
                       showCopy={true}
                       className="text-primary"

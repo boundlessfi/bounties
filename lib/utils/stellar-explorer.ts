@@ -1,12 +1,12 @@
 /**
  * Stellar Explorer Integration Utilities
- * 
+ *
  * Provides URL generation for Stellar explorers to link transactions,
  * accounts, and contracts for transparency and verification.
  */
 
-export type StellarNetwork = 'mainnet' | 'testnet';
-export type ExplorerType = 'transaction' | 'account' | 'contract';
+export type StellarNetwork = "mainnet" | "testnet";
+export type ExplorerType = "transaction" | "account" | "contract";
 
 export interface ExplorerConfig {
   name: string;
@@ -20,29 +20,29 @@ export interface ExplorerConfig {
 
 // Supported Stellar explorers
 const EXPLORERS: Record<string, ExplorerConfig> = {
-  'stellar.expert': {
-    name: 'Stellar Expert',
-    baseUrl: 'https://stellar.expert',
+  "stellar.expert": {
+    name: "Stellar Expert",
+    baseUrl: "https://stellar.expert",
     paths: {
-      transaction: '/tx/',
-      account: '/account/',
-      contract: '/contract/'
-    }
+      transaction: "/explorer/public/tx/",
+      account: "/explorer/public/account/",
+      contract: "/explorer/public/contract/",
+    },
   },
-  'stellarchain.io': {
-    name: 'Stellar Chain',
-    baseUrl: 'https://stellarchain.io',
+  "stellarchain.io": {
+    name: "Stellar Chain",
+    baseUrl: "https://stellarchain.io",
     paths: {
-      transaction: '/tx/',
-      account: '/account/',
-      contract: '/contract/'
-    }
-  }
+      transaction: "/tx/",
+      account: "/account/",
+      contract: "/contract/",
+    },
+  },
 };
 
 // Default network settings
-const DEFAULT_NETWORK: StellarNetwork = 'mainnet';
-const DEFAULT_EXPLORER = 'stellar.expert';
+const DEFAULT_NETWORK: StellarNetwork = "mainnet";
+const DEFAULT_EXPLORER = "stellar.expert";
 
 /**
  * Determines the Stellar network based on the address or transaction hash
@@ -52,12 +52,12 @@ const DEFAULT_EXPLORER = 'stellar.expert';
 export function getStellarNetwork(addressOrHash: string): StellarNetwork {
   // Testnet addresses typically start with 'G' and are testnet-specific
   // This is a simplified detection - in production, you might want more sophisticated detection
-  if (addressOrHash.startsWith('G') && addressOrHash.length === 56) {
+  if (addressOrHash.startsWith("G") && addressOrHash.length === 56) {
     // You could maintain a list of known testnet prefixes or use other heuristics
     // For now, we'll assume mainnet for most cases
-    return 'mainnet';
+    return "mainnet";
   }
-  
+
   // Testnet transaction hashes often have different patterns
   // This is a placeholder - implement proper testnet detection based on your needs
   return DEFAULT_NETWORK;
@@ -71,12 +71,16 @@ export function getStellarNetwork(addressOrHash: string): StellarNetwork {
  */
 function getExplorerBaseUrl(explorer: string, network: StellarNetwork): string {
   const config = EXPLORERS[explorer] || EXPLORERS[DEFAULT_EXPLORER];
-  
-  // Add testnet subdomain if needed (some explorers use testnet subdomains)
-  if (network === 'testnet') {
-    return config.baseUrl.replace('https://', 'https://testnet.');
+
+  // Handle different testnet URL patterns for different explorers
+  if (network === "testnet") {
+    if (explorer === "stellar.expert") {
+      return "https://testnet.stellar.expert";
+    } else if (explorer === "stellarchain.io") {
+      return "https://testnet.stellarchain.io";
+    }
   }
-  
+
   return config.baseUrl;
 }
 
@@ -90,16 +94,16 @@ function getExplorerBaseUrl(explorer: string, network: StellarNetwork): string {
 export function getTransactionUrl(
   txHash: string,
   network?: StellarNetwork,
-  explorer: string = DEFAULT_EXPLORER
+  explorer: string = DEFAULT_EXPLORER,
 ): string {
   if (!txHash) {
-    throw new Error('Transaction hash is required');
+    throw new Error("Transaction hash is required");
   }
 
   const detectedNetwork = network || getStellarNetwork(txHash);
   const config = EXPLORERS[explorer] || EXPLORERS[DEFAULT_EXPLORER];
   const baseUrl = getExplorerBaseUrl(explorer, detectedNetwork);
-  
+
   return `${baseUrl}${config.paths.transaction}${txHash}`;
 }
 
@@ -113,16 +117,16 @@ export function getTransactionUrl(
 export function getAccountUrl(
   address: string,
   network?: StellarNetwork,
-  explorer: string = DEFAULT_EXPLORER
+  explorer: string = DEFAULT_EXPLORER,
 ): string {
   if (!address) {
-    throw new Error('Account address is required');
+    throw new Error("Account address is required");
   }
 
   const detectedNetwork = network || getStellarNetwork(address);
   const config = EXPLORERS[explorer] || EXPLORERS[DEFAULT_EXPLORER];
   const baseUrl = getExplorerBaseUrl(explorer, detectedNetwork);
-  
+
   return `${baseUrl}${config.paths.account}${address}`;
 }
 
@@ -136,16 +140,16 @@ export function getAccountUrl(
 export function getContractUrl(
   contractId: string,
   network?: StellarNetwork,
-  explorer: string = DEFAULT_EXPLORER
+  explorer: string = DEFAULT_EXPLORER,
 ): string {
   if (!contractId) {
-    throw new Error('Contract ID is required');
+    throw new Error("Contract ID is required");
   }
 
   const detectedNetwork = network || getStellarNetwork(contractId);
   const config = EXPLORERS[explorer] || EXPLORERS[DEFAULT_EXPLORER];
   const baseUrl = getExplorerBaseUrl(explorer, detectedNetwork);
-  
+
   return `${baseUrl}${config.paths.contract}${contractId}`;
 }
 
@@ -192,6 +196,6 @@ export function isValidStellarTxHash(hash: string): boolean {
  * @returns True if valid, false otherwise
  */
 export function isValidStellarContractId(contractId: string): boolean {
-  // Contract IDs follow the same format as Stellar addresses
-  return isValidStellarAddress(contractId);
+  // Soroban contract IDs start with 'C' and are 56 characters long
+  return /^C[A-Z0-9]{55}$/.test(contractId);
 }
