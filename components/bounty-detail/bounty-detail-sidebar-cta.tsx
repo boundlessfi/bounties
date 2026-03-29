@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Github, Copy, Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +8,13 @@ import { Separator } from "@/components/ui/separator";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
 
-export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
+export function SidebarCTA({
+  bounty,
+  actionSlot,
+}: {
+  bounty: BountyFieldsFragment;
+  actionSlot?: ReactNode;
+}) {
   const [copied, setCopied] = useState(false);
   const canAct = bounty.status === "OPEN";
 
@@ -75,23 +81,31 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
         <Separator className="bg-gray-800/60" />
 
         {/* CTA */}
-        <Button
-          className="w-full h-11 font-bold tracking-wide"
-          disabled={!canAct}
-          size="lg"
-          onClick={() =>
-            canAct &&
-            window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
-          }
-        >
-          {ctaLabel()}
-        </Button>
+        {actionSlot ?? (
+          <>
+            <Button
+              className="w-full h-11 font-bold tracking-wide"
+              disabled={!canAct}
+              size="lg"
+              onClick={() =>
+                canAct &&
+                window.open(
+                  bounty.githubIssueUrl,
+                  "_blank",
+                  "noopener,noreferrer",
+                )
+              }
+            >
+              {ctaLabel()}
+            </Button>
 
-        {!canAct && (
-          <p className="flex items-center gap-1.5 text-xs text-gray-500 justify-center text-center">
-            <AlertCircle className="size-3 shrink-0" />
-            This bounty is no longer accepting new submissions.
-          </p>
+            {!canAct && (
+              <p className="flex items-center gap-1.5 text-xs text-gray-500 justify-center text-center">
+                <AlertCircle className="size-3 shrink-0" />
+                This bounty is no longer accepting new submissions.
+              </p>
+            )}
+          </>
         )}
 
         {/* GitHub */}
@@ -127,7 +141,13 @@ export function SidebarCTA({ bounty }: { bounty: BountyFieldsFragment }) {
   );
 }
 
-export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
+export function MobileCTA({
+  bounty,
+  actionSlot,
+}: {
+  bounty: BountyFieldsFragment;
+  actionSlot?: ReactNode;
+}) {
   const canAct = bounty.status === "OPEN";
 
   const label = () => {
@@ -146,17 +166,19 @@ export function MobileCTA({ bounty }: { bounty: BountyFieldsFragment }) {
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/90 backdrop-blur-xl border-t border-gray-800/60 z-20">
-      <Button
-        className="w-full h-11 font-bold tracking-wide"
-        disabled={!canAct}
-        size="lg"
-        onClick={() =>
-          canAct &&
-          window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
-        }
-      >
-        {label()}
-      </Button>
+      {actionSlot ?? (
+        <Button
+          className="w-full h-11 font-bold tracking-wide"
+          disabled={!canAct}
+          size="lg"
+          onClick={() =>
+            canAct &&
+            window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
+          }
+        >
+          {label()}
+        </Button>
+      )}
     </div>
   );
 }
