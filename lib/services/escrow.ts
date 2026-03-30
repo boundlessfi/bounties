@@ -1,4 +1,10 @@
-import { EscrowPool, EscrowSlot, FeeBreakdown } from "@/types/escrow";
+import {
+  EscrowPool,
+  EscrowSlot,
+  FeeBreakdown,
+  RefundResult,
+  CancellationRecord,
+} from "@/types/escrow";
 
 export class EscrowService {
   // Mock data mapping bountyId/poolId to EscrowPool and Slots
@@ -68,6 +74,8 @@ export class EscrowService {
     ],
   };
 
+  private static cancellations: Record<string, CancellationRecord> = {};
+
   /**
    * Get the escrow pool details for a given pool ID (usually bounty ID in our mock).
    */
@@ -119,7 +127,161 @@ export class EscrowService {
     };
   }
 
-  private static async simulateDelay(): Promise<void> {
-    await new Promise((resolve) => setTimeout(resolve, 300));
+  /**
+   * Cancel a bounty and initiate the escrow refund.
+   * Maps to BountyRegistry.cancel_bounty(creator, bounty_id) on-chain.
+   * Returns the cancellation record including refund details.
+   */
+  static async cancelBounty(
+    bountyId: string,
+    cancelledBy: string,
+    reason: string,
+  ): Promise<CancellationRecord> {
+    await this.simulateDelay(800);
+
+    const pool = this.pools[bountyId];
+    if (!pool) {
+      throw new Error(`No escrow pool found for bounty ${bountyId}`);
+    }
+
+    if (pool.status === "Fully Released") {
+      throw new Error(
+        "Cannot cancel: all funds have already been released to recipients",
+      );
+    }
+
+    if (pool.status === "Refunded") {
+      throw new Error("This bounty has already been refunded");
+    }
+
+    // Determine refund amount (total minus already released)
+    const refundableAmount = pool.totalAmount - pool.releasedAmount;
+    const txHash = this.generateMockTxHash();
+
+    const refund: RefundResult = {
+      transactionHash: txHash,
+      poolId: pool.poolId,
+      refundedAmount: refundableAmount,
+      asset: pool.asset,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
+    };
+
+    // Update pool state
+    this.pools[bountyId] = {
+      ...pool,
+      isLocked: false,
+      status: "Refunded",
+    };
+
+    const record: CancellationRecord = {
+      bountyId,
+      cancelledBy,
+      reason,
+      cancelledAt: new Date().toISOString(),
+      refund,
+    };
+
+    this.cancellations[bountyId] = record;
+    return record;
+  }
+
+  /**
+   * Refund all funds in an escrow pool.
+   * Maps to CoreEscrow.refund_all(pool_id) on-chain.
+   */
+  static async refundAll(poolId: string): Promise<RefundResult> {
+    await this.simulateDelay(600);
+
+    const pool = this.pools[poolId];
+    if (!pool) {
+      throw new Error(`No escrow pool found: ${poolId}`);
+    }
+
+    if (pool.status === "Refunded") {
+      throw new Error("Pool has already been refunded");
+    }
+
+    const txHash = this.generateMockTxHash();
+    const refundedAmount = pool.totalAmount;
+
+    this.pools[poolId] = {
+      ...pool,
+      isLocked: false,
+      releasedAmount: 0,
+      status: "Refunded",
+    };
+
+    return {
+      transactionHash: txHash,
+      poolId,
+      refundedAmount,
+      asset: pool.asset,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
+    };
+  }
+
+  /**
+   * Refund remaining (unreleased) funds in an escrow pool.
+   * Maps to CoreEscrow.refund_remaining(pool_id) on-chain.
+   */
+  static async refundRemaining(poolId: string): Promise<RefundResult> {
+    await this.simulateDelay(600);
+
+    const pool = this.pools[poolId];
+    if (!pool) {
+      throw new Error(`No escrow pool found: ${poolId}`);
+    }
+
+    if (pool.status === "Refunded") {
+      throw new Error("Pool has already been refunded");
+    }
+
+    if (pool.status === "Fully Released") {
+      throw new Error("No remaining funds to refund");
+    }
+
+    const txHash = this.generateMockTxHash();
+    const refundedAmount = pool.totalAmount - pool.releasedAmount;
+
+    this.pools[poolId] = {
+      ...pool,
+      isLocked: false,
+      status: pool.releasedAmount > 0 ? "Partially Released" : "Refunded",
+    };
+
+    return {
+      transactionHash: txHash,
+      poolId,
+      refundedAmount,
+      asset: pool.asset,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      explorerUrl: `https://stellar.expert/explorer/testnet/tx/${txHash}`,
+    };
+  }
+
+  /**
+   * Get cancellation record for a bounty, if it exists.
+   */
+  static async getCancellation(
+    bountyId: string,
+  ): Promise<CancellationRecord | null> {
+    await this.simulateDelay();
+    return this.cancellations[bountyId] || null;
+  }
+
+  private static simulateDelay(ms = 300): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private static generateMockTxHash(): string {
+    const chars = "abcdef0123456789";
+    return Array.from({ length: 64 }, () =>
+      chars.charAt(Math.floor(Math.random() * chars.length)),
+    ).join("");
   }
 }

@@ -7,6 +7,8 @@ export const escrowKeys = {
   slots: (poolId: string) => [...escrowKeys.all, "slots", poolId] as const,
   fee: (amount: number, subType: string) =>
     [...escrowKeys.all, "fee", amount, subType] as const,
+  cancellation: (bountyId: string) =>
+    [...escrowKeys.all, "cancellation", bountyId] as const,
 };
 
 /**
@@ -41,3 +43,16 @@ export function useFeeCalculation(amount: number, subType: string) {
     enabled: amount > 0 && !!subType,
   });
 }
+
+/**
+ * Fetch the cancellation record for a bounty.
+ * Only enabled when the bounty status is CANCELLED.
+ */
+export function useCancellation(bountyId: string, enabled = true) {
+  return useQuery({
+    queryKey: escrowKeys.cancellation(bountyId),
+    queryFn: () => EscrowService.getCancellation(bountyId),
+    enabled: !!bountyId && enabled,
+  });
+}
+

@@ -29,3 +29,23 @@ export interface FeeBreakdown {
   insuranceFee: number;
   netPayout: number;
 }
+
+export type RefundStatus = "pending" | "processing" | "completed" | "failed";
+
+export interface RefundResult {
+  transactionHash: string;
+  poolId: string;
+  refundedAmount: number;
+  asset: string;
+  status: RefundStatus;
+  timestamp: string;
+  explorerUrl: string;
+}
+
+export interface CancellationRecord {
+  bountyId: string;
+  cancelledBy: string;
+  reason: string;
+  cancelledAt: string;
+  refund: RefundResult | null;
+}

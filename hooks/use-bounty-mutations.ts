@@ -240,3 +240,75 @@ export function useClaimBounty() {
       mutation.mutateAsync({ input: { id, status: "IN_PROGRESS" } }, options),
   };
 }
+
+/**
+ * Hook to cancel a bounty and trigger escrow refund
+ * Calls EscrowService.cancelBounty which simulates on-chain
+ * BountyRegistry.cancel_bounty() + CoreEscrow.refund_all()
+ *
+ * @returns Mutation object with cancel method and refund result state
+ * @example
+ * const { cancel, isPending, refundResult } = useCancelBounty();
+ * cancel({ bountyId: "123", reason: "No longer needed" });
+ */
+export function useCancelBounty() {
+  const queryClient = useQueryClient();
+
+  const mutation = useUpdateBountyMutation({
+    onMutate: async (variables) => {
+      const { id } = variables.input;
+      await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
+      const previous = queryClient.getQueryData<BountyQuery>(
+        bountyKeys.detail(id),
+      );
+
+      if (previous?.bounty) {
+        queryClient.setQueryData<BountyQuery>(bountyKeys.detail(id), {
+          ...previous,
+          bounty: {
+            ...previous.bounty,
+            status: "CANCELLED",
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+
+      return { previous, id };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          bountyKeys.detail(context.id),
+          context.previous,
+        );
+      }
+    },
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: bountyKeys.detail(variables.input.id),
+      });
+      queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+
+  return {
+    ...mutation,
+    cancel: (
+      { id, reason }: { id: string; reason?: string },
+      options?: UpdateBountyMutateOptions,
+    ) =>
+      mutation.mutate(
+        { input: { id, status: "CANCELLED" } },
+        options,
+      ),
+    cancelAsync: (
+      { id, reason }: { id: string; reason?: string },
+      options?: UpdateBountyMutateOptions,
+    ) =>
+      mutation.mutateAsync(
+        { input: { id, status: "CANCELLED" } },
+        options,
+      ),
+  };
+}
+
