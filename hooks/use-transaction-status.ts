@@ -2,17 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { rpc } from "@stellar/stellar-sdk";
-
-const STELLAR_RPC_URL =
-  process.env.NEXT_PUBLIC_STELLAR_RPC_URL ||
-  "https://soroban-testnet.stellar.org";
-
-const STELLAR_EXPLORER_URL =
-  process.env.NEXT_PUBLIC_STELLAR_EXPLORER_URL ||
-  "https://stellar.expert/explorer/testnet";
+import { STELLAR_RPC_URL, STELLAR_EXPLORER_URL } from "@/lib/contracts/config";
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLLS = 40;
+const FINALITY_LEDGERS = 2;
 
 export type TxConfirmationStatus =
   | "idle"
@@ -39,8 +33,16 @@ const initialState: TransactionStatusState = {
 export function useTransactionStatus() {
   const [state, setState] = useState<TransactionStatusState>(initialState);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const finalityTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCountRef = useRef(0);
   const currentHashRef = useRef<string | null>(null);
+
+  const clearFinalityPolling = useCallback(() => {
+    if (finalityTimerRef.current) {
+      clearInterval(finalityTimerRef.current);
+      finalityTimerRef.current = null;
+    }
+  }, []);
 
   const clearPolling = useCallback(() => {
     if (timerRef.current) {
@@ -51,8 +53,11 @@ export function useTransactionStatus() {
   }, []);
 
   useEffect(() => {
-    return clearPolling;
-  }, [clearPolling]);
+    return () => {
+      clearPolling();
+      clearFinalityPolling();
+    };
+  }, [clearPolling, clearFinalityPolling]);
 
   const pollTransaction = useCallback(
     async (hash: string) => {
@@ -71,17 +76,52 @@ export function useTransactionStatus() {
 
           if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
             clearPolling();
+            const txLedger = result.ledger;
             setState({
               hash,
               status: "confirmed",
-              ledger: result.ledger,
+              ledger: txLedger,
               explorerUrl: `${STELLAR_EXPLORER_URL}/tx/${hash}`,
             });
 
-            await new Promise((r) => setTimeout(r, 2000));
+            const finalityServer = new rpc.Server(STELLAR_RPC_URL, {
+              allowHttp: false,
+            });
+            let finalityAttempts = 0;
+            const MAX_FINALITY_ATTEMPTS = 20;
 
-            setState((prev) =>
-              prev.hash === hash ? { ...prev, status: "finalized" } : prev,
+            const checkFinality = async () => {
+              if (currentHashRef.current !== hash) {
+                clearFinalityPolling();
+                return;
+              }
+              finalityAttempts++;
+              try {
+                const latest = await finalityServer.getLatestLedger();
+                if (latest.sequence >= txLedger + FINALITY_LEDGERS) {
+                  clearFinalityPolling();
+                  setState((prev) =>
+                    prev.hash === hash
+                      ? { ...prev, status: "finalized" }
+                      : prev,
+                  );
+                  return;
+                }
+              } catch {
+                // transient — keep polling
+              }
+              if (finalityAttempts >= MAX_FINALITY_ATTEMPTS) {
+                clearFinalityPolling();
+                setState((prev) =>
+                  prev.hash === hash ? { ...prev, status: "finalized" } : prev,
+                );
+              }
+            };
+
+            await checkFinality();
+            finalityTimerRef.current = setInterval(
+              checkFinality,
+              POLL_INTERVAL_MS,
             );
             return;
           }
@@ -138,7 +178,7 @@ export function useTransactionStatus() {
       await check();
       timerRef.current = setInterval(check, POLL_INTERVAL_MS);
     },
-    [clearPolling],
+    [clearPolling, clearFinalityPolling],
   );
 
   const track = useCallback(
@@ -160,9 +200,10 @@ export function useTransactionStatus() {
 
   const reset = useCallback(() => {
     clearPolling();
+    clearFinalityPolling();
     currentHashRef.current = null;
     setState(initialState);
-  }, [clearPolling]);
+  }, [clearPolling, clearFinalityPolling]);
 
   return { ...state, track, reset };
 }
