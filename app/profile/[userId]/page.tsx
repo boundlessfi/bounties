@@ -21,6 +21,45 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { useCompletionHistory } from "@/hooks/use-reputation";
+import type { MilestoneFlowState } from "@/types/milestone-flow";
+
+function getMilestoneClaimForUser(
+  bountyId: string,
+  viewerId: string,
+): { status: string; nextMilestone?: string } | null {
+  if (typeof window === "undefined") return null;
+
+  const key = `milestone_flow_${bountyId}`;
+  const serialized = window.localStorage.getItem(key);
+  if (!serialized) return null;
+
+  try {
+    const flow = JSON.parse(serialized) as MilestoneFlowState;
+    const participant = flow.participants.find(
+      (item) => item.contributorId === viewerId,
+    );
+
+    if (!participant) return null;
+
+    const milestone = flow.milestones[participant.currentMilestoneIndex];
+
+    if (participant.status === "COMPLETED") {
+      return { status: "completed" };
+    }
+
+    if (participant.status === "REJECTED") {
+      return { status: "disputed" };
+    }
+
+    if (participant.status === "SUBMITTED") {
+      return { status: "submitted", nextMilestone: milestone?.title };
+    }
+
+    return { status: "in-progress", nextMilestone: milestone?.title };
+  } catch {
+    return null;
+  }
+}
 
 export default function ProfilePage() {
   const params = useParams();
@@ -52,10 +91,11 @@ export default function ProfilePage() {
 
   const myClaims = useMemo<MyClaim[]>(() => {
     const bounties = bountyResponse?.data ?? [];
+    const claimMap = new Map<string, MyClaim>();
 
-    return bounties
+    bounties
       .filter((bounty) => bounty.createdBy === userId)
-      .map((bounty) => {
+      .forEach((bounty) => {
         let status = "unknown";
 
         if (bounty.status === "COMPLETED") {
@@ -74,13 +114,30 @@ export default function ProfilePage() {
           status = "open";
         }
 
-        return {
+        claimMap.set(bounty.id, {
           bountyId: bounty.id,
           title: bounty.title,
           status,
           rewardAmount: bounty.rewardAmount ?? undefined,
-        };
+        });
       });
+
+    bounties
+      .filter((bounty) => bounty.type === "MILESTONE_BASED")
+      .forEach((bounty) => {
+        const milestoneClaim = getMilestoneClaimForUser(bounty.id, userId);
+        if (!milestoneClaim) return;
+
+        claimMap.set(bounty.id, {
+          bountyId: bounty.id,
+          title: bounty.title,
+          status: milestoneClaim.status,
+          nextMilestone: milestoneClaim.nextMilestone,
+          rewardAmount: bounty.rewardAmount ?? undefined,
+        });
+      });
+
+    return Array.from(claimMap.values());
   }, [bountyResponse?.data, userId]);
 
   const earningsSummary = useMemo<EarningsSummaryType>(() => {
