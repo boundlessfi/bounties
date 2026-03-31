@@ -20,6 +20,21 @@ import { useMemo } from "react";
 import { useCompletionHistory } from "@/hooks/use-reputation";
 import { ContributorReputationWithMetrics } from "@/types/reputation";
 
+// Mock metrics data for testing until backend supports full metrics payload
+const getMockMetrics = (): ContributorReputationWithMetrics["metrics"] => ({
+  xp: 2500,
+  skills: [
+    { name: "Frontend", level: 75 },
+    { name: "Backend", level: 60 },
+    { name: "Documentation", level: 40 },
+  ],
+  contributionHistory: {
+    totalContributions: 0,
+    contributions: [],
+    streak: { current: 0, longest: 0 },
+  },
+});
+
 export default function ProfilePage() {
   const params = useParams();
   const userId = params.userId as string;
@@ -234,9 +249,18 @@ export default function ProfilePage() {
 
             <TabsContent value="dashboard" className="mt-6">
               <h2 className="text-xl font-bold mb-4">Reputation Dashboard</h2>
-              <ReputationDashboard
-                reputation={reputation as ContributorReputationWithMetrics}
-              />
+              {"metrics" in reputation && reputation.metrics ? (
+                <ReputationDashboard
+                  reputation={reputation as ContributorReputationWithMetrics}
+                />
+              ) : (
+                <ReputationDashboard
+                  reputation={{
+                    ...reputation,
+                    metrics: getMockMetrics(),
+                  }}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="analytics" className="mt-6">

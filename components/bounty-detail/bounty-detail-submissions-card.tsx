@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

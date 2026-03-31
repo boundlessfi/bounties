@@ -12,6 +12,15 @@ interface ReputationDashboardProps {
 export function ReputationDashboard({ reputation }: ReputationDashboardProps) {
   const { metrics } = reputation;
 
+  // Guard against missing metrics
+  if (!metrics) {
+    return (
+      <div className="p-8 border rounded-lg text-center text-muted-foreground">
+        <p>Metrics data is not available for this user.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* XP Display */}

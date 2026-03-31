@@ -12,8 +12,10 @@ interface XpDisplayProps {
 
 // XP thresholds for levels
 const getLevelFromXp = (xp: number) => {
-  const level = Math.floor(xp / 1000) + 1;
-  const currentLevelXp = xp % 1000;
+  // Clamp negative XP to 0
+  const clampedXp = Math.max(0, xp);
+  const level = Math.floor(clampedXp / 1000) + 1;
+  const currentLevelXp = clampedXp % 1000;
   const nextLevelXp = 1000;
   const progress = (currentLevelXp / nextLevelXp) * 100;
 

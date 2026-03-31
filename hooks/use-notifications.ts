@@ -91,20 +91,15 @@ export function useNotifications() {
   const userId = session?.user?.id ?? null;
   const prevUserIdRef = useRef(userId);
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  // Initialize state with lazy loading from localStorage
+  // This runs only once during initial render, avoiding setState in effect
+  const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
+    if (typeof window === "undefined" || !userId) return [];
+    return loadFromStorage(userId);
+  });
 
-  // Hydrate from localStorage when userId becomes available
-  useEffect(() => {
-    if (userId) {
-      setNotifications(loadFromStorage(userId));
-    } else {
-      setNotifications([]);
-    }
-    setHydrated(true);
-  }, [userId]);
-
-  // Reset on user change
+  // Reset on user change - this is allowed during render as it's a state update
+  // based on a condition change (userId)
   if (prevUserIdRef.current !== userId) {
     prevUserIdRef.current = userId;
     setNotifications(userId ? loadFromStorage(userId) : []);
@@ -112,14 +107,17 @@ export function useNotifications() {
 
   // Persist to localStorage whenever notifications change
   useEffect(() => {
-    if (userId && hydrated) {
+    if (userId) {
       saveToStorage(userId, notifications);
     }
-  }, [notifications, userId, hydrated]);
+  }, [notifications, userId]);
 
   // Helper to update notifications with cache invalidation
   const addNotification = useCallback(
-    (item: NotificationItem, invalidateKeys?: readonly (readonly string[])[]) => {
+    (
+      item: NotificationItem,
+      invalidateKeys?: readonly (readonly string[])[],
+    ) => {
       setNotifications((prev) => upsertNotification(prev, item));
 
       if (invalidateKeys) {
@@ -226,18 +224,15 @@ export function useNotifications() {
     [notifications],
   );
 
-  const isLoading = session === undefined || !hydrated;
+  const isLoading = session === undefined;
 
-  const markAsRead = useCallback(
-    (id: string, type: NotificationType) => {
-      setNotifications((previous) =>
-        previous.map((item) =>
-          item.id === id && item.type === type ? { ...item, read: true } : item,
-        ),
-      );
-    },
-    [],
-  );
+  const markAsRead = useCallback((id: string, type: NotificationType) => {
+    setNotifications((previous) =>
+      previous.map((item) =>
+        item.id === id && item.type === type ? { ...item, read: true } : item,
+      ),
+    );
+  }, []);
 
   const markAllAsRead = useCallback(() => {
     setNotifications((previous) =>

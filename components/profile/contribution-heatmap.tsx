@@ -9,7 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { format, subDays, startOfDay, isSameDay } from "date-fns";
+import { format, subDays, startOfDay } from "date-fns";
 
 interface ContributionHeatmapProps {
   contributionHistory: ContributionHistory;
@@ -35,20 +35,6 @@ const getContributionColor = (count: number, maxCount: number): string => {
 };
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 
 export function ContributionHeatmap({
   contributionHistory,
@@ -60,13 +46,16 @@ export function ContributionHeatmap({
   const today = startOfDay(new Date());
   const daysData: DayData[] = [];
 
+  // Build a Map for O(1) lookup instead of O(n) .find() in each iteration
+  const contributionMap = new Map(contributions.map((c) => [c.date, c.count]));
+
   for (let i = 364; i >= 0; i--) {
     const date = subDays(today, i);
     const dateStr = format(date, "yyyy-MM-dd");
-    const contribution = contributions.find((c) => c.date === dateStr);
+    const count = contributionMap.get(dateStr) ?? 0;
     daysData.push({
       date: dateStr,
-      count: contribution?.count ?? 0,
+      count,
     });
   }
 
@@ -83,7 +72,7 @@ export function ContributionHeatmap({
     currentWeek.push({ date: "", count: 0 });
   }
 
-  daysData.forEach((day, index) => {
+  daysData.forEach((day) => {
     currentWeek.push(day);
     if (currentWeek.length === 7) {
       weeks.push(currentWeek);
@@ -149,21 +138,29 @@ export function ContributionHeatmap({
           <div className="flex flex-col gap-1">
             {/* Month labels */}
             <div className="flex gap-[3px] ml-6 mb-1">
-              {MONTHS.map((month, index) => {
-                // Show month label at the start of each month
+              {weeks.map((week, weekIndex) => {
+                // Find the first valid date in this week to determine the month
+                const firstValidDay = week.find((day) => day.date);
+                if (!firstValidDay) {
+                  return <div key={weekIndex} className="w-3" />;
+                }
+                const weekMonth = format(new Date(firstValidDay.date), "MMM");
                 const shouldShow =
-                  index === 0 ||
-                  (index > 0 && index % 2 === 0) ||
-                  index === MONTHS.length - 1;
+                  weekIndex === 0 ||
+                  weeks[weekIndex - 1]?.some(
+                    (day) =>
+                      day.date &&
+                      format(new Date(day.date), "MMM") !== weekMonth,
+                  );
                 if (!shouldShow) {
-                  return <div key={month} className="w-3" />;
+                  return <div key={weekIndex} className="w-3" />;
                 }
                 return (
                   <div
-                    key={month}
+                    key={weekIndex}
                     className="text-xs text-muted-foreground w-8"
                   >
-                    {month}
+                    {weekMonth}
                   </div>
                 );
               })}
