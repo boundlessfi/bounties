@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock } from "lucide-react";
+import { Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
@@ -114,6 +114,12 @@ export function BountyCard({
               <Badge variant={status.variant} className="text-xs font-medium">
                 {status.label}
               </Badge>
+              {bounty.bountyWindow && (
+                <Badge className="text-[10px] px-1.5 py-0.5 gap-1 bg-yellow-500/15 text-yellow-400 border-yellow-500/30">
+                  <Zap className="h-2.5 w-2.5 fill-yellow-400" />
+                  Lightning
+                </Badge>
+              )}
             </div>
 
             {variant === "grid" && bounty.rewardAmount && (

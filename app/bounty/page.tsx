@@ -10,6 +10,7 @@ import {
 import { FiltersSidebar } from "@/components/bounty/filters-sidebar";
 import { BountyToolbar } from "@/components/bounty/bounty-toolbar";
 import { BountyGrid } from "@/components/bounty/bounty-grid";
+import { LightningRoundBanner } from "@/components/bounty/lightning-round-banner";
 
 export default function BountiesPage() {
   const { data, isLoading, isError, error, refetch } = useBounties();
@@ -53,6 +54,7 @@ export default function BountiesPage() {
           />
 
           <main className="flex-1 min-w-0">
+            <LightningRoundBanner className="mb-8" />
             <BountyToolbar
               totalCount={filters.filteredBounties.length}
               sortOption={filters.sortOption}

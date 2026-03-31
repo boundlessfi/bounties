@@ -21,6 +21,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { MiniLeaderboard } from "@/components/leaderboard/mini-leaderboard";
+import { LightningRoundSchedule } from "@/components/bounty/lightning-round-schedule";
 
 interface FiltersSidebarProps {
   searchQuery: string;
@@ -208,8 +209,9 @@ export function FiltersSidebar({
           </div>
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden lg:block space-y-4">
           <MiniLeaderboard className="w-full" />
+          <LightningRoundSchedule className="w-full" />
         </div>
       </div>
     </aside>
