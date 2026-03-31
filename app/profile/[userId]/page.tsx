@@ -2,9 +2,13 @@
 
 import { useContributorReputation } from "@/hooks/use-reputation";
 import { useBounties } from "@/hooks/use-bounties";
+import { useSparkCreditsHistory } from "@/hooks/use-spark-credits";
 import { ReputationCard } from "@/components/reputation/reputation-card";
 import { CompletionHistory } from "@/components/reputation/completion-history";
 import { MyClaims, type MyClaim } from "@/components/reputation/my-claims";
+import { CreditHistory } from "@/components/reputation/credit-history";
+import { CreditExplainer } from "@/components/reputation/credit-explainer";
+import { CreditBalance } from "@/components/reputation/credit-balance";
 import {
   EarningsSummary,
   type EarningsSummary as EarningsSummaryType,
@@ -37,6 +41,12 @@ export default function ProfilePage() {
     isLoading: historyLoading,
     isError: historyError,
   } = useCompletionHistory(userId);
+
+  const {
+    data: creditsHistory,
+    isLoading: creditsHistoryLoading,
+    isError: creditsHistoryError,
+  } = useSparkCreditsHistory(userId);
 
   const records = completionData?.records ?? [];
 
@@ -206,6 +216,12 @@ export default function ProfilePage() {
               >
                 My Claims
               </TabsTrigger>
+              <TabsTrigger
+                value="credits"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3"
+              >
+                Spark Credits
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="history" className="mt-6">
@@ -245,6 +261,24 @@ export default function ProfilePage() {
                   </p>
                   <EarningsSummary earnings={earningsSummary} />
                   <MyClaims claims={myClaims} />
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="credits" className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Spark Credits</h2>
+                <CreditBalance userId={userId} />
+              </div>
+              {creditsHistoryLoading ? (
+                <Skeleton className="h-48 w-full" />
+              ) : creditsHistoryError ? (
+                <div className="text-center text-muted-foreground text-sm">
+                  Unable to load credit history.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <CreditHistory events={creditsHistory?.events ?? []} />
+                  <CreditExplainer />
                 </div>
               )}
             </TabsContent>

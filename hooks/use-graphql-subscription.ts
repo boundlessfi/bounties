@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
-import { wsClient } from '@/lib/graphql/ws-client';
-import { type DocumentNode, print } from 'graphql';
+import { useEffect, useRef } from "react";
+import { wsClient } from "@/lib/graphql/ws-client";
+import { type DocumentNode, print } from "graphql";
 
 /**
  * Generic GraphQL Subscription Hook.
@@ -13,41 +13,46 @@ import { type DocumentNode, print } from 'graphql';
  * @param onError - Optional error callback
  */
 export function useGraphQLSubscription<T>(
-    query: DocumentNode | string,
-    variables: Record<string, unknown>,
-    onData: (data: T) => void,
-    onError?: (error: unknown) => void
+  query: DocumentNode | string,
+  variables: Record<string, unknown>,
+  onData: (data: T) => void,
+  onError?: (error: unknown) => void,
+  enabled = true,
 ) {
-    // Hold latest callbacks in refs so we don't restart the subscription when they change
-    const onDataRef = useRef(onData);
-    const onErrorRef = useRef(onError);
+  // Hold latest callbacks in refs so we don't restart the subscription when they change
+  const onDataRef = useRef(onData);
+  const onErrorRef = useRef(onError);
 
-    useEffect(() => {
-        onDataRef.current = onData;
-        onErrorRef.current = onError;
-    }, [onData, onError]);
+  useEffect(() => {
+    onDataRef.current = onData;
+    onErrorRef.current = onError;
+  }, [onData, onError]);
 
-    // Track variables as a string to avoid reference-based flapping
-    const variablesString = JSON.stringify(variables);
+  // Track variables as a string to avoid reference-based flapping
+  const variablesString = JSON.stringify(variables);
 
-    // Track query as a string
-    const queryString = typeof query === 'string' ? query : print(query);
+  // Track query as a string
+  const queryString = typeof query === "string" ? query : print(query);
 
-    useEffect(() => {
-        const unsubscribe = wsClient.subscribe<T>(
-            { query: queryString, variables: JSON.parse(variablesString) },
-            {
-                next: ({ data }) => data && onDataRef.current(data),
-                error: (err) => {
-                    console.error('[GraphQL Subscription] Error:', err);
-                    onErrorRef.current?.(err);
-                },
-                complete: () => { },
-            }
-        );
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
 
-        return () => {
-            unsubscribe();
-        };
-    }, [queryString, variablesString]);
+    const unsubscribe = wsClient.subscribe<T>(
+      { query: queryString, variables: JSON.parse(variablesString) },
+      {
+        next: ({ data }) => data && onDataRef.current(data),
+        error: (err) => {
+          console.error("[GraphQL Subscription] Error:", err);
+          onErrorRef.current?.(err);
+        },
+        complete: () => {},
+      },
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [enabled, queryString, variablesString]);
 }

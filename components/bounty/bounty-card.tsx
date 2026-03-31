@@ -13,6 +13,8 @@ import { Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
+import { EscrowStatus } from "./escrow-status";
+import { useEscrowPool } from "@/hooks/use-escrow";
 
 interface BountyCardProps {
   bounty: BountyFieldsFragment;
@@ -83,6 +85,9 @@ export function BountyCard({
   const orgName = bounty.organization?.name ?? "Unknown";
   const orgLogo = bounty.organization?.logo;
 
+  // Fetch escrow pool data
+  const { data: pool } = useEscrowPool(bounty.id);
+
   return (
     <Card
       className={cn(
@@ -128,6 +133,22 @@ export function BountyCard({
               </div>
             )}
           </div>
+
+          {pool ? (
+            <div className="mb-4">
+              <EscrowStatus
+                status={pool.status}
+                lockedAmount={
+                  pool.status === "Fully Released"
+                    ? 0
+                    : pool.totalAmount - pool.releasedAmount
+                }
+                releasedAmount={pool.releasedAmount}
+                currency={pool.asset}
+                showAmounts={true}
+              />
+            </div>
+          ) : null}
 
           <CardTitle className="text-base font-semibold line-clamp-2 mb-2 leading-snug">
             {bounty.title}

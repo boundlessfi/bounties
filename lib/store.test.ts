@@ -45,8 +45,6 @@ describe("BountyStore", () => {
         bountyId: "b-2",
         contributorId: "u-2",
         content: "My work",
-        explanation: "My work",
-        walletAddress: "GABC1234567890EXAMPLEWALLETADDRESS",
         status: "pending",
         submittedAt: new Date().toISOString(),
       };

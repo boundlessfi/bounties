@@ -59,10 +59,8 @@ export function useCreateBounty() {
 
   return {
     ...mutation,
-    mutate: (
-      input: CreateBountyInput,
-      options?: CreateBountyMutateOptions,
-    ) => mutation.mutate({ input }, options),
+    mutate: (input: CreateBountyInput, options?: CreateBountyMutateOptions) =>
+      mutation.mutate({ input }, options),
     mutateAsync: (
       input: CreateBountyInput,
       options?: CreateBountyMutateOptions,
@@ -193,14 +191,10 @@ export function useDeleteBounty() {
 
   return {
     ...mutation,
-    mutate: (
-      id: string,
-      options?: DeleteBountyMutateOptions,
-    ) => mutation.mutate({ id }, options),
-    mutateAsync: (
-      id: string,
-      options?: DeleteBountyMutateOptions,
-    ) => mutation.mutateAsync({ id }, options),
+    mutate: (id: string, options?: DeleteBountyMutateOptions) =>
+      mutation.mutate({ id }, options),
+    mutateAsync: (id: string, options?: DeleteBountyMutateOptions) =>
+      mutation.mutateAsync({ id }, options),
   };
 }
 
@@ -229,14 +223,82 @@ export function useClaimBounty() {
 
   return {
     ...mutation,
-    mutate: (
-      id: string,
-      options?: UpdateBountyMutateOptions,
-    ) => mutation.mutate({ input: { id, status: "IN_PROGRESS" } }, options),
-    mutateAsync: (
-      id: string,
+    mutate: (id: string, options?: UpdateBountyMutateOptions) =>
+      mutation.mutate({ input: { id, status: "IN_PROGRESS" } }, options),
+    mutateAsync: (id: string, options?: UpdateBountyMutateOptions) =>
+      mutation.mutateAsync({ input: { id, status: "IN_PROGRESS" } }, options),
+  };
+}
+
+/**
+ * Hook to cancel a bounty and update its status in the registry.
+ * This hook handles the GraphQL status update to "CANCELLED".
+ * Escrow cancellation/refund is handled separately via EscrowService.cancelBounty.
+ *
+ * @returns Mutation object with:
+ *  - cancel: (id: string, reason?: string) => void
+ *  - cancelAsync: (id: string, reason?: string) => Promise<any>
+ *  - isPending: boolean (standard TanStack Query state)
+ *
+ * @example
+ * const { cancel, isPending } = useCancelBounty();
+ * cancel({ id: "123", reason: "Budget changed" });
+ */
+export function useCancelBounty() {
+  const queryClient = useQueryClient();
+
+  const mutation = useUpdateBountyMutation({
+    onMutate: async (variables) => {
+      const { id } = variables.input;
+      await queryClient.cancelQueries({ queryKey: bountyKeys.detail(id) });
+      const previous = queryClient.getQueryData<BountyQuery>(
+        bountyKeys.detail(id),
+      );
+
+      if (previous?.bounty) {
+        queryClient.setQueryData<BountyQuery>(bountyKeys.detail(id), {
+          ...previous,
+          bounty: {
+            ...previous.bounty,
+            status: "CANCELLED",
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+
+      return { previous, id };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(
+          bountyKeys.detail(context.id),
+          context.previous,
+        );
+      }
+    },
+    onSettled: (_data, _err, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: bountyKeys.detail(variables.input.id),
+      });
+      queryClient.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+
+  return {
+    ...mutation,
+    cancel: (
+      { id }: { id: string; reason?: string },
       options?: UpdateBountyMutateOptions,
     ) =>
-      mutation.mutateAsync({ input: { id, status: "IN_PROGRESS" } }, options),
+      // 'reason' is intentionally ignored in the GraphQL mutation because
+      // UpdateBountyInput does not support it. It is consumed by EscrowService.cancelBounty.
+      mutation.mutate({ input: { id, status: "CANCELLED" } }, options),
+    cancelAsync: (
+      { id }: { id: string; reason?: string },
+      options?: UpdateBountyMutateOptions,
+    ) =>
+      // 'reason' is intentionally ignored in the GraphQL mutation because
+      // UpdateBountyInput does not support it. It is consumed by EscrowService.cancelBounty.
+      mutation.mutateAsync({ input: { id, status: "CANCELLED" } }, options),
   };
 }
