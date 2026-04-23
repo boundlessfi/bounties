@@ -11,7 +11,7 @@ export function HeaderCard({ bounty }: { bounty: BountyFieldsFragment }) {
     <div className="p-6 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm">
       {/* Badges */}
       <div className="flex items-center gap-2 flex-wrap mb-4">
-        <StatusBadge status={bounty.status} />
+        <StatusBadge status={bounty.status} type={bounty.type} />
         <TypeBadge type={bounty.type} />
       </div>
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { QueryErrorBoundary } from "./query-error-boundary";
 import { useBountySubscription } from "@/hooks/use-bounty-subscription";
+import { contractEventPoller } from "@/lib/contracts/event-listener";
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -47,6 +48,15 @@ function RealtimeSync() {
   return null;
 }
 
+function OnChainSync() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    contractEventPoller.start(queryClient);
+    return () => contractEventPoller.stop();
+  }, [queryClient]);
+  return null;
+}
+
 /**
  * Standard QueryClientProvider for the application.
  * Centralizes TanStack Query configuration and provides the client to the tree.
@@ -57,6 +67,7 @@ export function QueryClientProvider({ children }: QueryClientProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <RealtimeSync />
+      <OnChainSync />
       <QueryErrorBoundary>{children}</QueryErrorBoundary>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools
