@@ -71,7 +71,7 @@ function createApiClient(): AxiosInstance {
   return client;
 }
 
-export const apiClient = createApiClient();
+const apiClient = createApiClient();
 
 // Request options with abort signal support
 interface RequestOptions {
@@ -79,7 +79,6 @@ interface RequestOptions {
   params?: Record<string, unknown>;
 }
 
-// Type-safe request helpers
 export async function get<T>(
   url: string,
   options?: RequestOptions,
@@ -99,35 +98,5 @@ export async function post<T>(
   const response = await apiClient.post<T>(url, data, {
     signal: options?.signal,
   });
-  return response.data;
-}
-
-export async function put<T>(
-  url: string,
-  data?: unknown,
-  options?: { signal?: AbortSignal },
-): Promise<T> {
-  const response = await apiClient.put<T>(url, data, {
-    signal: options?.signal,
-  });
-  return response.data;
-}
-
-export async function patch<T>(
-  url: string,
-  data?: unknown,
-  options?: { signal?: AbortSignal },
-): Promise<T> {
-  const response = await apiClient.patch<T>(url, data, {
-    signal: options?.signal,
-  });
-  return response.data;
-}
-
-export async function del<T>(
-  url: string,
-  options?: { signal?: AbortSignal },
-): Promise<T> {
-  const response = await apiClient.delete<T>(url, { signal: options?.signal });
   return response.data;
 }

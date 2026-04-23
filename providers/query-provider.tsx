@@ -42,9 +42,21 @@ interface QueryProviderProps {
 }
 
 import { useBountySubscription } from "@/hooks/use-bounty-subscription";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { contractEventPoller } from "@/lib/contracts/event-listener";
 
 function RealtimeSync() {
   useBountySubscription();
+  return null;
+}
+
+function OnChainSync() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    contractEventPoller.start(queryClient);
+    return () => contractEventPoller.stop();
+  }, [queryClient]);
   return null;
 }
 
@@ -54,6 +66,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <RealtimeSync />
+      <OnChainSync />
       <QueryErrorBoundary>{children}</QueryErrorBoundary>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools

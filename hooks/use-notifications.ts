@@ -89,7 +89,6 @@ export function useNotifications() {
 
   const isEnabled = Boolean(session?.user);
   const userId = session?.user?.id ?? null;
-  const prevUserIdRef = useRef(userId);
 
   // Initialize state with lazy loading from localStorage
   // This runs only once during initial render, avoiding setState in effect
@@ -100,8 +99,9 @@ export function useNotifications() {
 
   // Reset on user change - this is allowed during render as it's a state update
   // based on a condition change (userId)
-  if (prevUserIdRef.current !== userId) {
-    prevUserIdRef.current = userId;
+  const prevHydratedUserIdRef = useRef(userId);
+  if (prevHydratedUserIdRef.current !== userId) {
+    prevHydratedUserIdRef.current = userId;
     setNotifications(userId ? loadFromStorage(userId) : []);
   }
 

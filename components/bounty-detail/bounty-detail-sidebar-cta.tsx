@@ -26,6 +26,7 @@ import {
 import { toast } from "sonner";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
+import { FcfsClaimButton } from "@/components/bounty/fcfs-claim-button";
 import { authClient } from "@/lib/auth-client";
 import type { CancellationRecord } from "@/types/escrow";
 import { useRaiseDisputeMutation } from "@/hooks/use-dispute-mutations";
@@ -55,6 +56,7 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
   const raiseDisputeMutation = useRaiseDisputeMutation();
 
   const canAct = bounty.status === "OPEN";
+  const isFcfs = bounty.type === "FIXED_PRICE";
   const isCreator = session?.user?.id === bounty.createdBy;
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
@@ -141,7 +143,7 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
         <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between text-gray-400">
             <span>Status</span>
-            <StatusBadge status={bounty.status} />
+            <StatusBadge status={bounty.status} type={bounty.type} />
           </div>
           <div className="flex items-center justify-between text-gray-400">
             <span>Type</span>
@@ -152,17 +154,25 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
         <Separator className="bg-gray-800/60" />
 
         {/* CTA */}
-        <Button
-          className="w-full h-11 font-bold tracking-wide"
-          disabled={!canAct}
-          size="lg"
-          onClick={() =>
-            canAct &&
-            window.open(bounty.githubIssueUrl, "_blank", "noopener,noreferrer")
-          }
-        >
-          {ctaLabel()}
-        </Button>
+        {isFcfs ? (
+          <FcfsClaimButton bounty={bounty} />
+        ) : (
+          <Button
+            className="w-full h-11 font-bold tracking-wide"
+            disabled={!canAct}
+            size="lg"
+            onClick={() =>
+              canAct &&
+              window.open(
+                bounty.githubIssueUrl,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
+          >
+            {ctaLabel()}
+          </Button>
+        )}
 
         {/* Raise Dispute Button */}
         {canDispute && bounty.status !== "DISPUTED" && (
@@ -268,7 +278,7 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
                 placeholder="e.g., Requirements changed, budget reallocation, issue resolved externally..."
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                className="min-h-[80px] resize-none"
+                className="min-h-20 resize-none"
                 disabled={isCancelling}
               />
             </div>
@@ -364,6 +374,7 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
   const raiseDisputeMutation = useRaiseDisputeMutation();
 
   const canAct = bounty.status === "OPEN";
+  const isFcfs = bounty.type === "FIXED_PRICE";
   const isCreator = session?.user?.id === bounty.createdBy;
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
@@ -437,15 +448,32 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
         )}
         {canCancel && (
           <Button
-            variant="outline"
+            className="flex-1 h-11 font-bold tracking-wide"
+            disabled={!canAct}
             size="lg"
-            className="h-11 border-red-500/30 text-red-400 hover:bg-red-500/10 shrink-0"
-            onClick={() => setCancelDialogOpen(true)}
+            onClick={() =>
+              canAct &&
+              window.open(
+                bounty.githubIssueUrl,
+                "_blank",
+                "noopener,noreferrer",
+              )
+            }
           >
-            <XCircle className="size-4" />
+            {label()}
           </Button>
-        )}
-      </div>
+          {canCancel && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-11 border-red-500/30 text-red-400 hover:bg-red-500/10 shrink-0"
+              onClick={() => setCancelDialogOpen(true)}
+            >
+              <XCircle className="size-4" />
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Mobile Cancel Dialog */}
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
@@ -469,7 +497,7 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
               placeholder="Reason for cancellation..."
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="min-h-[80px]"
+              className="min-h-20"
               disabled={isCancelling}
             />
           </div>

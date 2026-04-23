@@ -65,6 +65,11 @@ const statusConfig: Record<
     label: "Under Review",
     dotColor: "bg-amber-500",
   },
+  in_review: {
+    variant: "secondary",
+    label: "In Review",
+    dotColor: "bg-amber-500",
+  },
   disputed: {
     variant: "destructive",
     label: "Disputed",
@@ -77,7 +82,13 @@ export function BountyCard({
   onClick,
   variant = "grid",
 }: BountyCardProps) {
-  const status = statusConfig[bounty.status];
+  const normalizedStatus = bounty.status
+    .toUpperCase()
+    .replace(/-/g, "_") as string;
+  const status =
+    statusConfig[normalizedStatus.toLowerCase()] ?? statusConfig.open;
+  const isFcfsClaimed =
+    bounty.type === "FIXED_PRICE" && normalizedStatus === "IN_PROGRESS";
   const timeLeft = bounty.updatedAt
     ? formatDistanceToNow(new Date(bounty.updatedAt), { addSuffix: true })
     : "N/A";
@@ -112,7 +123,7 @@ export function BountyCard({
             <div className="flex items-center gap-2">
               <div className={cn("w-2 h-2 rounded-full", status.dotColor)} />
               <Badge variant={status.variant} className="text-xs font-medium">
-                {status.label}
+                {isFcfsClaimed ? "Claimed" : status.label}
               </Badge>
             </div>
 

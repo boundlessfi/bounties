@@ -1,5 +1,5 @@
 // API Client
-export { apiClient, get, post, put, patch, del } from "./client";
+export { get, post } from "./client";
 
 // Error handling
 export {

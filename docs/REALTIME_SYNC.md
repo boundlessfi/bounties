@@ -13,7 +13,7 @@ The application uses **GraphQL Subscriptions** via [graphql-ws](https://github.c
    - Injects authentication tokens via `connectionParams`.
    - Manages automatic reconnection and retry logic.
 2. **`lib/graphql/subscriptions.ts`**: Contains the typed GraphQL subscription documents and their response payload interfaces.
-3. **`hooks/use-graphql-subscription.ts`**: A generic React hook that wraps the `wsClient.subscribe` method. 
+3. **`hooks/use-graphql-subscription.ts`**: A generic React hook that wraps the `wsClient.subscribe` method.
    - Manages the subscription lifecycle (subscribes on mount, unsubscribes on unmount).
    - Handles cleanup to prevent memory leaks.
 4. **`hooks/use-bounty-subscription.ts`**: A high-level hook that aggregates subscriptions for `bountyCreated`, `bountyUpdated`, and `bountyDeleted`.
@@ -21,10 +21,10 @@ The application uses **GraphQL Subscriptions** via [graphql-ws](https://github.c
 
 ## Cache Invalidation Strategy
 
-| Event | Action on Client | Cache Affected |
-|-------|------------------|----------------|
-| `bountyCreated` | `invalidateQueries` | `bountyKeys.lists()` |
-| `bountyUpdated` | `invalidateQueries` | `bountyKeys.detail(id)`, `bountyKeys.lists()` |
+| Event           | Action on Client                     | Cache Affected                                |
+| --------------- | ------------------------------------ | --------------------------------------------- |
+| `bountyCreated` | `invalidateQueries`                  | `bountyKeys.lists()`                          |
+| `bountyUpdated` | `invalidateQueries`                  | `bountyKeys.detail(id)`, `bountyKeys.lists()` |
 | `bountyDeleted` | `removeQueries`, `invalidateQueries` | `bountyKeys.detail(id)`, `bountyKeys.lists()` |
 
 ## Configuration
@@ -51,7 +51,7 @@ import { useBountySubscription } from '@/hooks/use-bounty-subscription';
 function MyComponent() {
   // Activate bounty synchronization
   useBountySubscription();
-  
+
   return (
     // ... UI that React Query will automatically update
   );
