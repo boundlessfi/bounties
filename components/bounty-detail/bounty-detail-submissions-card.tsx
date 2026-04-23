@@ -153,6 +153,8 @@ export function BountyDetailSubmissionsCard({
         return "bg-emerald-100 text-emerald-900";
       case "REJECTED":
         return "bg-red-100 text-red-900";
+      case "DISPUTED":
+        return "bg-yellow-100 text-yellow-900 border border-yellow-200";
       case "PENDING":
       default:
         return "bg-gray-100 text-gray-900";
