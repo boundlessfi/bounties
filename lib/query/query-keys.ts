@@ -74,6 +74,8 @@ export const submissionKeys = {
   detail: (id: string) => [...submissionKeys.all, "detail", id] as const,
   byBounty: (bountyId: string) =>
     [...submissionKeys.all, "byBounty", bountyId] as const,
+  drafts: () => [...submissionKeys.all, "drafts"] as const,
+  draft: (bountyId: string) => [...submissionKeys.drafts(), bountyId] as const,
 };
 
 export type SubmissionQueryKey =

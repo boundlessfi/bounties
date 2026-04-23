@@ -4,19 +4,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState, type ReactNode } from "react";
 import { QueryErrorBoundary } from "./query-error-boundary";
+import { useBountySubscription } from "@/hooks/use-bounty-subscription";
 
 function makeQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60 * 1000, // 60 seconds
-        gcTime: 5 * 60 * 1000, // 5 minutes (formerly cacheTime)
+        staleTime: 60 * 1000, // 1 minute
+        gcTime: 5 * 60 * 1000, // 5 minutes
         retry: 3,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
         refetchOnWindowFocus: false,
       },
       mutations: {
-        retry: 3,
+        retry: 1, // Usually want fewer retries for mutations
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
     },
@@ -37,18 +38,20 @@ function getQueryClient(): QueryClient {
   return browserQueryClient;
 }
 
-interface QueryProviderProps {
+interface QueryClientProviderProps {
   children: ReactNode;
 }
-
-import { useBountySubscription } from "@/hooks/use-bounty-subscription";
 
 function RealtimeSync() {
   useBountySubscription();
   return null;
 }
 
-export function QueryProvider({ children }: QueryProviderProps) {
+/**
+ * Standard QueryClientProvider for the application.
+ * Centralizes TanStack Query configuration and provides the client to the tree.
+ */
+export function QueryClientProvider({ children }: QueryClientProviderProps) {
   const [queryClient] = useState(getQueryClient);
 
   return (

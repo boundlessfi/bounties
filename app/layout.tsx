@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { QueryProvider } from "@/providers/query-provider";
+import { QueryClientProvider } from "@/providers/query-client-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalNavbar } from "@/components/global-navbar";
@@ -38,7 +38,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
+          <QueryClientProvider>
             <SmartWalletProvider>
               <div suppressHydrationWarning>
                 {/* <GlobalResizableNavbar /> */}
@@ -47,7 +47,7 @@ export default function RootLayout({
               </div>
               <Toaster />
             </SmartWalletProvider>
-          </QueryProvider>
+          </QueryClientProvider>
         </ThemeProvider>
       </body>
     </html>

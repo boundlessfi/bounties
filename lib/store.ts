@@ -2,6 +2,11 @@ import { Bounty } from "@/types/bounty";
 import { Application, Submission, MilestoneParticipation, CompetitionParticipation } from "@/types/participation";
 import { mockBounties } from "./mock-bounty";
 
+/**
+ * @deprecated Use TanStack Query hooks (e.g., useBounty, useBounties) for data fetching.
+ * For local state management, use queryClient.setQueryData with appropriate query keys.
+ * globalThis.bountyStore is being removed to ensure SSR compatibility.
+ */
 class BountyStoreData {
     bounties: Bounty[] = [...mockBounties];
     applications: Application[] = [];
@@ -10,77 +15,78 @@ class BountyStoreData {
     competitionParticipations: CompetitionParticipation[] = [];
 }
 
-declare global {
-    var bountyStore: BountyStoreData | undefined;
-}
+// Internal mock store for API routes (Server-only persistence during dev)
+const serverStore = new BountyStoreData();
 
-const globalStore: BountyStoreData = globalThis.bountyStore || new BountyStoreData();
-if (process.env.NODE_ENV !== 'production') globalThis.bountyStore = globalStore;
-
+/**
+ * BountyStore provides imperative access to mock data.
+ * This is being deprecated in favor of TanStack Query patterns for client state
+ * and proper API/Database patterns for server state.
+ */
 export const BountyStore = {
     // Bounties
-    getBounties: () => globalStore.bounties,
-    getBountyById: (id: string) => globalStore.bounties.find((b: Bounty) => b.id === id),
+    getBounties: () => serverStore.bounties,
+    getBountyById: (id: string) => serverStore.bounties.find((b: Bounty) => b.id === id),
 
     // Applications (Model 2)
     addApplication: (app: Application) => {
-        globalStore.applications.push(app);
+        serverStore.applications.push(app);
         return app;
     },
     getApplicationsByBounty: (bountyId: string) =>
-        globalStore.applications.filter((a: Application) => a.bountyId === bountyId),
+        serverStore.applications.filter((a: Application) => a.bountyId === bountyId),
     getApplicationById: (appId: string) =>
-        globalStore.applications.find((a: Application) => a.id === appId),
+        serverStore.applications.find((a: Application) => a.id === appId),
     updateApplication: (appId: string, updates: Partial<Application>) => {
-        const index = globalStore.applications.findIndex((a: Application) => a.id === appId);
+        const index = serverStore.applications.findIndex((a: Application) => a.id === appId);
         if (index === -1) return null;
-        globalStore.applications[index] = { ...globalStore.applications[index], ...updates };
-        return globalStore.applications[index];
+        serverStore.applications[index] = { ...serverStore.applications[index], ...updates };
+        return serverStore.applications[index];
     },
 
     // Submissions (Model 3)
     addSubmission: (sub: Submission) => {
-        globalStore.submissions.push(sub);
+        serverStore.submissions.push(sub);
         return sub;
     },
     getSubmissionsByBounty: (bountyId: string) =>
-        globalStore.submissions.filter((s: Submission) => s.bountyId === bountyId),
+        serverStore.submissions.filter((s: Submission) => s.bountyId === bountyId),
     getSubmissionById: (subId: string) =>
-        globalStore.submissions.find((s: Submission) => s.id === subId),
+        serverStore.submissions.find((s: Submission) => s.id === subId),
     updateSubmission: (subId: string, updates: Partial<Submission>) => {
-        const index = globalStore.submissions.findIndex((s: Submission) => s.id === subId);
+        const index = serverStore.submissions.findIndex((s: Submission) => s.id === subId);
         if (index === -1) return null;
-        globalStore.submissions[index] = { ...globalStore.submissions[index], ...updates };
-        return globalStore.submissions[index];
+        serverStore.submissions[index] = { ...serverStore.submissions[index], ...updates };
+        return serverStore.submissions[index];
     },
 
     // Milestones (Model 4)
     addMilestoneParticipation: (mp: MilestoneParticipation) => {
-        globalStore.milestoneParticipations.push(mp);
+        serverStore.milestoneParticipations.push(mp);
         return mp;
     },
     getMilestoneParticipationsByBounty: (bountyId: string) =>
-        globalStore.milestoneParticipations.filter((m: MilestoneParticipation) => m.bountyId === bountyId),
+        serverStore.milestoneParticipations.filter((m: MilestoneParticipation) => m.bountyId === bountyId),
     updateMilestoneParticipation: (participationId: string, updates: Partial<MilestoneParticipation>) => {
-        const index = globalStore.milestoneParticipations.findIndex((m: MilestoneParticipation) => m.id === participationId);
+        const index = serverStore.milestoneParticipations.findIndex((m: MilestoneParticipation) => m.id === participationId);
         if (index === -1) return null;
-        globalStore.milestoneParticipations[index] = { ...globalStore.milestoneParticipations[index], ...updates };
-        return globalStore.milestoneParticipations[index];
+        serverStore.milestoneParticipations[index] = { ...serverStore.milestoneParticipations[index], ...updates };
+        return serverStore.milestoneParticipations[index];
     },
 
     // Competitions
     addCompetitionParticipation: (cp: CompetitionParticipation) => {
-        globalStore.competitionParticipations.push(cp);
+        serverStore.competitionParticipations.push(cp);
         return cp;
     },
     getCompetitionParticipationsByBounty: (bountyId: string) =>
-        globalStore.competitionParticipations.filter((c: CompetitionParticipation) => c.bountyId === bountyId),
+        serverStore.competitionParticipations.filter((c: CompetitionParticipation) => c.bountyId === bountyId),
 
     // Generic Bounty Update (for status changes)
     updateBounty: (bountyId: string, updates: Partial<Bounty>) => {
-        const index = globalStore.bounties.findIndex((b: Bounty) => b.id === bountyId);
+        const index = serverStore.bounties.findIndex((b: Bounty) => b.id === bountyId);
         if (index === -1) return null;
-        globalStore.bounties[index] = { ...globalStore.bounties[index], ...updates };
-        return globalStore.bounties[index];
+        serverStore.bounties[index] = { ...serverStore.bounties[index], ...updates };
+        return serverStore.bounties[index];
     }
 };
