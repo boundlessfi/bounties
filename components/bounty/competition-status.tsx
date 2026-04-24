@@ -1,5 +1,7 @@
 "use client";
 
+"use client";
+
 import { Users, Clock, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 interface CompetitionStatusProps {

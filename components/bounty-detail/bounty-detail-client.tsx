@@ -88,7 +88,15 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   const isCreator =
     (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
   const isFinalized = bounty.status === "COMPLETED";
-  const submissions = (bounty as { submissions?: unknown[] }).submissions ?? [];
+  const competitionSubmissions = (
+    (bounty as { submissions?: Array<{
+      id: string;
+      submittedBy: string;
+      submittedByUser?: { name?: string | null; image?: string | null } | null;
+      githubPullRequestUrl?: string | null;
+      status: string;
+    }> }).submissions ?? []
+  );
   const pastDeadline =
     bounty.bountyWindow?.endDate != null &&
     Date.now() > new Date(bounty.bountyWindow.endDate).getTime();
@@ -108,9 +116,7 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
         {isCompetition && isCreator && (pastDeadline || isFinalized) && (
           <CompetitionJudging
             bountyId={bountyId}
-            submissions={
-              submissions as Parameters<typeof CompetitionJudging>[0]["submissions"]
-            }
+            submissions={competitionSubmissions}
             isFinalized={isFinalized}
             totalReward={bounty.rewardAmount}
             currency={bounty.rewardCurrency}

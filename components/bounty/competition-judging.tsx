@@ -104,6 +104,10 @@ export function CompetitionJudging({
     );
   }
 
+  const pendingWinner = approveMutation.isPending
+    ? approveMutation.variables?.winner
+    : null;
+
   return (
     <div className="p-5 rounded-xl border border-gray-800 bg-background-card space-y-5">
       <div className="flex items-center justify-between">
@@ -120,7 +124,8 @@ export function CompetitionJudging({
         {submissions.map((sub, idx) => {
           const isApproved = approved.has(sub.id);
           const name = sub.submittedByUser?.name ?? sub.submittedBy;
-          const isPending = approveMutation.isPending;
+          const isThisPending =
+            approveMutation.isPending && pendingWinner === sub.submittedBy;
 
           return (
             <div
@@ -179,7 +184,7 @@ export function CompetitionJudging({
                         setPayouts((p) => ({ ...p, [sub.id]: e.target.value }))
                       }
                       className="h-8 text-sm"
-                      disabled={isPending}
+                      disabled={approveMutation.isPending}
                     />
                   </div>
                   <div className="space-y-1">
@@ -195,7 +200,7 @@ export function CompetitionJudging({
                         setPoints((p) => ({ ...p, [sub.id]: e.target.value }))
                       }
                       className="h-8 text-sm"
-                      disabled={isPending}
+                      disabled={approveMutation.isPending}
                     />
                   </div>
                 </div>
@@ -206,9 +211,9 @@ export function CompetitionJudging({
                   size="sm"
                   className="w-full"
                   onClick={() => void handleApprove(sub)}
-                  disabled={isPending || !walletAddress}
+                  disabled={approveMutation.isPending || !walletAddress}
                 >
-                  {isPending && approveMutation.variables?.winner === sub.submittedBy ? (
+                  {isThisPending ? (
                     <Loader2 className="mr-2 size-3.5 animate-spin" />
                   ) : (
                     <Trophy className="mr-2 size-3.5" />
