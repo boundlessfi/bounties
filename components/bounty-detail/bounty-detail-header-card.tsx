@@ -2,13 +2,27 @@ import { ExternalLink, GitBranch } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
+import { BookmarkButton } from "@/components/bounty/bookmark-button";
 
 export function HeaderCard({ bounty }: { bounty: BountyFieldsFragment }) {
   const orgName = bounty.organization?.name ?? "Unknown";
   const orgLogo = bounty.organization?.logo;
 
   return (
-    <div className="p-6 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm">
+    <div className="p-6 rounded-xl border border-gray-800 bg-background-card backdrop-blur-xl shadow-sm relative">
+      {/* Bookmark button - top right corner */}
+      <div
+        className="absolute right-4 top-4"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+          }
+        }}
+      >
+        <BookmarkButton bountyId={bounty.id} size="md" />
+      </div>
+
       {/* Badges */}
       <div className="flex items-center gap-2 flex-wrap mb-4">
         <StatusBadge status={bounty.status} type={bounty.type} />

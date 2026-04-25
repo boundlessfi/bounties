@@ -132,7 +132,7 @@ export function StellarLink({
     const prefix = tooltipPrefix || `View ${type}`;
     const networkText = network || getStellarNetwork();
     return `${prefix} on ${networkText} • ${explorer}`;
-  }, [type, network, explorer, isValid, tooltipPrefix, value]);
+  }, [type, network, explorer, isValid, tooltipPrefix]);
 
   if (!value || !isValid) {
     return (

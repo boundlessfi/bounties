@@ -1,0 +1,23 @@
+query Bookmarks {
+  bookmarks {
+    id
+    userId
+    bountyId
+    createdAt
+    bounty {
+      ...BountyFields
+    }
+  }
+}
+
+mutation ToggleBookmark($input: ToggleBookmarkInput!) {
+  toggleBookmark(input: $input) {
+    id
+    userId
+    bountyId
+    createdAt
+    bounty {
+      ...BountyFields
+    }
+  }
+}

@@ -16,6 +16,7 @@ import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { EscrowStatus } from "./escrow-status";
 import { useEscrowPool } from "@/hooks/use-escrow";
 import { getRoundPhase } from "@/hooks/use-lightning-rounds";
+import { BookmarkButton } from "./bookmark-button";
 
 interface BountyCardProps {
   bounty: BountyFieldsFragment;
@@ -116,7 +117,7 @@ export function BountyCard({
     <Card
       className={cn(
         "overflow-hidden w-full max-w-sm h-full rounded-lg cursor-pointer transition-all duration-300",
-        "flex flex-col",
+        "flex flex-col relative", // Add relative for bookmark button positioning
         "p-0",
         variant === "list" && "md:flex-row",
         // Subtle ring highlight for Lightning Round bounties
@@ -147,6 +148,19 @@ export function BountyCard({
           )}
         </div>
       )}
+
+      {/* Bookmark button - top-right corner */}
+      <div
+        className="absolute right-2 top-2 z-10"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+          }
+        }}
+      >
+        <BookmarkButton bountyId={bounty.id} size="sm" />
+      </div>
 
       <div className="flex-1 flex flex-col justify-between">
         <CardHeader className="pb-4 px-5 pt-5">

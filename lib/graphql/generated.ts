@@ -1,10 +1,32 @@
 import {
-  useMutation,
   useQuery,
-  UseMutationOptions,
+  useMutation,
   UseQueryOptions,
+  UseMutationOptions,
 } from "@tanstack/react-query";
 import { fetcher } from "./client";
+
+/**
+ * TypedDocumentString is a runtime class used by generated GraphQL documents.
+ * It extends String to hold the GraphQL query string and carries type metadata.
+ */
+export class TypedDocumentString<
+  TResult = unknown,
+  TVariables extends object = Record<string, unknown>,
+> extends String {
+  __apiType?: ((variables: TVariables) => TResult) | undefined;
+  private value: string;
+  __meta__?: Record<string, unknown> | undefined;
+  constructor(value: string, __meta__?: Record<string, unknown> | undefined) {
+    super(value);
+    this.value = value;
+    this.__meta__ = __meta__;
+  }
+  override toString(): string {
+    return this.value;
+  }
+}
+
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -661,6 +683,15 @@ export enum BlogPostStatus {
   Scheduled = "SCHEDULED",
 }
 
+export type Bookmark = {
+  __typename?: "Bookmark";
+  bounty: Bounty;
+  bountyId: Scalars["String"]["output"];
+  createdAt: Scalars["DateTime"]["output"];
+  id: Scalars["ID"]["output"];
+  userId: Scalars["String"]["output"];
+};
+
 export type Bounty = {
   __typename?: "Bounty";
   _count?: Maybe<BountyCount>;
@@ -1003,6 +1034,8 @@ export type Mutation = {
   reviewSubmission: BountySubmissionType;
   /** Submit to a bounty (any authenticated user) */
   submitToBounty: BountySubmissionType;
+  /** Toggle a bookmark on a bounty (authenticated users) */
+  toggleBookmark: Bookmark;
   /** Update a blog post (Admin only) */
   updateAdminBlogPost: AdminBlogPostDto;
   /** Update an existing bounty (organization members only) */
@@ -1139,6 +1172,10 @@ export type MutationSubmitToBountyArgs = {
   input: CreateSubmissionInput;
 };
 
+export type MutationToggleBookmarkArgs = {
+  input: ToggleBookmarkInput;
+};
+
 export type MutationUpdateAdminBlogPostArgs = {
   id: Scalars["ID"]["input"];
   input: UpdateBlogPostDto;
@@ -1203,6 +1240,8 @@ export type Query = {
   adminUserCrowdfundingCampaigns: AdminCrowdfundingResponseDto;
   /** Get all users with pagination and filtering */
   adminUsers: AdminUsersResponseDto;
+  /** Get all bookmarked bounties for the current user */
+  bookmarks: Array<Bookmark>;
   /** Get paginated list of bounties with filtering */
   bounties: PaginatedBounties;
   /** Get a single bounty by ID */
@@ -1305,7 +1344,6 @@ export type QueryAdminUsersArgs = {
   isActive?: InputMaybe<Scalars["Boolean"]["input"]>;
   limit?: InputMaybe<Scalars["Int"]["input"]>;
   page?: InputMaybe<Scalars["Int"]["input"]>;
-  role?: InputMaybe<Scalars["String"]["input"]>;
   search?: InputMaybe<Scalars["String"]["input"]>;
 };
 
@@ -1368,6 +1406,10 @@ export enum RewardDistributionStatus {
   Rejected = "REJECTED",
 }
 
+export type ToggleBookmarkInput = {
+  bountyId: Scalars["ID"]["input"];
+};
+
 export type UpdateBlogPostDto = {
   categories?: InputMaybe<Array<Scalars["String"]["input"]>>;
   content?: InputMaybe<Scalars["String"]["input"]>;
@@ -1407,6 +1449,114 @@ export type UserLeaderboardRankResponse = {
   __typename?: "UserLeaderboardRankResponse";
   contributor: LeaderboardContributor;
   rank: Scalars["Int"]["output"];
+};
+
+export type BookmarksQueryVariables = Exact<{ [key: string]: never }>;
+
+export type BookmarksQuery = {
+  __typename?: "Query";
+  bookmarks: Array<{
+    __typename?: "Bookmark";
+    id: string;
+    userId: string;
+    bountyId: string;
+    createdAt: string;
+    bounty: {
+      __typename?: "Bounty";
+      id: string;
+      title: string;
+      description: string;
+      status: string;
+      type: string;
+      rewardAmount: number;
+      rewardCurrency: string;
+      createdAt: string;
+      updatedAt: string;
+      organizationId: string;
+      projectId?: string | null;
+      bountyWindowId?: string | null;
+      githubIssueUrl: string;
+      githubIssueNumber?: number | null;
+      createdBy: string;
+      organization?: {
+        __typename?: "BountyOrganization";
+        id: string;
+        name: string;
+        logo?: string | null;
+        slug?: string | null;
+      } | null;
+      project?: {
+        __typename?: "BountyProject";
+        id: string;
+        title: string;
+        description?: string | null;
+      } | null;
+      bountyWindow?: {
+        __typename?: "BountyWindowType";
+        id: string;
+        name: string;
+        status: string;
+        startDate?: string | null;
+        endDate?: string | null;
+      } | null;
+      _count?: { __typename?: "BountyCount"; submissions: number } | null;
+    };
+  }>;
+};
+
+export type ToggleBookmarkMutationVariables = Exact<{
+  input: ToggleBookmarkInput;
+}>;
+
+export type ToggleBookmarkMutation = {
+  __typename?: "Mutation";
+  toggleBookmark: {
+    __typename?: "Bookmark";
+    id: string;
+    userId: string;
+    bountyId: string;
+    createdAt: string;
+    bounty: {
+      __typename?: "Bounty";
+      id: string;
+      title: string;
+      description: string;
+      status: string;
+      type: string;
+      rewardAmount: number;
+      rewardCurrency: string;
+      createdAt: string;
+      updatedAt: string;
+      organizationId: string;
+      projectId?: string | null;
+      bountyWindowId?: string | null;
+      githubIssueUrl: string;
+      githubIssueNumber?: number | null;
+      createdBy: string;
+      organization?: {
+        __typename?: "BountyOrganization";
+        id: string;
+        name: string;
+        logo?: string | null;
+        slug?: string | null;
+      } | null;
+      project?: {
+        __typename?: "BountyProject";
+        id: string;
+        title: string;
+        description?: string | null;
+      } | null;
+      bountyWindow?: {
+        __typename?: "BountyWindowType";
+        id: string;
+        name: string;
+        status: string;
+        startDate?: string | null;
+        endDate?: string | null;
+      } | null;
+      _count?: { __typename?: "BountyCount"; submissions: number } | null;
+    };
+  };
 };
 
 export type CreateBountyMutationVariables = Exact<{
@@ -2103,7 +2253,8 @@ export type MarkSubmissionPaidMutation = {
   };
 };
 
-export const BountyFieldsFragmentDoc = `
+export const BountyFieldsFragmentDoc = new TypedDocumentString(
+  `
     fragment BountyFields on Bounty {
   id
   title
@@ -2142,8 +2293,11 @@ export const BountyFieldsFragmentDoc = `
     submissions
   }
 }
-    `;
-export const SubmissionFieldsFragmentDoc = `
+    `,
+  { fragmentName: "BountyFields" },
+);
+export const SubmissionFieldsFragmentDoc = new TypedDocumentString(
+  `
     fragment SubmissionFields on BountySubmissionType {
   id
   bountyId
@@ -2168,8 +2322,11 @@ export const SubmissionFieldsFragmentDoc = `
   paidAt
   rewardTransactionHash
 }
-    `;
-export const SubmissionFieldsWithContactFragmentDoc = `
+    `,
+  { fragmentName: "SubmissionFields" },
+);
+export const SubmissionFieldsWithContactFragmentDoc = new TypedDocumentString(
+  `
     fragment SubmissionFieldsWithContact on BountySubmissionType {
   ...SubmissionFields
   submittedByUser {
@@ -2179,14 +2336,222 @@ export const SubmissionFieldsWithContactFragmentDoc = `
     email
   }
 }
-    ${SubmissionFieldsFragmentDoc}`;
-export const CreateBountyDocument = `
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`,
+  { fragmentName: "SubmissionFieldsWithContact" },
+);
+export const BookmarksDocument = new TypedDocumentString(`
+    query Bookmarks {
+  bookmarks {
+    id
+    userId
+    bountyId
+    createdAt
+    bounty {
+      ...BountyFields
+    }
+  }
+}
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
+
+export const useBookmarksQuery = <TData = BookmarksQuery, TError = unknown>(
+  variables?: BookmarksQueryVariables,
+  options?: Omit<UseQueryOptions<BookmarksQuery, TError, TData>, "queryKey"> & {
+    queryKey?: UseQueryOptions<BookmarksQuery, TError, TData>["queryKey"];
+  },
+) => {
+  return useQuery<BookmarksQuery, TError, TData>({
+    queryKey:
+      variables === undefined ? ["Bookmarks"] : ["Bookmarks", variables],
+    queryFn: fetcher<BookmarksQuery, BookmarksQueryVariables>(
+      BookmarksDocument,
+      variables,
+    ),
+    ...options,
+  });
+};
+
+useBookmarksQuery.getKey = (variables?: BookmarksQueryVariables) =>
+  variables === undefined ? ["Bookmarks"] : ["Bookmarks", variables];
+
+export const ToggleBookmarkDocument = new TypedDocumentString(`
+    mutation ToggleBookmark($input: ToggleBookmarkInput!) {
+  toggleBookmark(input: $input) {
+    id
+    userId
+    bountyId
+    createdAt
+    bounty {
+      ...BountyFields
+    }
+  }
+}
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
+
+export const useToggleBookmarkMutation = <TError = unknown, TContext = unknown>(
+  options?: UseMutationOptions<
+    ToggleBookmarkMutation,
+    TError,
+    ToggleBookmarkMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ToggleBookmarkMutation,
+    TError,
+    ToggleBookmarkMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ToggleBookmark"],
+    mutationFn: (variables?: ToggleBookmarkMutationVariables) =>
+      fetcher<ToggleBookmarkMutation, ToggleBookmarkMutationVariables>(
+        ToggleBookmarkDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+
+export const CreateBountyDocument = new TypedDocumentString(`
     mutation CreateBounty($input: CreateBountyInput!) {
   createBounty(input: $input) {
     ...BountyFields
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useCreateBountyMutation = <TError = unknown, TContext = unknown>(
   options?: UseMutationOptions<
@@ -2212,13 +2577,50 @@ export const useCreateBountyMutation = <TError = unknown, TContext = unknown>(
   });
 };
 
-export const UpdateBountyDocument = `
+export const UpdateBountyDocument = new TypedDocumentString(`
     mutation UpdateBounty($input: UpdateBountyInput!) {
   updateBounty(input: $input) {
     ...BountyFields
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useUpdateBountyMutation = <TError = unknown, TContext = unknown>(
   options?: UseMutationOptions<
@@ -2244,11 +2646,11 @@ export const useUpdateBountyMutation = <TError = unknown, TContext = unknown>(
   });
 };
 
-export const DeleteBountyDocument = `
+export const DeleteBountyDocument = new TypedDocumentString(`
     mutation DeleteBounty($id: ID!) {
   deleteBounty(id: $id)
 }
-    `;
+    `);
 
 export const useDeleteBountyMutation = <TError = unknown, TContext = unknown>(
   options?: UseMutationOptions<
@@ -2274,7 +2676,7 @@ export const useDeleteBountyMutation = <TError = unknown, TContext = unknown>(
   });
 };
 
-export const BountiesDocument = `
+export const BountiesDocument = new TypedDocumentString(`
     query Bounties($query: BountyQueryInput) {
   bounties(query: $query) {
     bounties {
@@ -2285,7 +2687,44 @@ export const BountiesDocument = `
     offset
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useBountiesQuery = <TData = BountiesQuery, TError = unknown>(
   variables?: BountiesQueryVariables,
@@ -2306,7 +2745,7 @@ export const useBountiesQuery = <TData = BountiesQuery, TError = unknown>(
 useBountiesQuery.getKey = (variables?: BountiesQueryVariables) =>
   variables === undefined ? ["Bounties"] : ["Bounties", variables];
 
-export const BountyDocument = `
+export const BountyDocument = new TypedDocumentString(`
     query Bounty($id: ID!) {
   bounty(id: $id) {
     ...BountyFields
@@ -2315,8 +2754,68 @@ export const BountyDocument = `
     }
   }
 }
-    ${BountyFieldsFragmentDoc}
-${SubmissionFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}
+fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
 
 export const useBountyQuery = <TData = BountyQuery, TError = unknown>(
   variables: BountyQueryVariables,
@@ -2339,13 +2838,50 @@ useBountyQuery.getKey = (variables: BountyQueryVariables) => [
   variables,
 ];
 
-export const ActiveBountiesDocument = `
+export const ActiveBountiesDocument = new TypedDocumentString(`
     query ActiveBounties {
   activeBounties {
     ...BountyFields
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useActiveBountiesQuery = <
   TData = ActiveBountiesQuery,
@@ -2375,13 +2911,50 @@ export const useActiveBountiesQuery = <
 useActiveBountiesQuery.getKey = (variables?: ActiveBountiesQueryVariables) =>
   variables === undefined ? ["ActiveBounties"] : ["ActiveBounties", variables];
 
-export const OrganizationBountiesDocument = `
+export const OrganizationBountiesDocument = new TypedDocumentString(`
     query OrganizationBounties($organizationId: ID!) {
   organizationBounties(organizationId: $organizationId) {
     ...BountyFields
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useOrganizationBountiesQuery = <
   TData = OrganizationBountiesQuery,
@@ -2413,13 +2986,50 @@ useOrganizationBountiesQuery.getKey = (
   variables: OrganizationBountiesQueryVariables,
 ) => ["OrganizationBounties", variables];
 
-export const ProjectBountiesDocument = `
+export const ProjectBountiesDocument = new TypedDocumentString(`
     query ProjectBounties($projectId: ID!) {
   projectBounties(projectId: $projectId) {
     ...BountyFields
   }
 }
-    ${BountyFieldsFragmentDoc}`;
+    fragment BountyFields on Bounty {
+  id
+  title
+  description
+  status
+  type
+  rewardAmount
+  rewardCurrency
+  createdAt
+  updatedAt
+  organizationId
+  projectId
+  bountyWindowId
+  githubIssueUrl
+  githubIssueNumber
+  createdBy
+  organization {
+    id
+    name
+    logo
+    slug
+  }
+  project {
+    id
+    title
+    description
+  }
+  bountyWindow {
+    id
+    name
+    status
+    startDate
+    endDate
+  }
+  _count {
+    submissions
+  }
+}`);
 
 export const useProjectBountiesQuery = <
   TData = ProjectBountiesQuery,
@@ -2448,7 +3058,7 @@ useProjectBountiesQuery.getKey = (variables: ProjectBountiesQueryVariables) => [
   variables,
 ];
 
-export const LeaderboardDocument = `
+export const LeaderboardDocument = new TypedDocumentString(`
     query Leaderboard($filters: LeaderboardFilters!, $pagination: LeaderboardPagination!) {
   leaderboard(filters: $filters, pagination: $pagination) {
     entries {
@@ -2483,7 +3093,7 @@ export const LeaderboardDocument = `
     lastUpdatedAt
   }
 }
-    `;
+    `);
 
 export const useLeaderboardQuery = <TData = LeaderboardQuery, TError = unknown>(
   variables: LeaderboardQueryVariables,
@@ -2509,7 +3119,7 @@ useLeaderboardQuery.getKey = (variables: LeaderboardQueryVariables) => [
   variables,
 ];
 
-export const UserLeaderboardRankDocument = `
+export const UserLeaderboardRankDocument = new TypedDocumentString(`
     query UserLeaderboardRank($userId: ID!) {
   userLeaderboardRank(userId: $userId) {
     rank
@@ -2537,7 +3147,7 @@ export const UserLeaderboardRankDocument = `
     }
   }
 }
-    `;
+    `);
 
 export const useUserLeaderboardRankQuery = <
   TData = UserLeaderboardRankQuery,
@@ -2569,7 +3179,7 @@ useUserLeaderboardRankQuery.getKey = (
   variables: UserLeaderboardRankQueryVariables,
 ) => ["UserLeaderboardRank", variables];
 
-export const TopContributorsDocument = `
+export const TopContributorsDocument = new TypedDocumentString(`
     query TopContributors($count: Int = 5) {
   topContributors(count: $count) {
     id
@@ -2594,7 +3204,7 @@ export const TopContributorsDocument = `
     lastActiveAt
   }
 }
-    `;
+    `);
 
 export const useTopContributorsQuery = <
   TData = TopContributorsQuery,
@@ -2626,13 +3236,36 @@ useTopContributorsQuery.getKey = (variables?: TopContributorsQueryVariables) =>
     ? ["TopContributors"]
     : ["TopContributors", variables];
 
-export const SubmitToBountyDocument = `
+export const SubmitToBountyDocument = new TypedDocumentString(`
     mutation SubmitToBounty($input: CreateSubmissionInput!) {
   submitToBounty(input: $input) {
     ...SubmissionFields
   }
 }
-    ${SubmissionFieldsFragmentDoc}`;
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
 
 export const useSubmitToBountyMutation = <TError = unknown, TContext = unknown>(
   options?: UseMutationOptions<
@@ -2658,13 +3291,36 @@ export const useSubmitToBountyMutation = <TError = unknown, TContext = unknown>(
   });
 };
 
-export const ReviewSubmissionDocument = `
+export const ReviewSubmissionDocument = new TypedDocumentString(`
     mutation ReviewSubmission($input: ReviewSubmissionInput!) {
   reviewSubmission(input: $input) {
     ...SubmissionFields
   }
 }
-    ${SubmissionFieldsFragmentDoc}`;
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
 
 export const useReviewSubmissionMutation = <
   TError = unknown,
@@ -2693,7 +3349,7 @@ export const useReviewSubmissionMutation = <
   });
 };
 
-export const MarkSubmissionPaidDocument = `
+export const MarkSubmissionPaidDocument = new TypedDocumentString(`
     mutation MarkSubmissionPaid($submissionId: ID!, $transactionHash: String!) {
   markSubmissionPaid(
     submissionId: $submissionId
@@ -2702,7 +3358,30 @@ export const MarkSubmissionPaidDocument = `
     ...SubmissionFields
   }
 }
-    ${SubmissionFieldsFragmentDoc}`;
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
 
 export const useMarkSubmissionPaidMutation = <
   TError = unknown,

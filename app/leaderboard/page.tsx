@@ -11,6 +11,7 @@ import {
 import { LeaderboardTimeframe } from "@/lib/graphql/generated";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 import {
   TIMEFRAMES,
   TIERS,
