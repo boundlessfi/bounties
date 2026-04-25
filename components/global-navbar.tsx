@@ -122,6 +122,14 @@ export function GlobalNavbar() {
             >
               Review
             </Link>
+            {isConnected && (
+              <Link
+                href="/bounty/create"
+                className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+              >
+                Create
+              </Link>
+            )}
           </div>
         </div>
 
