@@ -23,7 +23,9 @@ export type NotificationType =
   | "bounty-updated"
   | "new-application"
   | "submission-reviewed"
-  | "saved-bounty-updated";
+  | "saved-bounty-updated"
+  | "dispute-raised"
+  | "payment-received";
 
 export interface NotificationItem {
   id: string;
@@ -31,6 +33,7 @@ export interface NotificationItem {
   type: NotificationType;
   timestamp: string;
   read: boolean;
+  href?: string;
 }
 
 const MAX_NOTIFICATIONS = 25;
@@ -168,6 +171,7 @@ export function useNotifications() {
             type: "bounty-updated",
             timestamp: normaliseTimestamp(bounty.updatedAt),
             read: false,
+            href: `/bounty/${bounty.id}`,
           },
           bountyKeys.allListKeys,
         );
@@ -200,6 +204,7 @@ export function useNotifications() {
                   type: "saved-bounty-updated",
                   timestamp: normaliseTimestamp(bounty.updatedAt),
                   read: false,
+                  href: `/bounty/${bounty.id}`,
                 },
                 [],
               );
@@ -242,6 +247,7 @@ export function useNotifications() {
             type: "new-application",
             timestamp: normaliseTimestamp(application.createdAt),
             read: false,
+            href: `/bounty/${application.bountyId}`,
           },
           [submissionKeys.all],
         );
@@ -273,6 +279,7 @@ export function useNotifications() {
             type: "submission-reviewed",
             timestamp: normaliseTimestamp(submission.reviewedAt),
             read: false,
+            href: `/bounty/${submission.bountyId}`,
           },
           [submissionKeys.all],
         );
@@ -308,11 +315,19 @@ export function useNotifications() {
     );
   }, []);
 
+  const clearAll = useCallback(() => {
+    setNotifications([]);
+    if (userId) {
+      saveToStorage(userId, []);
+    }
+  }, [userId]);
+
   return {
     notifications,
     isLoading,
     unreadCount,
     markAsRead,
     markAllAsRead,
+    clearAll,
   };
 }
