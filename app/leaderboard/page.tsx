@@ -18,6 +18,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { authClient } from "@/lib/auth-client";
+import { ROUTES } from "@/lib/routes";
 
 export default function LeaderboardPage() {
   const router = useRouter();
@@ -45,9 +47,13 @@ export default function LeaderboardPage() {
     tags: initialTags || [],
   });
 
-  // Fake current user ID for demo purposes
-  // In a real app this would come from auth context
-  const currentUserId = "user-1";
+  // Derive currentUserId from the live auth session.
+  // isPending is true on the very first render while the session cookie is
+  // being validated — we pass it to children so they can hold their
+  // skeleton state instead of flashing the unauthenticated UI.
+  const { data: session, isPending: isSessionPending } =
+    authClient.useSession();
+  const currentUserId: string | undefined = session?.user?.id ?? undefined;
 
   // Debounce filters to prevent rapid API calls/URL updates
   const [debouncedFilters, setDebouncedFilters] =
@@ -82,7 +88,9 @@ export default function LeaderboardPage() {
       params.set("tags", debouncedFilters.tags.join(","));
     }
 
-    router.replace(`/leaderboard?${params.toString()}`, { scroll: false });
+    router.replace(`${ROUTES.LEADERBOARD}?${params.toString()}`, {
+      scroll: false,
+    });
   }, [debouncedFilters, router]);
 
   // Flatten infinite query data
@@ -133,9 +141,11 @@ export default function LeaderboardPage() {
                 hasNextPage={hasNextPage || false}
                 isFetchingNextPage={isFetchingNextPage}
                 onLoadMore={() => fetchNextPage()}
-                currentUserId={currentUserId}
+                // Pass undefined while session is resolving to suppress the
+                // highlight flash for authenticated users.
+                currentUserId={isSessionPending ? undefined : currentUserId}
                 onRowClick={(entry) =>
-                  router.push(`/user/${entry.contributor.userId}`)
+                  router.push(ROUTES.PROFILE(entry.contributor.userId))
                 }
               />
             )}
@@ -143,7 +153,10 @@ export default function LeaderboardPage() {
 
           {/* Sidebar - User Rank */}
           <div className="lg:col-span-1">
-            <UserRankSidebar userId={currentUserId} />
+            <UserRankSidebar
+              userId={isSessionPending ? undefined : currentUserId}
+              isSessionPending={isSessionPending}
+            />
           </div>
         </div>
       </div>

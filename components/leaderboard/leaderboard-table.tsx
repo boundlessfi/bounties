@@ -1,12 +1,12 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -18,160 +18,262 @@ import { TierBadge } from "@/components/reputation/tier-badge";
 import { StreakBadge } from "@/components/reputation/streak-badge";
 
 interface LeaderboardTableProps {
-    entries: LeaderboardEntry[];
-    isLoading: boolean;
-    hasNextPage: boolean;
-    isFetchingNextPage: boolean;
-    onLoadMore: () => void;
-    currentUserId?: string;
-    onRowClick?: (entry: LeaderboardEntry) => void;
+  entries: LeaderboardEntry[];
+  isLoading: boolean;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  currentUserId?: string;
+  onRowClick?: (entry: LeaderboardEntry) => void;
 }
 
 export function LeaderboardTable({
-    entries,
-    isLoading,
-    hasNextPage,
-    isFetchingNextPage,
-    onLoadMore,
-    currentUserId,
-    onRowClick,
+  entries,
+  isLoading,
+  hasNextPage,
+  isFetchingNextPage,
+  onLoadMore,
+  currentUserId,
+  onRowClick,
 }: LeaderboardTableProps) {
-    const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const currentUserRowRef = useRef<HTMLTableRowElement>(null);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-                    onLoadMore();
-                }
-            },
-            { threshold: 0.1 }
-        );
+  // Tracks whether we've already scrolled once — a plain ref so resetting it
+  // doesn't trigger a re-render.
+  const hasScrolledRef = useRef(false);
 
-        if (loadMoreRef.current) {
-            observer.observe(loadMoreRef.current);
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          onLoadMore();
         }
+      },
+      { threshold: 0.1 },
+    );
 
-        return () => {
-            observer.disconnect();
-        };
-    }, [hasNextPage, onLoadMore, isFetchingNextPage]);
-
-    if (isLoading && entries.length === 0) {
-        return (
-            <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
-                ))}
-            </div>
-        );
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent, entry: LeaderboardEntry) => {
-        if (onRowClick && (e.key === "Enter" || e.key === " ")) {
-            e.preventDefault();
-            onRowClick(entry);
-        }
+    return () => {
+      observer.disconnect();
     };
+  }, [hasNextPage, onLoadMore, isFetchingNextPage]);
 
-    return (
-        <div className="rounded-md border border-border/50 overflow-hidden bg-background-card">
-            <Table>
-                <TableHeader>
-                    <TableRow className="hover:bg-transparent border-b border-border">
-                        <TableHead className="w-[80px] text-center font-bold text-foreground">RANK</TableHead>
-                        <TableHead className="font-bold text-foreground">CONTRIBUTOR</TableHead>
-                        <TableHead className="hidden md:table-cell font-bold text-foreground">TIER</TableHead>
-                        <TableHead className="text-right font-bold text-foreground">SCORE</TableHead>
-                        <TableHead className="text-right hidden sm:table-cell font-bold text-foreground">COMPLETED</TableHead>
-                        <TableHead className="text-right hidden lg:table-cell font-bold text-foreground">EARNINGS</TableHead>
-                        <TableHead className="text-right font-bold text-foreground">STREAK</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {entries.map((entry) => {
-                        const isCurrentUser = currentUserId === entry.contributor.userId;
+  // Scroll to the current user's row — but only:
+  //   1. Once per mount (hasScrolledRef guard).
+  //   2. When the session is confirmed (currentUserId is defined).
+  //   3. When their rank is > 10 (they're already visible in the top fold).
+  useEffect(() => {
+    if (
+      hasScrolledRef.current ||
+      !currentUserId ||
+      !currentUserRowRef.current
+    ) {
+      return;
+    }
 
-                        return (
-                            <TableRow
-                                key={entry.contributor.id}
-                                className={cn(
-                                    "border-b border-border/60 hover:bg-muted/20",
-                                    isCurrentUser && "bg-secondary/40",
-                                    onRowClick && "cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:z-10 relative"
-                                )}
-                                tabIndex={onRowClick ? 0 : undefined}
-                                role={onRowClick ? "row" : undefined}
-                                onClick={onRowClick ? () => onRowClick(entry) : undefined}
-                                onKeyDown={onRowClick ? (e) => handleKeyDown(e, entry) : undefined}
-                            >
-                                <TableCell className="text-center font-medium">
-                                    <div className="flex justify-center">
-                                        <RankBadge rank={entry.rank} />
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex items-center gap-3">
-                                        <Avatar className="h-9 w-9 border border-border/60">
-                                            <AvatarImage src={entry.contributor.avatarUrl || undefined} />
-                                            <AvatarFallback className="bg-secondary text-secondary-foreground">{entry.contributor.displayName[0]}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col">
-                                            <span className={cn("font-semibold text-foreground", isCurrentUser && "text-primary")}>
-                                                {entry.contributor.displayName}
-                                                {isCurrentUser && " (You)"}
-                                            </span>
-                                            <div className="flex gap-1 md:hidden">
-                                                <span className="text-xs text-muted-foreground">{entry.contributor.tier}</span>
-                                            </div>
-                                            <div className="flex gap-1 mt-1 md:hidden">
-                                                {entry.contributor.topTags.slice(0, 3).map(tag => (
-                                                    <span key={tag} className="text-[10px] bg-muted px-1 rounded">{tag}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Desktop tags */}
-                                    <div className="hidden md:flex gap-1 mt-2">
-                                        {entry.contributor.topTags.slice(0, 3).map(tag => (
-                                            <Badge key={tag} variant="secondary" className="text-[10px] px-1 h-5 font-normal">
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="hidden md:table-cell text-foreground">
-                                    <TierBadge tier={entry.contributor.tier} />
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-foreground font-medium">
-                                    {entry.contributor.totalScore.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right hidden sm:table-cell text-foreground">
-                                    {entry.contributor.stats.totalCompleted}
-                                </TableCell>
-                                <TableCell className="text-right hidden lg:table-cell font-mono text-foreground">
-                                    ${entry.contributor.stats.totalEarnings.toLocaleString()}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end">
-                                        <StreakBadge streak={entry.contributor.stats.currentStreak} />
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-                    {isFetchingNextPage && (
-                        <TableRow>
-                            <TableCell colSpan={7} className="text-center py-4">
-                                <div className="flex items-center justify-center text-muted-foreground text-sm">
-                                    Loading more...
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-            {hasNextPage && <div ref={loadMoreRef} className="h-4" />}
-        </div>
+    const userEntry = entries.find(
+      (e) => e.contributor.userId === currentUserId,
     );
+    const userRank = userEntry?.rank ?? 0;
+
+    if (userRank > 10) {
+      currentUserRowRef.current.scrollIntoView({
+        behavior: "smooth",
+        // "nearest" scrolls the minimum distance needed — avoids
+        // aggressively snapping the hero header offscreen.
+        block: "nearest",
+      });
+    }
+
+    // Mark as done regardless of whether we scrolled, so future
+    // re-renders (e.g. next-page loads) don't re-trigger.
+    hasScrolledRef.current = true;
+  }, [currentUserId, entries]);
+
+  if (isLoading && entries.length === 0) {
+    return (
+      <div className="space-y-4">
+        {[...Array(5)].map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent, entry: LeaderboardEntry) => {
+    if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      onRowClick(entry);
+    }
+  };
+
+  return (
+    <div className="rounded-md border border-border/50 overflow-hidden bg-background-card">
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent border-b border-border">
+            <TableHead className="w-[80px] text-center font-bold text-foreground">
+              RANK
+            </TableHead>
+            <TableHead className="font-bold text-foreground">
+              CONTRIBUTOR
+            </TableHead>
+            <TableHead className="hidden md:table-cell font-bold text-foreground">
+              TIER
+            </TableHead>
+            <TableHead className="text-right font-bold text-foreground">
+              SCORE
+            </TableHead>
+            <TableHead className="text-right hidden sm:table-cell font-bold text-foreground">
+              COMPLETED
+            </TableHead>
+            <TableHead className="text-right hidden lg:table-cell font-bold text-foreground">
+              EARNINGS
+            </TableHead>
+            <TableHead className="text-right font-bold text-foreground">
+              STREAK
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry) => {
+            const isCurrentUser =
+              currentUserId !== undefined &&
+              currentUserId === entry.contributor.userId;
+
+            return (
+              <TableRow
+                key={entry.contributor.id}
+                // Attach the scroll ref to the matched row only
+                ref={isCurrentUser ? currentUserRowRef : undefined}
+                // aria-current signals to assistive technology that
+                // this is "the current item" in a list context.
+                aria-current={isCurrentUser ? true : undefined}
+                className={cn(
+                  "border-b border-border/60 hover:bg-muted/20 transition-colors",
+                  // Subtle background tint (non-text UI indicator)
+                  // Left border is the primary AA-passing visual cue
+                  isCurrentUser &&
+                    "bg-primary/[0.06] border-l-2 border-l-primary",
+                  onRowClick &&
+                    "cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:z-10 relative",
+                )}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? "row" : undefined}
+                onClick={onRowClick ? () => onRowClick(entry) : undefined}
+                onKeyDown={
+                  onRowClick ? (e) => handleKeyDown(e, entry) : undefined
+                }
+              >
+                <TableCell className="text-center font-medium">
+                  <div className="flex justify-center">
+                    <RankBadge rank={entry.rank} />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 border border-border/60">
+                      <AvatarImage
+                        src={entry.contributor.avatarUrl || undefined}
+                      />
+                      <AvatarFallback className="bg-secondary text-secondary-foreground">
+                        {entry.contributor.displayName[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span
+                        className={cn(
+                          "font-semibold text-foreground flex items-center gap-1.5 flex-wrap",
+                          isCurrentUser && "text-primary",
+                        )}
+                      >
+                        {entry.contributor.displayName}
+                        {isCurrentUser && (
+                          <Badge
+                            variant="default"
+                            // aria-label gives screen readers the full context
+                            // without relying on surrounding table structure.
+                            aria-label="This is your row"
+                            className="h-4 px-1.5 text-[10px] font-semibold tracking-wide"
+                          >
+                            You
+                            {/* Additional descriptive text visible only to screen readers */}
+                            <span className="sr-only">
+                              {" "}
+                              — your current rank
+                            </span>
+                          </Badge>
+                        )}
+                      </span>
+                      <div className="flex gap-1 md:hidden">
+                        <span className="text-xs text-muted-foreground">
+                          {entry.contributor.tier}
+                        </span>
+                      </div>
+                      <div className="flex gap-1 mt-1 md:hidden">
+                        {entry.contributor.topTags.slice(0, 3).map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[10px] bg-muted px-1 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop tags */}
+                  <div className="hidden md:flex gap-1 mt-2">
+                    {entry.contributor.topTags.slice(0, 3).map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="secondary"
+                        className="text-[10px] px-1 h-5 font-normal"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell text-foreground">
+                  <TierBadge tier={entry.contributor.tier} />
+                </TableCell>
+                <TableCell className="text-right font-mono text-foreground font-medium">
+                  {entry.contributor.totalScore.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right hidden sm:table-cell text-foreground">
+                  {entry.contributor.stats.totalCompleted}
+                </TableCell>
+                <TableCell className="text-right hidden lg:table-cell font-mono text-foreground">
+                  ${entry.contributor.stats.totalEarnings.toLocaleString()}
+                </TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end">
+                    <StreakBadge
+                      streak={entry.contributor.stats.currentStreak}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+          {isFetchingNextPage && (
+            <TableRow>
+              <TableCell colSpan={7} className="text-center py-4">
+                <div className="flex items-center justify-center text-muted-foreground text-sm">
+                  Loading more...
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      {hasNextPage && <div ref={loadMoreRef} className="h-4" />}
+    </div>
+  );
 }
