@@ -9,12 +9,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock } from "lucide-react";
+import { Clock, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { EscrowStatus } from "./escrow-status";
 import { useEscrowPool } from "@/hooks/use-escrow";
+import { getRoundPhase } from "@/hooks/use-lightning-rounds";
 
 interface BountyCardProps {
   bounty: BountyFieldsFragment;
@@ -99,6 +100,18 @@ export function BountyCard({
   // Fetch escrow pool data
   const { data: pool } = useEscrowPool(bounty.id);
 
+  // ── Lightning Round detection ──────────────────────────────────────────────
+  // A bounty belongs to an active Lightning Round when it has a bountyWindow
+  // whose phase is currently "active". We derive this client-side from the
+  // dates already present in the BountyFieldsFragment — no extra fetch needed.
+  const isLightningRound =
+    !!bounty.bountyWindow &&
+    getRoundPhase({
+      startDate: bounty.bountyWindow.startDate ?? null,
+      endDate: bounty.bountyWindow.endDate ?? null,
+      status: bounty.bountyWindow.status,
+    }) === "active";
+
   return (
     <Card
       className={cn(
@@ -106,6 +119,9 @@ export function BountyCard({
         "flex flex-col",
         "p-0",
         variant === "list" && "md:flex-row",
+        // Subtle ring highlight for Lightning Round bounties
+        isLightningRound &&
+          "ring-1 ring-yellow-500/40 shadow-[0_0_12px_0_rgba(234,179,8,0.12)]",
       )}
       role="button"
       tabIndex={0}
@@ -117,6 +133,21 @@ export function BountyCard({
         }
       }}
     >
+      {/* Lightning Round top bar */}
+      {isLightningRound && (
+        <div className="flex items-center gap-1.5 bg-yellow-500/15 border-b border-yellow-500/20 px-4 py-1.5">
+          <Zap className="size-3 text-yellow-400 shrink-0" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-yellow-400">
+            Lightning Round
+          </span>
+          {bounty.bountyWindow?.name && (
+            <span className="text-[10px] text-yellow-500/60 truncate">
+              · {bounty.bountyWindow.name}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col justify-between">
         <CardHeader className="pb-4 px-5 pt-5">
           <div className="flex items-center justify-between gap-3 mb-4">

@@ -15,7 +15,7 @@
     "check-schema": "node ./scripts/sync-schema.js --check"
   },
   "dependencies": {
-    "@creit-tech/stellar-wallets-kit": "npm:@jsr/creit-tech__stellar-wallets-kit@^2.0.1",
+    "@creit-tech/stellar-wallets-kit": "npm:@creit.tech/stellar-wallets-kit@^2.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
