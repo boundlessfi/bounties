@@ -8,7 +8,7 @@ import {
   Search,
   ArrowUpDown,
   Filter,
-  Plus,
+  RefreshCw,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
@@ -59,10 +59,10 @@ export function AssetsList({ assets, walletAddress }: AssetsListProps) {
       await queryClient.invalidateQueries({
         queryKey: walletKeys.assets(walletAddress),
       });
-      toast.success(`${supported.symbol} added to your tracked assets`);
+      toast.success(`${supported.symbol} balance refreshed`);
     } catch (err) {
-      console.error("[stellar] handleAddTrustline failed:", err);
-      toast.error(`Failed to add ${supported.symbol}`);
+      console.error("[stellar] refreshAssetBalance failed:", err);
+      toast.error(`Failed to refresh ${supported.symbol}`);
     } finally {
       setAddingAsset(null);
     }
@@ -142,8 +142,8 @@ export function AssetsList({ assets, walletAddress }: AssetsListProps) {
             className="flex-1 sm:flex-none"
             onClick={() => setShowManage(!showManage)}
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Manage
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
           </Button>
         </div>
       </div>
@@ -239,10 +239,10 @@ export function AssetsList({ assets, walletAddress }: AssetsListProps) {
       {showManage && (
         <div className="rounded-xl border border-border bg-card p-5 space-y-4">
           <div>
-            <h4 className="font-semibold text-sm">Trustline Management</h4>
+            <h4 className="font-semibold text-sm">Supported Assets</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Supported assets from config. Active assets are already tracked in
-              your wallet.
+              Assets supported by this platform. Use Refresh to update the
+              balance of an asset already held in your wallet.
             </p>
           </div>
           <Separator />
@@ -288,9 +288,9 @@ export function AssetsList({ assets, walletAddress }: AssetsListProps) {
                         {isAdding ? (
                           <Loader2 className="h-3 w-3 animate-spin mr-1" />
                         ) : (
-                          <Plus className="h-3 w-3 mr-1" />
+                          <RefreshCw className="h-3 w-3 mr-1" />
                         )}
-                        Add
+                        Refresh
                       </Button>
                     )}
                   </div>

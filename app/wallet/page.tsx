@@ -18,7 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WalletInfo } from "@/types/wallet";
+import { mockWalletWithAssets } from "@/lib/mock-wallet";
 import { useSearchParams } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 
 function WalletConnectPrompt({ onConnect }: { onConnect: () => void }) {
   return (
@@ -76,6 +78,15 @@ function WalletPageSkeleton() {
   );
 }
 
+function DataErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+      <AlertCircle className="h-4 w-4 shrink-0" />
+      {message}
+    </div>
+  );
+}
+
 function WalletPageContent() {
   const searchParams = useSearchParams();
   // Preview mode is only available in development to avoid bypassing auth in production.
@@ -92,12 +103,21 @@ function WalletPageContent() {
 
   const walletAddress = providerInfo?.address ?? null;
 
-  const { data: assets, isLoading: assetsLoading } =
-    useWalletAssets(walletAddress);
-  const { data: activity, isLoading: activityLoading } =
-    useWalletTransactions(walletAddress);
-  const { data: escrow, isLoading: escrowLoading } =
-    useEscrowSummary(walletAddress);
+  const {
+    data: assets,
+    isLoading: assetsLoading,
+    isError: assetsError,
+  } = useWalletAssets(walletAddress);
+  const {
+    data: activity,
+    isLoading: activityLoading,
+    isError: activityError,
+  } = useWalletTransactions(walletAddress);
+  const {
+    data: escrow,
+    isLoading: escrowLoading,
+    isError: escrowError,
+  } = useEscrowSummary(walletAddress);
 
   if (!isPreview && walletLoading) return <WalletPageSkeleton />;
 
@@ -105,14 +125,22 @@ function WalletPageContent() {
     return <WalletConnectPrompt onConnect={connect} />;
   }
 
-  const liveAssets = assets ?? [];
-  const totalBalanceUsd = liveAssets.reduce((sum, a) => sum + a.usdValue, 0);
+  // In preview mode without a connected wallet, fall back to mock data so the
+  // page doesn't crash on the providerInfo spread below.
+  const baseInfo = providerInfo ?? mockWalletWithAssets;
+
+  const liveAssets = isPreview ? mockWalletWithAssets.assets : (assets ?? []);
+  const totalBalanceUsd = isPreview
+    ? mockWalletWithAssets.balance
+    : liveAssets.reduce((sum, a) => sum + a.usdValue, 0);
 
   const walletInfo: WalletInfo = {
-    ...providerInfo!,
+    ...baseInfo,
     balance: totalBalanceUsd,
     assets: liveAssets,
-    recentActivity: activity ?? [],
+    recentActivity: isPreview
+      ? mockWalletWithAssets.recentActivity
+      : (activity ?? []),
   };
 
   return (
@@ -129,8 +157,12 @@ function WalletPageContent() {
           <BalanceCard
             walletInfo={walletInfo}
             pendingEarnings={escrow?.totalLocked ?? 0}
-            isLoading={assetsLoading}
+            isLoading={!isPreview && assetsLoading}
           />
+
+          {!isPreview && assetsError && (
+            <DataErrorBanner message="Could not load balances. Check your connection and refresh." />
+          )}
 
           <Tabs defaultValue="assets" className="w-full">
             <TabsList className="mb-4">
@@ -141,7 +173,7 @@ function WalletPageContent() {
             </TabsList>
 
             <TabsContent value="assets" className="space-y-4">
-              {assetsLoading ? (
+              {!isPreview && assetsLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 3 }).map((_, i) => (
                     <Skeleton key={i} className="h-14 rounded-xl" />
@@ -150,20 +182,25 @@ function WalletPageContent() {
               ) : (
                 <AssetsList
                   assets={walletInfo.assets}
-                  walletAddress={walletAddress}
+                  walletAddress={isPreview ? null : walletAddress}
                 />
               )}
             </TabsContent>
 
             <TabsContent value="activity" className="space-y-4">
-              {activityLoading ? (
+              {!isPreview && activityLoading ? (
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Skeleton key={i} className="h-12 rounded-xl" />
                   ))}
                 </div>
               ) : (
-                <TransactionHistory activity={walletInfo.recentActivity} />
+                <>
+                  {!isPreview && activityError && (
+                    <DataErrorBanner message="Could not load transaction history. Try refreshing the page." />
+                  )}
+                  <TransactionHistory activity={walletInfo.recentActivity} />
+                </>
               )}
             </TabsContent>
 
@@ -180,7 +217,11 @@ function WalletPageContent() {
         <div className="space-y-8">
           <WalletOverview walletInfo={walletInfo} />
 
-          <EscrowSummary data={escrow} isLoading={escrowLoading} />
+          <EscrowSummary
+            data={escrow}
+            isLoading={!isPreview && escrowLoading}
+            isError={!isPreview && escrowError}
+          />
 
           <div className="rounded-xl border border-border bg-card p-6">
             <h3 className="font-semibold mb-4">Quick Links</h3>

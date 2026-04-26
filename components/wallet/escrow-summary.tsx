@@ -1,12 +1,13 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Lock, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EscrowSummaryData } from "@/hooks/use-wallet-data";
 
 interface EscrowSummaryProps {
   data: EscrowSummaryData | undefined;
   isLoading: boolean;
+  isError?: boolean;
 }
 
 const formatCurrency = (amount: number) =>
@@ -14,7 +15,11 @@ const formatCurrency = (amount: number) =>
     amount,
   );
 
-export function EscrowSummary({ data, isLoading }: EscrowSummaryProps) {
+export function EscrowSummary({
+  data,
+  isLoading,
+  isError,
+}: EscrowSummaryProps) {
   const totalLocked = data?.totalLocked ?? 0;
 
   return (
@@ -30,44 +35,21 @@ export function EscrowSummary({ data, isLoading }: EscrowSummaryProps) {
         <div className="space-y-2">
           <Skeleton className="h-7 w-28" />
           <Skeleton className="h-4 w-40" />
-          <div className="pt-2 space-y-2 border-t border-border/50">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
+        </div>
+      ) : isError ? (
+        <div className="flex items-center gap-2 text-sm text-destructive">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>Could not load escrow data.</span>
         </div>
       ) : (
         <>
           <div>
             <p className="text-2xl font-bold">{formatCurrency(totalLocked)}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Funds locked in your active bounty escrows
+              {totalLocked > 0
+                ? "Funds locked in your active bounty escrows"
+                : "No escrow funds locked for this wallet"}
             </p>
-          </div>
-
-          <div className="pt-2 border-t border-border/50">
-            {data?.entries && data.entries.length > 0 ? (
-              <div className="space-y-2">
-                {data.entries.slice(0, 5).map((entry) => (
-                  <div
-                    key={entry.bountyId}
-                    className="flex items-center justify-between text-xs"
-                  >
-                    <span className="text-muted-foreground truncate max-w-[60%]">
-                      {entry.bountyId}
-                    </span>
-                    <span className="font-medium shrink-0 ml-2">
-                      {entry.amount} {entry.asset}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {totalLocked > 0
-                  ? "Per-bounty breakdown unavailable."
-                  : "No escrow funds locked for this wallet."}
-              </p>
-            )}
           </div>
         </>
       )}
