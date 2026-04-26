@@ -30,7 +30,6 @@ import { FcfsClaimButton } from "@/components/bounty/fcfs-claim-button";
 import { authClient } from "@/lib/auth-client";
 import type { CancellationRecord } from "@/types/escrow";
 import { useCancelBountyDialog } from "@/hooks/use-cancel-bounty-dialog";
-import { ApplicationDialog } from "@/components/bounty/application-dialog";
 import type { Bounty } from "@/types/bounty";
 
 /** Props accept the wider intersection returned by useBountyDetail so
@@ -45,6 +44,7 @@ interface SidebarCTAProps {
 
 export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
   const [copied, setCopied] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const { data: session } = authClient.useSession();
 
   const {
@@ -148,24 +148,28 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
             const max = bounty.maxSlots ?? 5;
             const isFull = occupied >= max;
             return (
-              <ApplicationDialog
-                bountyTitle={bounty.title}
-                onApply={async (data) => {
-                  // Mock application delay
+              <Button
+                className="w-full h-11 font-bold tracking-wide"
+                disabled={!canAct || isFull || isApplying}
+                size="lg"
+                onClick={async () => {
+                  setIsApplying(true);
+                  console.log(
+                    "[Coming soon] Applying for slot for bounty:",
+                    bounty.id,
+                  );
                   await new Promise((resolve) => setTimeout(resolve, 1500));
-                  console.log("[Coming soon] Applying for slot:", data);
-                  return true;
+                  setIsApplying(false);
                 }}
-                trigger={
-                  <Button
-                    className="w-full h-11 font-bold tracking-wide"
-                    disabled={!canAct || isFull}
-                    size="lg"
-                  >
-                    {isFull ? "Slots Full" : "Apply for Slot [Coming soon]"}
-                  </Button>
-                }
-              />
+              >
+                {isApplying ? (
+                  <Loader2 className="size-4 animate-spin mr-2" />
+                ) : isFull ? (
+                  "Slots Full"
+                ) : (
+                  "Apply for Slot [Coming soon]"
+                )}
+              </Button>
             );
           })()
         ) : (
