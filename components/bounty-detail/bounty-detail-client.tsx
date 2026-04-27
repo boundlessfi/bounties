@@ -11,11 +11,14 @@ import { BountyDetailSubmissionsCard } from "./bounty-detail-submissions-card";
 import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
 import { useBountyDetail } from "@/hooks/use-bounty-detail";
 import { FcfsApprovalPanel } from "@/components/bounty/fcfs-approval-panel";
+import { CompetitionJudging } from "@/components/bounty/competition-judging";
+import type { CompetitionSubmissionEntry } from "@/components/bounty/competition-judging";
 import { EscrowDetailPanel } from "../bounty/escrow-detail-panel";
 import { RefundStatusTracker } from "../bounty/refund-status";
 import { FeeCalculator } from "../bounty/fee-calculator";
 import { useEscrowPool } from "@/hooks/use-escrow";
 import { authClient } from "@/lib/auth-client";
+import { useDeadlinePassed } from "@/hooks/use-deadline-passed";
 import type { CancellationRecord } from "@/types/escrow";
 import { MilestoneFunnel } from "@/components/bounty/milestone-funnel";
 import {
@@ -63,14 +66,15 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   const router = useRouter();
   const { data: bounty, isPending, isError, error } = useBountyDetail(bountyId);
   const { data: pool } = useEscrowPool(bountyId);
+  const { data: session } = authClient.useSession();
   const [cancellationRecord, setCancellationRecord] =
     useState<CancellationRecord | null>(null);
-
-  const { data: session } = authClient.useSession();
 
   const handleCancelled = useCallback((record: CancellationRecord) => {
     setCancellationRecord(record);
   }, []);
+
+  const pastDeadline = useDeadlinePassed(bounty?.bountyWindow?.endDate);
 
   if (isPending) return <BountyDetailSkeleton />;
 
@@ -124,6 +128,17 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
 
   const isCancelled =
     bounty.status === "CANCELLED" || cancellationRecord !== null;
+
+  const isCompetition = bounty.type === "COMPETITION";
+  const isCreator =
+    (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
+  const isFinalized = bounty.status === "COMPLETED";
+  // submissions is present on BountyQuery (single-bounty query) but not on
+  // BountyFieldsFragment (list query). The cast is safe here because
+  // useBountyDetail returns BountyFieldsFragment & Partial<BountyQuery["bounty"]>.
+  const competitionSubmissions =
+    (bounty as { submissions?: CompetitionSubmissionEntry[] | null })
+      .submissions ?? [];
 
   return (
     <div className="flex flex-col lg:flex-row gap-10">
@@ -185,10 +200,19 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
 
         {!isCancelled && pool && <EscrowDetailPanel poolId={bountyId} />}
         <RefundStatusTracker bountyId={bountyId} isCancelled={isCancelled} />
-        {bounty.type !== "FIXED_PRICE" && (
+        {bounty.type !== "FIXED_PRICE" && !isCompetition && (
           <BountyDetailSubmissionsCard bounty={bounty} />
         )}
         {bounty.type === "FIXED_PRICE" && <FcfsApprovalPanel bounty={bounty} />}
+        {isCompetition && isCreator && (pastDeadline || isFinalized) && (
+          <CompetitionJudging
+            bountyId={bountyId}
+            submissions={competitionSubmissions}
+            isFinalized={isFinalized}
+            totalReward={bounty.rewardAmount}
+            currency={bounty.rewardCurrency}
+          />
+        )}
       </div>
 
       {/* Sidebar */}

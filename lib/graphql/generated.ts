@@ -1952,6 +1952,10 @@ export type BountyFieldsFragment = {
   githubIssueUrl: string;
   githubIssueNumber?: number | null;
   createdBy: string;
+  // Pending backend fields — will be populated once the backend schema adds them.
+  // Until then these are undefined and consumers must fall back gracefully.
+  maxParticipants?: number | null;
+  claimCount?: number | null;
   organization?: {
     __typename?: "BountyOrganization";
     id: string;
