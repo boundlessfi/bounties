@@ -5,17 +5,32 @@ import type { SubmissionDraft, SubmissionForm } from "@/types/submission-draft";
 const DRAFT_KEY_PREFIX = "submission_draft_";
 const AUTO_SAVE_DELAY = 1000;
 
+function readDraftFromStorage(draftKey: string): SubmissionDraft | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const stored = window.localStorage.getItem(draftKey);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(stored) as SubmissionDraft;
+  } catch {
+    window.localStorage.removeItem(draftKey);
+    return null;
+  }
+}
+
 export function useSubmissionDraft(bountyId: string) {
   const queryClient = useQueryClient();
   const draftKey = `${DRAFT_KEY_PREFIX}${bountyId}`;
-  const queryKey = [DRAFT_KEY_PREFIX, bountyId];
+  const queryKey = [DRAFT_KEY_PREFIX, bountyId] as const;
 
   const { data: draft = null } = useQuery<SubmissionDraft | null>({
     queryKey,
-    queryFn: () => {
-      const stored = localStorage.getItem(draftKey);
-      return stored ? JSON.parse(stored) : null;
-    },
+    queryFn: () => readDraftFromStorage(draftKey),
     staleTime: Infinity, // Keep draft fresh in cache until explicitly cleared
   });
 
@@ -27,7 +42,9 @@ export function useSubmissionDraft(bountyId: string) {
         formData,
         updatedAt: new Date().toISOString(),
       };
-      localStorage.setItem(draftKey, JSON.stringify(newDraft));
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(draftKey, JSON.stringify(newDraft));
+      }
       return newDraft;
     },
     onSuccess: (newDraft) => {
@@ -37,7 +54,9 @@ export function useSubmissionDraft(bountyId: string) {
 
   const clearMutation = useMutation({
     mutationFn: async () => {
-      localStorage.removeItem(draftKey);
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(draftKey);
+      }
       return null;
     },
     onSuccess: () => {
