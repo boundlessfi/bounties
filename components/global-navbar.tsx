@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { authClient } from "@/lib/auth-client";
+import { Wallet, LogIn, Fingerprint } from "lucide-react";
 
 export function GlobalNavbar() {
   const pathname = usePathname();

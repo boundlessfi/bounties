@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
   Field,
   FieldContent,
@@ -253,286 +254,290 @@ export function BountyCreateForm() {
   };
 
   const stepOne = (
-    <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-2">
+    <Card className="p-6">
+      <div className="space-y-8">
+        <div className="grid gap-6 md:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="title">Title</FieldLabel>
+            <FieldContent>
+              <Input
+                id="title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Short, clear bounty title"
+              />
+              {errors.title && (
+                <p className="text-sm text-destructive">{errors.title}</p>
+              )}
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="type">Bounty type</FieldLabel>
+            <FieldContent>
+              <Select value={type} onValueChange={(value) => setType(value as BountyType)}>
+                <SelectTrigger className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9">
+                  <SelectValue placeholder="Select bounty type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TYPES.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FieldContent>
+          </Field>
+        </div>
+
         <Field>
-          <FieldLabel htmlFor="title">Title</FieldLabel>
+          <FieldLabel htmlFor="description">Cover description</FieldLabel>
           <FieldContent>
-            <Input
-              id="title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Short, clear bounty title"
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Explain what you need, acceptance criteria, and any context."
+              rows={6}
             />
-            {errors.title && (
-              <p className="text-sm text-destructive">{errors.title}</p>
+            {errors.description && (
+              <p className="text-sm text-destructive">{errors.description}</p>
             )}
           </FieldContent>
         </Field>
 
-        <Field>
-          <FieldLabel htmlFor="type">Bounty type</FieldLabel>
-          <FieldContent>
-            <Select value={type} onValueChange={(value) => setType(value as BountyType)}>
-              <SelectTrigger className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9">
-                <SelectValue placeholder="Select bounty type" />
-              </SelectTrigger>
-              <SelectContent>
-                {TYPES.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldContent>
-        </Field>
-      </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Field>
+            <FieldLabel htmlFor="organizationId">Organization ID</FieldLabel>
+            <FieldContent>
+              <Input
+                id="organizationId"
+                value={organizationId}
+                onChange={(event) => setOrganizationId(event.target.value)}
+                placeholder="org-boundless or your org ID"
+              />
+              {errors.organizationId && (
+                <p className="text-sm text-destructive">{errors.organizationId}</p>
+              )}
+            </FieldContent>
+          </Field>
 
-      <Field>
-        <FieldLabel htmlFor="description">Cover description</FieldLabel>
-        <FieldContent>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Explain what you need, acceptance criteria, and any context."
-            rows={6}
-          />
-          {errors.description && (
-            <p className="text-sm text-destructive">{errors.description}</p>
-          )}
-        </FieldContent>
-      </Field>
+          <Field>
+            <FieldLabel htmlFor="projectId">Project / Category ID</FieldLabel>
+            <FieldContent>
+              <Input
+                id="projectId"
+                value={projectId}
+                onChange={(event) => setProjectId(event.target.value)}
+                placeholder="Optional project or category identifier"
+              />
+            </FieldContent>
+          </Field>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
         <Field>
-          <FieldLabel htmlFor="organizationId">Organization ID</FieldLabel>
+          <FieldLabel htmlFor="githubIssueUrl">GitHub issue URL</FieldLabel>
           <FieldContent>
             <Input
-              id="organizationId"
-              value={organizationId}
-              onChange={(event) => setOrganizationId(event.target.value)}
-              placeholder="org-boundless or your org ID"
+              id="githubIssueUrl"
+              value={githubIssueUrl}
+              onChange={(event) => setGithubIssueUrl(event.target.value)}
+              placeholder="https://github.com/owner/repo/issues/123"
             />
-            {errors.organizationId && (
-              <p className="text-sm text-destructive">{errors.organizationId}</p>
+            {errors.githubIssueUrl && (
+              <p className="text-sm text-destructive">{errors.githubIssueUrl}</p>
             )}
           </FieldContent>
         </Field>
-
-        <Field>
-          <FieldLabel htmlFor="projectId">Project / Category ID</FieldLabel>
-          <FieldContent>
-            <Input
-              id="projectId"
-              value={projectId}
-              onChange={(event) => setProjectId(event.target.value)}
-              placeholder="Optional project or category identifier"
-            />
-          </FieldContent>
-        </Field>
       </div>
-
-      <Field>
-        <FieldLabel htmlFor="githubIssueUrl">GitHub issue URL</FieldLabel>
-        <FieldContent>
-          <Input
-            id="githubIssueUrl"
-            value={githubIssueUrl}
-            onChange={(event) => setGithubIssueUrl(event.target.value)}
-            placeholder="https://github.com/owner/repo/issues/123"
-          />
-          {errors.githubIssueUrl && (
-            <p className="text-sm text-destructive">{errors.githubIssueUrl}</p>
-          )}
-        </FieldContent>
-      </Field>
-    </div>
+    </Card>
   );
 
   const stepTwo = (
-    <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-3">
-        <Field>
-          <FieldLabel htmlFor="rewardAmount">Reward amount</FieldLabel>
-          <FieldContent>
-            <Input
-              id="rewardAmount"
-              type="number"
-              min="0"
-              step="0.01"
-              value={rewardAmount}
-              onChange={(event) => setRewardAmount(event.target.value)}
-              placeholder="0.00"
-            />
-            {errors.rewardAmount && (
-              <p className="text-sm text-destructive">{errors.rewardAmount}</p>
+    <Card className="p-6">
+      <div className="space-y-8">
+        <div className="grid gap-6 md:grid-cols-3">
+          <Field>
+            <FieldLabel htmlFor="rewardAmount">Reward amount</FieldLabel>
+            <FieldContent>
+              <Input
+                id="rewardAmount"
+                type="number"
+                min="0"
+                step="0.01"
+                value={rewardAmount}
+                onChange={(event) => setRewardAmount(event.target.value)}
+                placeholder="0.00"
+              />
+              {errors.rewardAmount && (
+                <p className="text-sm text-destructive">{errors.rewardAmount}</p>
+              )}
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="rewardCurrency">Currency</FieldLabel>
+            <FieldContent>
+              <Select
+                value={rewardCurrency}
+                onValueChange={(value) => setRewardCurrency(value as RewardCurrency)}
+              >
+                <SelectTrigger className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map((currency) => (
+                    <SelectItem key={currency} value={currency}>
+                      {currency}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.rewardCurrency && (
+                <p className="text-sm text-destructive">{errors.rewardCurrency}</p>
+              )}
+            </FieldContent>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="deadline">Deadline</FieldLabel>
+            <FieldContent>
+              <Input
+                id="deadline"
+                type="date"
+                value={deadline}
+                onChange={(event) => setDeadline(event.target.value)}
+              />
+              {errors.deadline && (
+                <p className="text-sm text-destructive">{errors.deadline}</p>
+              )}
+            </FieldContent>
+          </Field>
+        </div>
+
+        {isCompetition && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="startDate">Competition start date</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(event) => setStartDate(event.target.value)}
+                />
+                {errors.startDate && (
+                  <p className="text-sm text-destructive">{errors.startDate}</p>
+                )}
+              </FieldContent>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="endDate">Competition end date</FieldLabel>
+              <FieldContent>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={endDate}
+                  onChange={(event) => setEndDate(event.target.value)}
+                />
+                {errors.endDate && (
+                  <p className="text-sm text-destructive">{errors.endDate}</p>
+                )}
+              </FieldContent>
+            </Field>
+          </div>
+        )}
+
+        {isMilestone && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <FieldTitle>Milestones</FieldTitle>
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                onClick={() =>
+                  setMilestones((prev) => [
+                    ...prev,
+                    { id: Date.now().toString(), title: `Milestone ${prev.length + 1}`, percent: "0" },
+                  ])
+                }
+              >
+                Add milestone
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              {milestones.map((milestone, index) => (
+                <div
+                  key={milestone.id}
+                  className="grid gap-4 md:grid-cols-[1.5fr_0.8fr_0.5fr]"
+                >
+                  <Input
+                    value={milestone.title}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setMilestones((prev) =>
+                        prev.map((item, idx) =>
+                          idx === index ? { ...item, title: value } : item,
+                        ),
+                      );
+                    }}
+                    placeholder={`Milestone ${index + 1}`}
+                  />
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={milestone.percent}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setMilestones((prev) =>
+                        prev.map((item, idx) =>
+                          idx === index ? { ...item, percent: value } : item,
+                        ),
+                      );
+                    }}
+                    placeholder="Percent"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    type="button"
+                    onClick={() =>
+                      setMilestones((prev) => prev.filter((_, idx) => idx !== index))
+                    }
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              Total payout: {computeMilestoneTotal}%
+            </p>
+            {errors.milestones && (
+              <p className="text-sm text-destructive">{errors.milestones}</p>
             )}
-          </FieldContent>
-        </Field>
+          </div>
+        )}
 
         <Field>
-          <FieldLabel htmlFor="rewardCurrency">Currency</FieldLabel>
-          <FieldContent>
-            <Select
-              value={rewardCurrency}
-              onValueChange={(value) => setRewardCurrency(value as RewardCurrency)}
-            >
-              <SelectTrigger className="w-full border-gray-700 hover:border-gray-600 focus:border-primary/50 h-9">
-                <SelectValue placeholder="Select currency" />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((currency) => (
-                  <SelectItem key={currency} value={currency}>
-                    {currency}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.rewardCurrency && (
-              <p className="text-sm text-destructive">{errors.rewardCurrency}</p>
-            )}
-          </FieldContent>
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="deadline">Deadline</FieldLabel>
+          <FieldLabel htmlFor="bountyWindowId">Lightning round window ID</FieldLabel>
           <FieldContent>
             <Input
-              id="deadline"
-              type="date"
-              value={deadline}
-              onChange={(event) => setDeadline(event.target.value)}
+              id="bountyWindowId"
+              value={bountyWindowId}
+              onChange={(event) => setBountyWindowId(event.target.value)}
+              placeholder="Optional bounty window ID"
             />
-            {errors.deadline && (
-              <p className="text-sm text-destructive">{errors.deadline}</p>
-            )}
           </FieldContent>
         </Field>
       </div>
-
-      {isCompetition && (
-        <div className="grid gap-6 md:grid-cols-2">
-          <Field>
-            <FieldLabel htmlFor="startDate">Competition start date</FieldLabel>
-            <FieldContent>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(event) => setStartDate(event.target.value)}
-              />
-              {errors.startDate && (
-                <p className="text-sm text-destructive">{errors.startDate}</p>
-              )}
-            </FieldContent>
-          </Field>
-
-          <Field>
-            <FieldLabel htmlFor="endDate">Competition end date</FieldLabel>
-            <FieldContent>
-              <Input
-                id="endDate"
-                type="date"
-                value={endDate}
-                onChange={(event) => setEndDate(event.target.value)}
-              />
-              {errors.endDate && (
-                <p className="text-sm text-destructive">{errors.endDate}</p>
-              )}
-            </FieldContent>
-          </Field>
-        </div>
-      )}
-
-      {isMilestone && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <FieldTitle>Milestones</FieldTitle>
-            <Button
-              variant="secondary"
-              size="sm"
-              type="button"
-              onClick={() =>
-                setMilestones((prev) => [
-                  ...prev,
-                  { id: Date.now().toString(), title: `Milestone ${prev.length + 1}`, percent: "0" },
-                ])
-              }
-            >
-              Add milestone
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            {milestones.map((milestone, index) => (
-              <div
-                key={milestone.id}
-                className="grid gap-4 md:grid-cols-[1.5fr_0.8fr_0.5fr]"
-              >
-                <Input
-                  value={milestone.title}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setMilestones((prev) =>
-                      prev.map((item, idx) =>
-                        idx === index ? { ...item, title: value } : item,
-                      ),
-                    );
-                  }}
-                  placeholder={`Milestone ${index + 1}`}
-                />
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={milestone.percent}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    setMilestones((prev) =>
-                      prev.map((item, idx) =>
-                        idx === index ? { ...item, percent: value } : item,
-                      ),
-                    );
-                  }}
-                  placeholder="Percent"
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  type="button"
-                  onClick={() =>
-                    setMilestones((prev) => prev.filter((_, idx) => idx !== index))
-                  }
-                >
-                  ×
-                </Button>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-sm text-muted-foreground">
-            Total payout: {computeMilestoneTotal}%
-          </p>
-          {errors.milestones && (
-            <p className="text-sm text-destructive">{errors.milestones}</p>
-          )}
-        </div>
-      )}
-
-      <Field>
-        <FieldLabel htmlFor="bountyWindowId">Lightning round window ID</FieldLabel>
-        <FieldContent>
-          <Input
-            id="bountyWindowId"
-            value={bountyWindowId}
-            onChange={(event) => setBountyWindowId(event.target.value)}
-            placeholder="Optional bounty window ID"
-          />
-        </FieldContent>
-      </Field>
-    </div>
+    </Card>
   );
 
   const stepThree = (
@@ -620,14 +625,14 @@ export function BountyCreateForm() {
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
-      <div className="rounded-3xl border border-border bg-background-card p-6">
+      <Card className="p-6">
         <h3 className="text-sm font-semibold">Cover description</h3>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
           {buildDescription() || "No description provided."}
         </p>
-      </div>
+      </Card>
     </div>
   );
 
@@ -643,9 +648,9 @@ export function BountyCreateForm() {
               Create a new bounty
             </h1>
           </div>
-          <div className="rounded-2xl bg-muted/50 p-4 text-sm text-muted-foreground">
-            Step {step} of 3
-          </div>
+          <Card className="p-4">
+            <p className="text-sm text-muted-foreground">Step {step} of 3</p>
+          </Card>
         </div>
       </div>
 
