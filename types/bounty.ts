@@ -2,7 +2,11 @@
  * Frontend types aligned with the backend GraphQL schema (schema.gql).
  */
 
-export type BountyType = "FIXED_PRICE" | "MILESTONE_BASED" | "COMPETITION";
+export type BountyType =
+  | "FIXED_PRICE"
+  | "MILESTONE_BASED"
+  | "COMPETITION"
+  | "MULTI_WINNER_MILESTONE";
 
 export type BountyStatus =
   | "OPEN"
@@ -65,6 +69,20 @@ export interface BountyCount {
   submissions: number;
 }
 
+export interface Milestone {
+  id: string;
+  title: string;
+  description?: string;
+  isCompleted?: boolean;
+}
+
+export interface ContributorProgress {
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  currentMilestoneId: string;
+}
+
 export interface Bounty {
   id: string;
   title: string;
@@ -88,6 +106,12 @@ export interface Bounty {
 
   submissions?: BountySubmission[] | null;
   _count?: BountyCount | null;
+
+  milestones?: Milestone[] | null;
+  contributorProgress?: ContributorProgress[] | null;
+
+  maxSlots?: number | null;
+  totalSlotsOccupied?: number | null;
 
   createdBy: string;
   createdAt: string;

@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TransactionLink } from "@/components/ui/stellar-link";
+import { AccountLink, TransactionLink } from "@/components/ui/stellar-link";
 import { WalletActivity } from "@/types/wallet";
 import { format, isValid } from "date-fns";
 import { ArrowDownLeft, ArrowUpRight, Download, Search } from "lucide-react";
@@ -149,6 +149,9 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
                 <th className="text-right py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
                   Date
                 </th>
+                <th className="text-left py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px] hidden lg:table-cell">
+                  Counterparty
+                </th>
                 <th className="text-left py-3 px-4 font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
                   Transaction
                 </th>
@@ -161,7 +164,7 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
               {filteredActivity.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="py-12 text-center text-muted-foreground"
                   >
                     No activity found.
@@ -176,12 +179,11 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
                         <div
-                          className={`p-1.5 rounded-full ${item.type === "earning" ? "bg-green-500/10" : "bg-orange-500/10"}`}
+                          className={`p-1.5 rounded-full ${item.type === "earning" || item.type === "deposit" ? "bg-green-500/10" : "bg-orange-500/10"}`}
                         >
-                          {item.type === "earning" ? (
-                            <ArrowDownLeft
-                              className={`h-4 w-4 ${item.type === "earning" ? "text-green-500" : "text-orange-500"}`}
-                            />
+                          {item.type === "earning" ||
+                          item.type === "deposit" ? (
+                            <ArrowDownLeft className="h-4 w-4 text-green-500" />
                           ) : (
                             <ArrowUpRight className="h-4 w-4 text-orange-500" />
                           )}
@@ -196,14 +198,28 @@ export function TransactionHistory({ activity }: TransactionHistoryProps) {
                     </td>
                     <td className="py-4 px-4 text-right">
                       <span
-                        className={`font-semibold ${item.type === "earning" ? "text-green-500" : ""}`}
+                        className={`font-semibold ${item.type === "earning" || item.type === "deposit" ? "text-green-500" : ""}`}
                       >
-                        {item.type === "earning" ? "+" : "-"}{" "}
+                        {item.type === "earning" || item.type === "deposit"
+                          ? "+"
+                          : "-"}{" "}
                         {formatCurrency(item.amount, item.currency)}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right text-muted-foreground">
                       {formatSafeDate(item.date, "MMM d, yyyy")}
+                    </td>
+                    <td className="py-4 px-4 hidden lg:table-cell">
+                      {item.counterparty ? (
+                        <AccountLink
+                          value={item.counterparty}
+                          maxLength={12}
+                          showCopy={false}
+                          className="text-xs"
+                        />
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
                     </td>
                     <td className="py-4 px-4">
                       {item.transactionHash ? (

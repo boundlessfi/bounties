@@ -107,3 +107,17 @@ export const withdrawalKeys = {
   all: ["withdrawal"] as const,
   history: () => [...withdrawalKeys.all, "history"] as const,
 };
+
+/**
+ * Query Key Factory for Bookmarks
+ */
+export const bookmarkKeys = {
+  all: ["bookmarks"] as const,
+  list: () => [...bookmarkKeys.all, "list"] as const,
+  ids: () => [...bookmarkKeys.all, "ids"] as const,
+  // Minimal status cache for notification deduplication: { [bountyId]: status }
+  statusCache: () => [...bookmarkKeys.all, "statusCache"] as const,
+};
+
+export type BookmarkQueryKey = ReturnType<typeof bookmarkKeys.list>;
+export type BookmarkIdsQueryKey = ReturnType<typeof bookmarkKeys.ids>;

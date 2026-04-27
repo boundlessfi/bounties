@@ -9,12 +9,14 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock } from "lucide-react";
+import { Clock, Users, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { EscrowStatus } from "./escrow-status";
 import { useEscrowPool } from "@/hooks/use-escrow";
+import { getRoundPhase } from "@/hooks/use-lightning-rounds";
+import { BookmarkButton } from "./bookmark-button";
 
 interface BountyCardProps {
   bounty: BountyFieldsFragment;
@@ -89,6 +91,10 @@ export function BountyCard({
     statusConfig[normalizedStatus.toLowerCase()] ?? statusConfig.open;
   const isFcfsClaimed =
     bounty.type === "FIXED_PRICE" && normalizedStatus === "IN_PROGRESS";
+  const isCompetition = bounty.type === "COMPETITION";
+  // claimCount: use backend claimCount when available, fall back to _count.submissions
+  const slotCount = bounty.claimCount ?? bounty._count?.submissions ?? 0;
+  const maxParticipants = bounty.maxParticipants ?? null;
   const timeLeft = bounty.updatedAt
     ? formatDistanceToNow(new Date(bounty.updatedAt), { addSuffix: true })
     : "N/A";
@@ -99,13 +105,28 @@ export function BountyCard({
   // Fetch escrow pool data
   const { data: pool } = useEscrowPool(bounty.id);
 
+  // ── Lightning Round detection ──────────────────────────────────────────────
+  // A bounty belongs to an active Lightning Round when it has a bountyWindow
+  // whose phase is currently "active". We derive this client-side from the
+  // dates already present in the BountyFieldsFragment — no extra fetch needed.
+  const isLightningRound =
+    !!bounty.bountyWindow &&
+    getRoundPhase({
+      startDate: bounty.bountyWindow.startDate ?? null,
+      endDate: bounty.bountyWindow.endDate ?? null,
+      status: bounty.bountyWindow.status,
+    }) === "active";
+
   return (
     <Card
       className={cn(
         "overflow-hidden w-full max-w-sm h-full rounded-lg cursor-pointer transition-all duration-300",
-        "flex flex-col",
+        "flex flex-col relative", // Add relative for bookmark button positioning
         "p-0",
         variant === "list" && "md:flex-row",
+        // Subtle ring highlight for Lightning Round bounties
+        isLightningRound &&
+          "ring-1 ring-yellow-500/40 shadow-[0_0_12px_0_rgba(234,179,8,0.12)]",
       )}
       role="button"
       tabIndex={0}
@@ -117,6 +138,34 @@ export function BountyCard({
         }
       }}
     >
+      {/* Lightning Round top bar */}
+      {isLightningRound && (
+        <div className="flex items-center gap-1.5 bg-yellow-500/15 border-b border-yellow-500/20 px-4 py-1.5">
+          <Zap className="size-3 text-yellow-400 shrink-0" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-yellow-400">
+            Lightning Round
+          </span>
+          {bounty.bountyWindow?.name && (
+            <span className="text-[10px] text-yellow-500/60 truncate">
+              · {bounty.bountyWindow.name}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Bookmark button - top-right corner */}
+      <div
+        className="absolute right-2 top-2 z-10"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+          }
+        }}
+      >
+        <BookmarkButton bountyId={bounty.id} size="sm" />
+      </div>
+
       <div className="flex-1 flex flex-col justify-between">
         <CardHeader className="pb-4 px-5 pt-5">
           <div className="flex items-center justify-between gap-3 mb-4">
@@ -167,6 +216,13 @@ export function BountyCard({
             <Badge variant="outline" className="text-xs px-2.5 py-1 ">
               {bounty.type.replace(/_/g, " ")}
             </Badge>
+            {isCompetition && (
+              <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs px-2.5 py-1 flex items-center gap-1">
+                <Users className="size-3" />
+                {slotCount}
+                {maxParticipants != null ? `/${maxParticipants}` : ""} joined
+              </Badge>
+            )}
           </div>
         </CardHeader>
 

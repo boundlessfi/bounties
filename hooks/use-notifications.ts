@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 
 import { authClient } from "@/lib/auth-client";
 import {
@@ -12,14 +10,20 @@ import {
   type OnNewApplicationData,
   type OnSubmissionReviewedData,
 } from "@/lib/graphql/subscriptions";
-import { bountyKeys, submissionKeys } from "@/lib/query/query-keys";
+import {
+  bountyKeys,
+  submissionKeys,
+  bookmarkKeys,
+} from "@/lib/query/query-keys";
+import type { Bookmark } from "@/lib/graphql/generated";
 
 import { useGraphQLSubscription } from "./use-graphql-subscription";
 
 export type NotificationType =
   | "bounty-updated"
   | "new-application"
-  | "submission-reviewed";
+  | "submission-reviewed"
+  | "saved-bounty-updated";
 
 export interface NotificationItem {
   id: string;
@@ -83,6 +87,32 @@ function saveToStorage(userId: string, items: NotificationItem[]): void {
   }
 }
 
+/**
+ * Get a Map of bountyId -> status for currently bookmarked bounties.
+ * Uses Set for O(1) membership filtering.
+ * Returns null if list cache is missing (no data available).
+ */
+function getBookmarkedStatusMap(
+  queryClient: QueryClient,
+): Map<string, string> | null {
+  const ids = queryClient.getQueryData<string[]>(bookmarkKeys.ids()) ?? [];
+  const idsSet = new Set(ids);
+  const list = queryClient.getQueryData<Bookmark[]>(bookmarkKeys.list());
+
+  // If list cache is missing or empty, return null to signal "no data"
+  if (!list || list.length === 0) {
+    return null;
+  }
+
+  const statusMap = new Map<string, string>();
+  for (const b of list) {
+    if (b.bounty && idsSet.has(b.bountyId)) {
+      statusMap.set(b.bountyId, b.bounty.status);
+    }
+  }
+  return statusMap;
+}
+
 export function useNotifications() {
   const { data: session } = authClient.useSession();
   const queryClient = useQueryClient();
@@ -90,29 +120,23 @@ export function useNotifications() {
   const isEnabled = Boolean(session?.user);
   const userId = session?.user?.id ?? null;
 
-  // Initialize state with lazy loading from localStorage
-  // This runs only once during initial render, avoiding setState in effect
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => {
     if (typeof window === "undefined" || !userId) return [];
     return loadFromStorage(userId);
   });
 
-  // Reset on user change - this is allowed during render as it's a state update
-  // based on a condition change (userId)
   const prevHydratedUserIdRef = useRef(userId);
   if (prevHydratedUserIdRef.current !== userId) {
     prevHydratedUserIdRef.current = userId;
     setNotifications(userId ? loadFromStorage(userId) : []);
   }
 
-  // Persist to localStorage whenever notifications change
   useEffect(() => {
     if (userId) {
       saveToStorage(userId, notifications);
     }
   }, [notifications, userId]);
 
-  // Helper to update notifications with cache invalidation
   const addNotification = useCallback(
     (
       item: NotificationItem,
@@ -147,6 +171,50 @@ export function useNotifications() {
           },
           bountyKeys.allListKeys,
         );
+
+        // Check bookmark membership using ONLY ids cache (O(1) via Set)
+        const bookmarkedIds = queryClient.getQueryData<string[]>(
+          bookmarkKeys.ids(),
+        );
+        const bookmarkedIdsSet = new Set(bookmarkedIds ?? []);
+        const isBookmarked = bookmarkedIdsSet.has(bounty.id);
+
+        if (isBookmarked) {
+          // Get previous status from status map (derived from list cache)
+          const statusMap = getBookmarkedStatusMap(queryClient);
+
+          // Only process notification if cached data exists (avoid false positives)
+          if (statusMap !== null) {
+            const previousStatus = statusMap.get(bounty.id);
+
+            // Only notify if status changed (meaningful update)
+            if (
+              previousStatus === undefined ||
+              previousStatus !== bounty.status
+            ) {
+              const timestamp = Date.now();
+              addNotification(
+                {
+                  id: `saved-bounty-updated-${bounty.id}-${timestamp}`,
+                  message: `Saved bounty "${bounty.title}" was updated.`,
+                  type: "saved-bounty-updated",
+                  timestamp: normaliseTimestamp(bounty.updatedAt),
+                  read: false,
+                },
+                [],
+              );
+
+              // Update status cache to prevent duplicate notifications
+              queryClient.setQueryData<Record<string, string>>(
+                bookmarkKeys.statusCache(),
+                (old = {}) => ({
+                  ...old,
+                  [bounty.id]: bounty.status,
+                }),
+              );
+            }
+          }
+        }
 
         queryClient.invalidateQueries({
           queryKey: bountyKeys.detail(bounty.id),

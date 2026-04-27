@@ -701,6 +701,18 @@ type BountyWindowType {
   status: String!
 }
 
+type Bookmark {
+  id: ID!
+  userId: String!
+  bountyId: String!
+  createdAt: DateTime!
+  bounty: Bounty!
+}
+
+input ToggleBookmarkInput {
+  bountyId: ID!
+}
+
 input ContactOrganizersInput {
   message: String!
   subject: String!
@@ -906,6 +918,9 @@ type Mutation {
   """Submit to a bounty (any authenticated user)"""
   submitToBounty(input: CreateSubmissionInput!): BountySubmissionType!
 
+   """Toggle a bookmark on a bounty (authenticated users)"""
+   toggleBookmark(input: ToggleBookmarkInput!): Bookmark
+
   """Update a blog post (Admin only)"""
   updateAdminBlogPost(id: ID!, input: UpdateBlogPostDto!): AdminBlogPostDto!
 
@@ -982,7 +997,7 @@ type Query {
   adminUserCrowdfundingCampaigns(limit: Int = 20, page: Int = 1, usernameOrId: String!): AdminCrowdfundingResponseDto!
 
   """Get all users with pagination and filtering"""
-  adminUsers(isActive: Boolean, limit: Int, page: Int, role: String, search: String): AdminUsersResponseDto!
+  adminUsers(isActive: Boolean, limit: Int, page: Int, search: String): AdminUsersResponseDto!
 
   """Get paginated list of bounties with filtering"""
   bounties(query: BountyQueryInput): PaginatedBounties!
@@ -995,6 +1010,9 @@ type Query {
 
   """Get bounties for a specific project"""
   projectBounties(projectId: ID!): [Bounty!]!
+
+  """Get all bookmarked bounties for the current user"""
+  bookmarks: [Bookmark!]!
 
   """Get leaderboard with filtering and pagination"""
   leaderboard(filters: LeaderboardFilters!, pagination: LeaderboardPagination!): LeaderboardResponse!

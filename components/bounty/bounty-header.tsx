@@ -22,6 +22,11 @@ const typeConfig: Record<
     icon: <Trophy className="size-3" />,
     className: "bg-destructive text-white border-transparent",
   },
+  MULTI_WINNER_MILESTONE: {
+    label: "Multi-Winner Milestone",
+    icon: <Milestone className="size-3" />,
+    className: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
+  },
 };
 
 const statusConfig: Record<BountyStatus, { label: string; className: string }> =

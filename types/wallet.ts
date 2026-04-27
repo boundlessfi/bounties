@@ -19,6 +19,7 @@ export interface WalletActivity {
   status: ActivityStatus;
   description?: string;
   transactionHash?: string; // Stellar transaction hash for explorer links
+  counterparty?: string; // Address of the other party in the transaction
 }
 
 export interface WalletInfo {

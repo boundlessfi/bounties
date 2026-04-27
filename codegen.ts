@@ -13,6 +13,11 @@ const config: CodegenConfig = {
   generates: {
     "./lib/graphql/generated.ts": {
       plugins: [
+        {
+          add: {
+            content: "import { gql } from 'graphql-tag';",
+          },
+        },
         "typescript",
         "typescript-operations",
         "typescript-react-query",
@@ -24,6 +29,7 @@ const config: CodegenConfig = {
         },
         exposeQueryKeys: true,
         reactQueryVersion: 5,
+        documentMode: "graphQLTag",
         scalars: {
           DateTime: "string",
           JSON: "Record<string, any>",

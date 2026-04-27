@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useBounties } from "@/hooks/use-bounties";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useActiveLightningRound } from "@/hooks/use-lightning-rounds";
 import { BountyCard } from "@/components/bounty/bounty-card";
 import { BountyListSkeleton } from "@/components/bounty/bounty-card-skeleton";
 import { BountyError } from "@/components/bounty/bounty-error";
+import { LightningRoundBanner } from "@/components/bounty/lightning-round-banner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -33,10 +35,17 @@ import {
   type BountyQueryInput,
 } from "@/lib/graphql/generated";
 
-const BOUNTY_TYPES: { value: BountyType; label: string }[] = [
+const BOUNTY_TYPES: {
+  value: BountyType | "MULTI_WINNER_MILESTONE";
+  label: string;
+}[] = [
   { value: BountyType.FixedPrice, label: "Fixed Price" },
   { value: BountyType.MilestoneBased, label: "Milestone Based" },
   { value: BountyType.Competition, label: "Competition" },
+  {
+    value: "MULTI_WINNER_MILESTONE" as unknown as BountyType,
+    label: "Multi-Winner Milestone",
+  },
 ];
 
 const STATUSES: { value: BountyStatus | "all"; label: string }[] = [
@@ -71,8 +80,6 @@ export default function BountiesPage() {
   const [page, setPage] = useState(1);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  // When the user clears the search input, drop the filter immediately instead
-  // of waiting for the debounce to flush the stale value.
   const effectiveSearchQuery = searchQuery === "" ? "" : debouncedSearchQuery;
 
   const queryParams: BountyQueryInput = useMemo(
@@ -89,14 +96,21 @@ export default function BountiesPage() {
 
   const { data, isLoading, isError, error, refetch } = useBounties(queryParams);
 
+  // ── Lightning Round banner ─────────────────────────────────────────────────
+  // Only fetches activeBounties — cheap, already used by other parts of the
+  // app. Returns null when no active round exists, banner is hidden.
+  const { round: activeRound } = useActiveLightningRound();
+
   const bounties = data?.data ?? [];
   const pagination = data?.pagination;
   const totalResults = pagination?.total ?? 0;
   const currentPage = pagination?.page ?? page;
   const totalPages = pagination?.totalPages ?? 1;
 
-  const toggleType = (type: BountyType) => {
-    setSelectedType((prev) => (prev === type ? "all" : type));
+  const toggleType = (type: BountyType | "MULTI_WINNER_MILESTONE") => {
+    setSelectedType((prev) =>
+      prev === type ? "all" : (type as unknown as BountyType),
+    );
     setPage(1);
   };
 
@@ -135,6 +149,13 @@ export default function BountiesPage() {
             features, and earn rewards in crypto.
           </p>
         </header>
+
+        {/* ── Lightning Round Banner (shown only when a round is live) ── */}
+        {activeRound && (
+          <div className="mb-8">
+            <LightningRoundBanner round={activeRound} />
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-10">
           <aside className="w-full lg:w-70 shrink-0 space-y-8">

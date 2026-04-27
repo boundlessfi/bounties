@@ -14,11 +14,18 @@ interface ProjectBountiesProps {
   projectId: string;
 }
 
-const bountyTypes: { value: BountyType | "all"; label: string }[] = [
+const bountyTypes: {
+  value: BountyType | "all" | "MULTI_WINNER_MILESTONE";
+  label: string;
+}[] = [
   { value: "all", label: "All Types" },
   { value: BountyType.FixedPrice, label: "Fixed Price" },
   { value: BountyType.MilestoneBased, label: "Milestone" },
   { value: BountyType.Competition, label: "Competition" },
+  {
+    value: "MULTI_WINNER_MILESTONE" as unknown as BountyType,
+    label: "Multi-Winner",
+  },
 ];
 
 const statuses: { value: BountyStatus | "all"; label: string }[] = [
@@ -88,7 +95,9 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
               >
                 <button
                   type="button"
-                  onClick={() => setSelectedType(type.value)}
+                  onClick={() =>
+                    setSelectedType(type.value as unknown as BountyType)
+                  }
                   aria-pressed={selectedType === type.value}
                 >
                   {type.label}

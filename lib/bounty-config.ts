@@ -59,4 +59,8 @@ export const TYPE_CONFIG: Record<string, { label: string; className: string }> =
       label: "Competition",
       className: "bg-rose-500/10 text-rose-400 border border-rose-500/20",
     },
+    MULTI_WINNER_MILESTONE: {
+      label: "Multi-Winner Milestone",
+      className: "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
+    },
   };
