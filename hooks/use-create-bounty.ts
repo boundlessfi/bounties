@@ -31,8 +31,8 @@ export function useCreateBounty() {
         router.push(`/bounty/${data.createBounty.id}`);
       }
     },
-    onError: () => {
-      toast.error("Unable to create bounty. Please check your details and try again.");
+    onError: (error) => {
+      toast.error(error.message || "Unable to create bounty. Please check your details and try again.");
     },
   });
 

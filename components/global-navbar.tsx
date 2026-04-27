@@ -22,12 +22,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { Wallet, LogIn, Fingerprint } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
 
 export function GlobalNavbar() {
   const pathname = usePathname();
   const { walletInfo, isConnected, isRegistered, connect, isLoading } =
     useSmartWallet();
+  const { data: session } = authClient.useSession();
+
+  const isAuthenticated = Boolean(session?.user);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -122,7 +125,7 @@ export function GlobalNavbar() {
             >
               Review
             </Link>
-            {isConnected && (
+            {isAuthenticated && (
               <Link
                 href="/bounty/create"
                 className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"

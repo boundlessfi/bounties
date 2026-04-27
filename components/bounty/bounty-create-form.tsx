@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Card } from "@/components/ui/card";
 import {
   Field,
   FieldContent,
@@ -33,6 +33,7 @@ const TYPES = [
 type RewardCurrency = (typeof CURRENCIES)[number];
 
 type Milestone = {
+  id: string;
   title: string;
   percent: string;
 };
@@ -75,8 +76,8 @@ export function BountyCreateForm() {
   const [deadline, setDeadline] = useState("");
   const [bountyWindowId, setBountyWindowId] = useState("");
   const [milestones, setMilestones] = useState<Milestone[]>([
-    { title: "Milestone 1", percent: "50" },
-    { title: "Milestone 2", percent: "50" },
+    { id: "1", title: "Milestone 1", percent: "50" },
+    { id: "2", title: "Milestone 2", percent: "50" },
   ]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -139,9 +140,7 @@ export function BountyCreateForm() {
 
     if (!title.trim()) {
       nextErrors.title = "Title is required.";
-    }
-
-    if (title.trim().length < 10) {
+    } else if (title.trim().length < 10) {
       nextErrors.title = "Title must be at least 10 characters.";
     }
 
@@ -177,8 +176,12 @@ export function BountyCreateForm() {
       nextErrors.rewardCurrency = "Select a reward currency.";
     }
 
-    if (deadline && new Date(deadline).getTime() <= Date.now()) {
-      nextErrors.deadline = "Deadline must be in the future.";
+    if (deadline) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (new Date(deadline) < today) {
+        nextErrors.deadline = "Deadline must be in the future.";
+      }
     }
 
     if (isCompetition) {
@@ -189,13 +192,14 @@ export function BountyCreateForm() {
         nextErrors.endDate = "Competition end date is required.";
       }
       if (startDate && endDate) {
-        const start = new Date(startDate).getTime();
-        const end = new Date(endDate).getTime();
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const now = new Date();
+        if (start <= now) {
+          nextErrors.startDate = "Start date must be in the future.";
+        }
         if (start >= end) {
           nextErrors.endDate = "End date must be after the start date.";
-        }
-        if (start <= Date.now()) {
-          nextErrors.startDate = "Start date must be in the future.";
         }
       }
     }
@@ -222,10 +226,11 @@ export function BountyCreateForm() {
   };
 
   const handleSubmit = async () => {
+    if (!validateStepOne() || !validateStepTwo()) return;
     const input = {
       title: title.trim(),
       description: buildDescription(),
-      githubIssueUrl: githubIssueUrl.trim() || "https://github.com/",
+      githubIssueUrl: githubIssueUrl.trim() || undefined,
       githubIssueNumber: parseGithubIssueNumber(githubIssueUrl.trim()),
       organizationId: organizationId.trim(),
       projectId: projectId.trim() || undefined,
@@ -452,7 +457,7 @@ export function BountyCreateForm() {
               onClick={() =>
                 setMilestones((prev) => [
                   ...prev,
-                  { title: `Milestone ${prev.length + 1}`, percent: "0" },
+                  { id: Date.now().toString(), title: `Milestone ${prev.length + 1}`, percent: "0" },
                 ])
               }
             >
@@ -463,7 +468,7 @@ export function BountyCreateForm() {
           <div className="space-y-4">
             {milestones.map((milestone, index) => (
               <div
-                key={index}
+                key={milestone.id}
                 className="grid gap-4 md:grid-cols-[1.5fr_0.8fr_0.5fr]"
               >
                 <Input
@@ -532,7 +537,7 @@ export function BountyCreateForm() {
 
   const stepThree = (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-border bg-background-card p-6 shadow-sm">
+      <Card className="border-gray-800">
         <div className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold">Review your bounty</h2>
@@ -607,7 +612,7 @@ export function BountyCreateForm() {
               </p>
               <ul className="mt-2 space-y-2 text-sm">
                 {milestones.map((milestone, index) => (
-                  <li key={index}>
+                  <li key={milestone.id}>
                     <span className="font-medium">{milestone.title}</span> — {milestone.percent}%
                   </li>
                 ))}
@@ -644,7 +649,7 @@ export function BountyCreateForm() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-border bg-background-card p-8 shadow-sm">
+      <Card className="border-gray-800 p-8">
         {submitError && (
           <Alert variant="destructive" className="mb-6">
             <AlertTitle>Error</AlertTitle>
@@ -695,7 +700,7 @@ export function BountyCreateForm() {
             )}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
