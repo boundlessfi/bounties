@@ -17,6 +17,7 @@ import { bountyKeys } from "@/lib/query/query-keys";
 export function useSubmitToBounty() {
   const queryClient = useQueryClient();
   const mutation = useSubmitToBountyMutation({
+    retry: false,
     onSuccess: (data) => {
       const bountyId = data.submitToBounty.bountyId;
       queryClient.invalidateQueries({ queryKey: bountyKeys.detail(bountyId) });
