@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { SearchCommand } from "@/components/search-command";
 import { NavRankBadge } from "@/components/leaderboard/nav-rank-badge";
-import { NotificationCenter } from "@/components/notifications/notification-center";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { WalletSheet } from "@/components/wallet/wallet-sheet";
 import { useSmartWallet } from "@/components/providers/smart-wallet-provider";
 import { WalletInfo } from "@/types/wallet";
@@ -130,7 +130,7 @@ export function GlobalNavbar() {
           <CreditBalance userId="user-1" className="hidden sm:flex" />
           {/* TODO: Replace with actual auth user ID */}
 
-          <NotificationCenter />
+          {isConnected && <NotificationBell />}
 
           {isConnected ? (
             <WalletSheet
