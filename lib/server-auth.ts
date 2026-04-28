@@ -6,6 +6,10 @@ export interface User {
   name: string;
   email?: string;
   image?: string;
+  bio?: string;
+  github?: string;
+  twitter?: string;
+  website?: string;
 }
 
 interface SessionUser {
@@ -96,11 +100,22 @@ export async function getCurrentUser(): Promise<User | null> {
       return null;
     }
 
+    const u = validatedSession.user as typeof validatedSession.user & {
+      bio?: string | null;
+      github?: string | null;
+      twitter?: string | null;
+      website?: string | null;
+    };
+
     return {
-      id: validatedSession.user.id,
-      name: validatedSession.user.name ?? "Authenticated User",
-      email: validatedSession.user.email ?? undefined,
-      image: validatedSession.user.image ?? undefined,
+      id: u.id!,
+      name: u.name ?? "Authenticated User",
+      email: u.email ?? undefined,
+      image: u.image ?? undefined,
+      bio: u.bio ?? undefined,
+      github: u.github ?? undefined,
+      twitter: u.twitter ?? undefined,
+      website: u.website ?? undefined,
     };
   } catch (error) {
     console.error("Failed to resolve current user from session:", error);
