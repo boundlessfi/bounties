@@ -117,7 +117,7 @@ describe("POST /api/reputation/link-wallet", () => {
 
         // Recover returns different address
         vi.mocked(viem.recoverMessageAddress).mockResolvedValue(
-            "0xdifferentaddress00000000000000000000" as `0x${string}`
+            "0xABCDEFABCDEFABCDEFABCDEFABCDEFABCDEFABCD" as `0x${string}`
         );
 
         const request = new NextRequest("http://localhost/api/reputation/link-wallet", {
@@ -279,7 +279,6 @@ describe("POST /api/reputation/link-wallet", () => {
 
     it("should handle case-insensitive address comparison", async () => {
         const { POST, GET } = await import("./route");
-        const walletAddress = "0x1234567890123456789012345678901234567890";
         const mixedCaseAddress = "0x123456789012345678901234567890123456789A";
 
         // Get nonce

@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         const nonce = crypto.randomUUID();
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
-        const key = `${userId}:${address}`;
+        const key = `${userId}:${address.toLowerCase()}`;
         nonceStore.set(key, { nonce, expiresAt });
 
         // Clean up expired entries periodically
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Nonce Validation
-        const key = `${userId}:${address}`;
+        const key = `${userId}:${address.toLowerCase()}`;
         const stored = nonceStore.get(key);
 
         if (!stored) {
