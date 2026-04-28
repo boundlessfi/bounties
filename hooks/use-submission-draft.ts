@@ -1,33 +1,79 @@
 import { useCallback } from "react";
-import { useLocalStorage } from "./use-local-storage";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { SubmissionDraft, SubmissionForm } from "@/types/submission-draft";
 
 const DRAFT_KEY_PREFIX = "submission_draft_";
 const AUTO_SAVE_DELAY = 1000;
 
-export function useSubmissionDraft(bountyId: string) {
-  const draftKey = `${DRAFT_KEY_PREFIX}${bountyId}`;
-  const [draft, setDraft] = useLocalStorage<SubmissionDraft | null>(
-    draftKey,
-    null,
-  );
+function readDraftFromStorage(draftKey: string): SubmissionDraft | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
 
-  const saveDraft = useCallback(
-    (formData: SubmissionForm) => {
+  const stored = window.localStorage.getItem(draftKey);
+  if (!stored) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(stored) as SubmissionDraft;
+  } catch {
+    window.localStorage.removeItem(draftKey);
+    return null;
+  }
+}
+
+export function useSubmissionDraft(bountyId: string) {
+  const queryClient = useQueryClient();
+  const draftKey = `${DRAFT_KEY_PREFIX}${bountyId}`;
+  const queryKey = [DRAFT_KEY_PREFIX, bountyId] as const;
+
+  const { data: draft = null } = useQuery<SubmissionDraft | null>({
+    queryKey,
+    queryFn: () => readDraftFromStorage(draftKey),
+    staleTime: Infinity, // Keep draft fresh in cache until explicitly cleared
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (formData: SubmissionForm) => {
       const newDraft: SubmissionDraft = {
         id: `draft_${bountyId}_${Date.now()}`,
         bountyId,
         formData,
         updatedAt: new Date().toISOString(),
       };
-      setDraft(newDraft);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(draftKey, JSON.stringify(newDraft));
+      }
+      return newDraft;
     },
-    [bountyId, setDraft],
+    onSuccess: (newDraft) => {
+      queryClient.setQueryData(queryKey, newDraft);
+    },
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(draftKey);
+      }
+      return null;
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(queryKey, null);
+    },
+  });
+
+  const saveDraft = useCallback(
+    (formData: SubmissionForm) => {
+      saveMutation.mutate(formData);
+    },
+    [saveMutation],
   );
 
   const clearDraft = useCallback(() => {
-    setDraft(null);
-  }, [setDraft]);
+    clearMutation.mutate();
+  }, [clearMutation]);
 
   const autoSave = useCallback(
     (formData: SubmissionForm) => {

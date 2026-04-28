@@ -1,86 +1,256 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bounty } from "@/types/bounty";
 import { Application, Submission, MilestoneParticipation, CompetitionParticipation } from "@/types/participation";
 import { mockBounties } from "./mock-bounty";
 
-class BountyStoreData {
-    bounties: Bounty[] = [...mockBounties];
-    applications: Application[] = [];
-    submissions: Submission[] = [];
-    milestoneParticipations: MilestoneParticipation[] = [];
-    competitionParticipations: CompetitionParticipation[] = [];
-}
+/**
+ * @deprecated The previous globalThis-based local store is deprecated.
+ * Server and local state are now managed entirely by TanStack Query.
+ * Please use the exported React Query hooks for interacting with local state.
+ */
 
-declare global {
-    var bountyStore: BountyStoreData | undefined;
-}
-
-const globalStore: BountyStoreData = globalThis.bountyStore || new BountyStoreData();
-if (process.env.NODE_ENV !== 'production') globalThis.bountyStore = globalStore;
-
-export const BountyStore = {
-    // Bounties
-    getBounties: () => globalStore.bounties,
-    getBountyById: (id: string) => globalStore.bounties.find((b: Bounty) => b.id === id),
-
-    // Applications (Model 2)
-    addApplication: (app: Application) => {
-        globalStore.applications.push(app);
-        return app;
-    },
-    getApplicationsByBounty: (bountyId: string) =>
-        globalStore.applications.filter((a: Application) => a.bountyId === bountyId),
-    getApplicationById: (appId: string) =>
-        globalStore.applications.find((a: Application) => a.id === appId),
-    updateApplication: (appId: string, updates: Partial<Application>) => {
-        const index = globalStore.applications.findIndex((a: Application) => a.id === appId);
-        if (index === -1) return null;
-        globalStore.applications[index] = { ...globalStore.applications[index], ...updates };
-        return globalStore.applications[index];
-    },
-
-    // Submissions (Model 3)
-    addSubmission: (sub: Submission) => {
-        globalStore.submissions.push(sub);
-        return sub;
-    },
-    getSubmissionsByBounty: (bountyId: string) =>
-        globalStore.submissions.filter((s: Submission) => s.bountyId === bountyId),
-    getSubmissionById: (subId: string) =>
-        globalStore.submissions.find((s: Submission) => s.id === subId),
-    updateSubmission: (subId: string, updates: Partial<Submission>) => {
-        const index = globalStore.submissions.findIndex((s: Submission) => s.id === subId);
-        if (index === -1) return null;
-        globalStore.submissions[index] = { ...globalStore.submissions[index], ...updates };
-        return globalStore.submissions[index];
-    },
-
-    // Milestones (Model 4)
-    addMilestoneParticipation: (mp: MilestoneParticipation) => {
-        globalStore.milestoneParticipations.push(mp);
-        return mp;
-    },
-    getMilestoneParticipationsByBounty: (bountyId: string) =>
-        globalStore.milestoneParticipations.filter((m: MilestoneParticipation) => m.bountyId === bountyId),
-    updateMilestoneParticipation: (participationId: string, updates: Partial<MilestoneParticipation>) => {
-        const index = globalStore.milestoneParticipations.findIndex((m: MilestoneParticipation) => m.id === participationId);
-        if (index === -1) return null;
-        globalStore.milestoneParticipations[index] = { ...globalStore.milestoneParticipations[index], ...updates };
-        return globalStore.milestoneParticipations[index];
-    },
-
-    // Competitions
-    addCompetitionParticipation: (cp: CompetitionParticipation) => {
-        globalStore.competitionParticipations.push(cp);
-        return cp;
-    },
-    getCompetitionParticipationsByBounty: (bountyId: string) =>
-        globalStore.competitionParticipations.filter((c: CompetitionParticipation) => c.bountyId === bountyId),
-
-    // Generic Bounty Update (for status changes)
-    updateBounty: (bountyId: string, updates: Partial<Bounty>) => {
-        const index = globalStore.bounties.findIndex((b: Bounty) => b.id === bountyId);
-        if (index === -1) return null;
-        globalStore.bounties[index] = { ...globalStore.bounties[index], ...updates };
-        return globalStore.bounties[index];
-    }
+export const localStoreKeys = {
+  bounties: ["localStore", "bounties"] as const,
+  applications: ["localStore", "applications"] as const,
+  submissions: ["localStore", "submissions"] as const,
+  milestoneParticipations: ["localStore", "milestoneParticipations"] as const,
+  competitionParticipations: ["localStore", "competitionParticipations"] as const,
 };
+
+function notFoundError(entity: string, id: string) {
+  return new Error(`${entity} with id "${id}" was not found in the local query cache.`);
+}
+
+// --- Bounties ---
+export function useLocalBounties() {
+  return useQuery({
+    queryKey: localStoreKeys.bounties,
+    queryFn: () => [...mockBounties],
+    initialData: () => [...mockBounties],
+    staleTime: Infinity,
+  });
+}
+
+export function useUpdateLocalBounty() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Bounty> }) => {
+      let updatedBounty: Bounty | null = null;
+
+      queryClient.setQueryData<Bounty[]>(localStoreKeys.bounties, (current = [...mockBounties]) => {
+        const index = current.findIndex((bounty) => bounty.id === id);
+        if (index === -1) {
+          return current;
+        }
+
+        const next = [...current];
+        updatedBounty = { ...next[index], ...updates };
+        next[index] = updatedBounty;
+        return next;
+      });
+
+      if (!updatedBounty) {
+        throw notFoundError("Bounty", id);
+      }
+
+      return updatedBounty;
+    },
+  });
+}
+
+// --- Applications ---
+export function useLocalApplications(bountyId?: string) {
+  return useQuery({
+    queryKey: localStoreKeys.applications,
+    queryFn: () => [] as Application[],
+    initialData: [],
+    staleTime: Infinity,
+    select: (apps) => (bountyId ? apps.filter((app) => app.bountyId === bountyId) : apps),
+  });
+}
+
+export function useAddLocalApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (application: Application) => {
+      queryClient.setQueryData<Application[]>(localStoreKeys.applications, (current = []) => [
+        ...current,
+        application,
+      ]);
+
+      return application;
+    },
+  });
+}
+
+export function useUpdateLocalApplication() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Application> }) => {
+      let updatedApplication: Application | null = null;
+
+      queryClient.setQueryData<Application[]>(localStoreKeys.applications, (current = []) => {
+        const index = current.findIndex((application) => application.id === id);
+        if (index === -1) {
+          return current;
+        }
+
+        const next = [...current];
+        updatedApplication = { ...next[index], ...updates };
+        next[index] = updatedApplication;
+        return next;
+      });
+
+      if (!updatedApplication) {
+        throw notFoundError("Application", id);
+      }
+
+      return updatedApplication;
+    },
+  });
+}
+
+// --- Submissions ---
+export function useLocalSubmissions(bountyId?: string) {
+  return useQuery({
+    queryKey: localStoreKeys.submissions,
+    queryFn: () => [] as Submission[],
+    initialData: [],
+    staleTime: Infinity,
+    select: (submissions) =>
+      bountyId ? submissions.filter((submission) => submission.bountyId === bountyId) : submissions,
+  });
+}
+
+export function useAddLocalSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (submission: Submission) => {
+      queryClient.setQueryData<Submission[]>(localStoreKeys.submissions, (current = []) => [
+        ...current,
+        submission,
+      ]);
+
+      return submission;
+    },
+  });
+}
+
+export function useUpdateLocalSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Submission> }) => {
+      let updatedSubmission: Submission | null = null;
+
+      queryClient.setQueryData<Submission[]>(localStoreKeys.submissions, (current = []) => {
+        const index = current.findIndex((submission) => submission.id === id);
+        if (index === -1) {
+          return current;
+        }
+
+        const next = [...current];
+        updatedSubmission = { ...next[index], ...updates };
+        next[index] = updatedSubmission;
+        return next;
+      });
+
+      if (!updatedSubmission) {
+        throw notFoundError("Submission", id);
+      }
+
+      return updatedSubmission;
+    },
+  });
+}
+
+// --- Milestone Participations ---
+export function useLocalMilestoneParticipations(bountyId?: string) {
+  return useQuery({
+    queryKey: localStoreKeys.milestoneParticipations,
+    queryFn: () => [] as MilestoneParticipation[],
+    initialData: [],
+    staleTime: Infinity,
+    select: (participations) =>
+      bountyId
+        ? participations.filter((participation) => participation.bountyId === bountyId)
+        : participations,
+  });
+}
+
+export function useAddLocalMilestoneParticipation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (participation: MilestoneParticipation) => {
+      queryClient.setQueryData<MilestoneParticipation[]>(
+        localStoreKeys.milestoneParticipations,
+        (current = []) => [...current, participation],
+      );
+
+      return participation;
+    },
+  });
+}
+
+export function useUpdateLocalMilestoneParticipation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<MilestoneParticipation>;
+    }) => {
+      let updatedParticipation: MilestoneParticipation | null = null;
+
+      queryClient.setQueryData<MilestoneParticipation[]>(
+        localStoreKeys.milestoneParticipations,
+        (current = []) => {
+          const index = current.findIndex((participation) => participation.id === id);
+          if (index === -1) {
+            return current;
+          }
+
+          const next = [...current];
+          updatedParticipation = { ...next[index], ...updates };
+          next[index] = updatedParticipation;
+          return next;
+        },
+      );
+
+      if (!updatedParticipation) {
+        throw notFoundError("Milestone participation", id);
+      }
+
+      return updatedParticipation;
+    },
+  });
+}
+
+// --- Competition Participations ---
+export function useLocalCompetitionParticipations(bountyId?: string) {
+  return useQuery({
+    queryKey: localStoreKeys.competitionParticipations,
+    queryFn: () => [] as CompetitionParticipation[],
+    initialData: [],
+    staleTime: Infinity,
+    select: (participations) =>
+      bountyId
+        ? participations.filter((participation) => participation.bountyId === bountyId)
+        : participations,
+  });
+}
+
+export function useAddLocalCompetitionParticipation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (participation: CompetitionParticipation) => {
+      queryClient.setQueryData<CompetitionParticipation[]>(
+        localStoreKeys.competitionParticipations,
+        (current = []) => [...current, participation],
+      );
+
+      return participation;
+    },
+  });
+}

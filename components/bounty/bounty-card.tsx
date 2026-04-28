@@ -119,6 +119,8 @@ export function BountyCard({
 
   return (
     <Card
+      data-testid="bounty-card"
+      data-bounty-id={bounty.id}
       className={cn(
         "overflow-hidden w-full max-w-sm h-full rounded-lg cursor-pointer transition-all duration-300",
         "flex flex-col relative", // Add relative for bookmark button positioning

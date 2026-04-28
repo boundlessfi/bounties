@@ -79,7 +79,7 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
   const isFinalized = bounty.status === "COMPLETED";
   const submissionCount = bounty._count?.submissions ?? 0;
 
-  const { hasJoined, isPastDeadline, joinMutation, handleJoin } =
+  const { walletAddress, hasJoined, isPastDeadline, joinMutation, handleJoin } =
     useCompetitionJoinState(bounty);
 
   const handleCopy = async () => {
@@ -219,8 +219,14 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
             </Button>
           ) : (
             <Button
+              data-testid="apply-to-bounty-btn"
               className="w-full h-11 font-bold tracking-wide"
-              disabled={!canAct || isPastDeadline || joinMutation.isPending}
+              disabled={
+                !canAct ||
+                isPastDeadline ||
+                joinMutation.isPending ||
+                !walletAddress
+              }
               size="lg"
               onClick={() => void handleJoin()}
             >
@@ -475,7 +481,7 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
 
-  const { hasJoined, isPastDeadline, joinMutation, handleJoin } =
+  const { walletAddress, hasJoined, isPastDeadline, joinMutation, handleJoin } =
     useCompetitionJoinState(bounty);
 
   const label = () => {
