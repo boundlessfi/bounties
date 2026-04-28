@@ -136,15 +136,24 @@ describe("POST /api/reputation/link-wallet", () => {
     });
 
     it("should return 403 when invalid nonce provided", async () => {
-        const { POST } = await import("./route");
-        vi.mocked(getCurrentUser).mockResolvedValue({ id: "user-1" });
+        const { POST, GET } = await import("./route");
+        const walletAddress = "0x1234567890123456789012345678901234567890";
 
+        // First get a nonce to seed the store
+        vi.mocked(getCurrentUser).mockResolvedValue({ id: "user-1" });
+        const nonceRequest = new NextRequest(
+            `http://localhost/api/reputation/link-wallet?userId=user-1&address=${walletAddress}`,
+            { method: "GET" }
+        );
+        await GET(nonceRequest);
+
+        // Now try with wrong nonce
         const request = new NextRequest("http://localhost/api/reputation/link-wallet", {
             method: "POST",
             body: JSON.stringify({
                 userId: "user-1",
                 signature: "0xabc",
-                address: "0x1234567890123456789012345678901234567890",
+                address: walletAddress,
                 nonce: "wrong-nonce",
             }),
         });
@@ -290,6 +299,7 @@ describe("POST /api/reputation/link-wallet", () => {
         const nonceResponse = await GET(nonceRequest);
         const nonceData = await nonceResponse.json();
         const nonce = nonceData.nonce;
+        const messageToSign = nonceData.message;
 
         // Recover returns mixed case, request uses lowercase
         vi.mocked(viem.recoverMessageAddress).mockResolvedValue(mixedCaseAddress as `0x${string}`);
@@ -306,6 +316,12 @@ describe("POST /api/reputation/link-wallet", () => {
         });
         const response = await POST(request);
         expect(response.status).toBe(200);
+
+        // Verify POST used the exact message issued by GET
+        expect(viem.recoverMessageAddress).toHaveBeenCalledWith({
+            message: messageToSign,
+            signature: "0xvalidsignature",
+        });
     });
 
     it("should return nonce with correct message format via GET", async () => {

@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/server-auth";
 import { recoverMessageAddress } from "viem";
 
 // In-memory nonce store (use Redis in production)
-const nonceStore = new Map<string, { nonce: string; expiresAt: number }>();
+const nonceStore = new Map<string, { nonce: string; expiresAt: number; message: string }>();
 
 // Generate a nonce for signature challenges
 export async function GET(request: NextRequest) {
@@ -30,8 +30,9 @@ export async function GET(request: NextRequest) {
         const nonce = crypto.randomUUID();
         const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
+        const message = `Link wallet ${address} to user ${userId}\nNonce: ${nonce}`;
         const key = `${userId}:${address.toLowerCase()}`;
-        nonceStore.set(key, { nonce, expiresAt });
+        nonceStore.set(key, { nonce, expiresAt, message });
 
         // Clean up expired entries periodically
         if (nonceStore.size > 1000) {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
             nonce,
-            message: `Link wallet ${address} to user ${userId}\nNonce: ${nonce}`,
+            message,
             expiresAt,
         });
     } catch (error) {
@@ -96,7 +97,8 @@ export async function POST(request: NextRequest) {
         }
 
         // 3. Signature Verification using recoverMessageAddress
-        const signedMessage = `Link wallet ${address} to user ${userId}\nNonce: ${nonce}`;
+        // Use the exact message that was stored with the nonce to prevent mismatches
+        const signedMessage = stored.message;
 
         let recoveredAddress: `0x${string}`;
         try {
