@@ -50,7 +50,7 @@ export default function DisputeReviewPage({ params }: DisputePageProps) {
     return (
       <div className="p-8 text-center border rounded-xl bg-muted/20">
         <h1 className="text-2xl font-bold">Dispute not found</h1>
-        <Button onClick={() => router.back()} className="mt-4">
+        <Button onClick={() => router.back()} className="mt-4" variant="outline">
           Go Back
         </Button>
       </div>
@@ -85,7 +85,7 @@ export default function DisputeReviewPage({ params }: DisputePageProps) {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Gavel className="h-8 w-8 text-primary" />
-            Dispute Review
+            Dispute Resolution
           </h1>
           <p className="text-muted-foreground font-mono text-sm">Case #{disputeId}</p>
         </div>

@@ -1,0 +1,17 @@
+query AdminDisputeDetail($id: String!) {
+  adminDisputeDetail(id: $id) {
+    id
+    status
+    reason
+    description
+    campaignId
+    milestoneId
+  }
+}
+
+mutation ResolveDispute($id: String!, $input: AdminResolveDisputeDto!) {
+  resolveDispute(id: $id, input: $input) {
+    id
+    status
+  }
+}
