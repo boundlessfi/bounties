@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ReputationService } from "@/lib/services/reputation";
 import { getCurrentUser } from "@/lib/server-auth";
+import { verifyMessage } from "viem";
 
 export async function POST(request: NextRequest) {
     try {
-        const { userId, signature, address } = await request.json();
+        const { userId, signature, address, message } = await request.json();
 
         if (!userId || !signature || !address) {
             return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
@@ -17,16 +18,32 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Signature Verification
-        // Note: Real implementation would use ethers.verifyMessage or similar
-        // const recoveredAddress = verifyMessage(`Link wallet ${address} to user ${userId}`, signature);
-        const isValidSignature = true; // Mocked for now
+        // Reconstruct the signed message (client should send the exact message that was signed)
+        const signedMessage = message || `Link wallet ${address} to user ${userId}`;
 
-        if (!isValidSignature) {
-            // if (recoveredAddress !== address)
-            return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+        let recoveredAddress: `0x${string}`;
+        try {
+            recoveredAddress = await verifyMessage({
+                message: signedMessage,
+                signature: signature as `0x${string}`,
+                address: address as `0x${string}`,
+            });
+        } catch (verifyError) {
+            console.error("Signature verification failed:", verifyError);
+            return NextResponse.json(
+                { error: "Invalid signature format or verification failed" },
+                { status: 403 }
+            );
         }
 
-        // 3. Service Call
+        // Verify the recovered address matches the provided address
+        if (recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+            return NextResponse.json(
+                { error: "Signature does not match the provided wallet address" },
+                { status: 403 }
+            );
+        }
+
         // 3. Service Call
         const result = await ReputationService.linkWallet(userId, address);
 
@@ -37,7 +54,11 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: result.error || "Failed to link wallet" }, { status: 500 });
         }
 
-        return NextResponse.json({ success: true, message: "Wallet linked successfully" });
+        return NextResponse.json({ 
+            success: true, 
+            message: "Wallet linked successfully",
+            verifiedAddress: recoveredAddress 
+        });
     } catch (error) {
         console.error("Error linking wallet:", error);
         return NextResponse.json(
