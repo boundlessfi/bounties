@@ -5,15 +5,7 @@ import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalNavbar } from "@/components/global-navbar";
-import dynamic from "next/dynamic";
-
-const SmartWalletProvider = dynamic(
-  () =>
-    import("@/components/providers/smart-wallet-provider").then(
-      (m) => m.SmartWalletProvider,
-    ),
-  { ssr: false },
-);
+import { SmartWalletProvider } from "@/components/providers/smart-wallet-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
