@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -58,10 +58,10 @@ export function NotificationsTab() {
   const handleSave = async () => {
     setIsPending(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      toast.success("Notification preferences saved!");
-    } catch {
-      toast.error("Failed to save preferences");
+      // TODO: wire to backend notification preferences endpoint
+      toast.info(
+        "Notification preferences saved locally. Backend sync coming soon.",
+      );
     } finally {
       setIsPending(false);
     }
@@ -82,25 +82,23 @@ export function NotificationsTab() {
           </span>
 
           {eventKeys.map((key) => (
-            <>
-              <Label key={`${key}-label`} className="text-sm">
-                {eventLabels[key]}
-              </Label>
-              <div key={`${key}-inapp`} className="flex justify-center">
+            <Fragment key={key}>
+              <Label className="text-sm">{eventLabels[key]}</Label>
+              <div className="flex justify-center">
                 <Switch
                   checked={prefs[key].inApp}
                   onCheckedChange={() => toggleChannel(key, "inApp")}
                   aria-label={`${eventLabels[key]} in-app notification`}
                 />
               </div>
-              <div key={`${key}-email`} className="flex justify-center">
+              <div className="flex justify-center">
                 <Switch
                   checked={prefs[key].email}
                   onCheckedChange={() => toggleChannel(key, "email")}
                   aria-label={`${eventLabels[key]} email notification`}
                 />
               </div>
-            </>
+            </Fragment>
           ))}
         </div>
       </div>

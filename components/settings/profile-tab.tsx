@@ -72,18 +72,25 @@ export function ProfileTab({ defaultValues }: ProfileTabProps) {
   });
 
   const handleSubmit = async (values: ProfileFormValues) => {
-    const previous = queryClient.getQueryData<ProfileFormValues>(
-      authKeys.session(),
-    );
+    const dirtyFields = form.formState.dirtyFields;
+    const changedValues = Object.fromEntries(
+      Object.entries(values).filter(
+        ([key]) => dirtyFields[key as keyof ProfileFormValues],
+      ),
+    ) as Partial<ProfileFormValues>;
+
+    if (Object.keys(changedValues).length === 0) return;
+
+    const previous = queryClient.getQueryData(authKeys.session());
 
     queryClient.setQueryData(authKeys.session(), (old: unknown) => {
       if (!old || typeof old !== "object") return old;
       const session = old as { user?: Partial<ProfileFormValues> };
-      return { ...session, user: { ...session.user, ...values } };
+      return { ...session, user: { ...session.user, ...changedValues } };
     });
 
     try {
-      await mutateAsync(values);
+      await mutateAsync(changedValues);
     } catch {
       queryClient.setQueryData(authKeys.session(), previous);
     }

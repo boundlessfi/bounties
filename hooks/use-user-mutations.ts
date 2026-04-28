@@ -13,22 +13,19 @@ export interface UpdateUserParams {
 }
 
 export async function updateUser(params: UpdateUserParams) {
-  try {
-    const response = await authClient.updateUser(
-      params as Parameters<typeof authClient.updateUser>[0],
-    );
+  const response = await authClient.updateUser(
+    params as Parameters<typeof authClient.updateUser>[0],
+  );
 
-    if (!response.data) {
-      throw new Error("Failed to update user profile");
-    }
-
-    return response.data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`User update failed: ${error.message}`);
-    }
-    throw new Error("An unexpected error occurred while updating user profile");
+  if (response.error) {
+    throw new Error(response.error.message || "Failed to update user profile");
   }
+
+  if (!response.data) {
+    throw new Error("Failed to update user profile");
+  }
+
+  return response.data;
 }
 
 export type UpdateUserData = Awaited<ReturnType<typeof updateUser>>;

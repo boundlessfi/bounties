@@ -18,10 +18,10 @@ export function SettingsClient({ user }: SettingsClientProps) {
   const profileDefaults = {
     name: user.name ?? "",
     image: user.image ?? "",
-    bio: "",
-    github: "",
-    twitter: "",
-    website: "",
+    bio: user.bio ?? "",
+    github: user.github ?? "",
+    twitter: user.twitter ?? "",
+    website: user.website ?? "",
   };
 
   return (
