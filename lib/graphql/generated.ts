@@ -2257,6 +2257,45 @@ export type MarkSubmissionPaidMutation = {
   };
 };
 
+export type AdminDisputeDetailQueryVariables = Exact<{
+  id: Scalars["ID"]["input"];
+}>;
+
+export type AdminDisputeDetailQuery = {
+  __typename?: "Query";
+  adminDisputeDetail: {
+    __typename?: "AdminDisputeDto";
+    id: string;
+    campaignId: string;
+    description: string;
+    reason: DisputeReasonEnum;
+    status: DisputeStatusEnum;
+    resolution?: string | null;
+    milestoneId?: string | null;
+    createdAt: string;
+  };
+};
+
+export type ResolveDisputeMutationVariables = Exact<{
+  id: Scalars["ID"]["input"];
+  input: AdminResolveDisputeDto;
+}>;
+
+export type ResolveDisputeMutation = {
+  __typename?: "Mutation";
+  resolveDispute: {
+    __typename?: "AdminDisputeDto";
+    id: string;
+    campaignId: string;
+    description: string;
+    reason: DisputeReasonEnum;
+    status: DisputeStatusEnum;
+    resolution?: string | null;
+    milestoneId?: string | null;
+    createdAt: string;
+  };
+};
+
 export const BountyFieldsFragmentDoc = new TypedDocumentString(
   `
     fragment BountyFields on Bounty {
@@ -2430,6 +2469,89 @@ export const useBookmarksQuery = <TData = BookmarksQuery, TError = unknown>(
       BookmarksDocument,
       variables,
     ),
+    ...options,
+  });
+};
+
+export const AdminDisputeDetailDocument = new TypedDocumentString(`
+    query AdminDisputeDetail($id: ID!) {
+  adminDisputeDetail(id: $id) {
+    id
+    campaignId
+    description
+    reason
+    status
+    resolution
+    milestoneId
+    createdAt
+  }
+}
+    `);
+
+export const useAdminDisputeDetailQuery = <
+  TData = AdminDisputeDetailQuery,
+  TError = unknown,
+>(
+  variables: AdminDisputeDetailQueryVariables,
+  options?: Omit<
+    UseQueryOptions<AdminDisputeDetailQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<AdminDisputeDetailQuery, TError, TData>["queryKey"];
+  },
+) => {
+  return useQuery<AdminDisputeDetailQuery, TError, TData>({
+    queryKey: ["AdminDisputeDetail", variables],
+    queryFn: fetcher<AdminDisputeDetailQuery, AdminDisputeDetailQueryVariables>(
+      AdminDisputeDetailDocument,
+      variables,
+    ),
+    ...options,
+  });
+};
+
+useAdminDisputeDetailQuery.getKey = (
+  variables: AdminDisputeDetailQueryVariables,
+) => ["AdminDisputeDetail", variables];
+
+export const ResolveDisputeDocument = new TypedDocumentString(`
+    mutation ResolveDispute($id: ID!, $input: AdminResolveDisputeDto!) {
+  resolveDispute(id: $id, input: $input) {
+    id
+    campaignId
+    description
+    reason
+    status
+    resolution
+    milestoneId
+    createdAt
+  }
+}
+    `);
+
+export const useResolveDisputeMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    ResolveDisputeMutation,
+    TError,
+    ResolveDisputeMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ResolveDisputeMutation,
+    TError,
+    ResolveDisputeMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ResolveDispute"],
+    mutationFn: (variables?: ResolveDisputeMutationVariables) =>
+      fetcher<ResolveDisputeMutation, ResolveDisputeMutationVariables>(
+        ResolveDisputeDocument,
+        variables,
+      )(),
     ...options,
   });
 };
@@ -3291,6 +3413,372 @@ export const useSubmitToBountyMutation = <TError = unknown, TContext = unknown>(
         SubmitToBountyDocument,
         variables,
       )(),
+    ...options,
+  });
+};
+
+export const ReviewSubmissionDocument = new TypedDocumentString(`
+    mutation ReviewSubmission($input: ReviewSubmissionInput!) {
+  reviewSubmission(input: $input) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useReviewSubmissionMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ReviewSubmission"],
+    mutationFn: (variables?: ReviewSubmissionMutationVariables) =>
+      fetcher<ReviewSubmissionMutation, ReviewSubmissionMutationVariables>(
+        ReviewSubmissionDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+
+export const MarkSubmissionPaidDocument = new TypedDocumentString(`
+    mutation MarkSubmissionPaid($submissionId: ID!, $transactionHash: String!) {
+  markSubmissionPaid(
+    submissionId: $submissionId
+    transactionHash: $transactionHash
+  ) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useMarkSubmissionPaidMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >({
+    mutationKey: ["MarkSubmissionPaid"],
+    mutationFn: (variables?: MarkSubmissionPaidMutationVariables) =>
+      fetcher<MarkSubmissionPaidMutation, MarkSubmissionPaidMutationVariables>(
+        MarkSubmissionPaidDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+    ...options,
+  });
+};
+
+export const ReviewSubmissionDocument = new TypedDocumentString(`
+    mutation ReviewSubmission($input: ReviewSubmissionInput!) {
+  reviewSubmission(input: $input) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useReviewSubmissionMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ReviewSubmission"],
+    mutationFn: (variables?: ReviewSubmissionMutationVariables) =>
+      fetcher<ReviewSubmissionMutation, ReviewSubmissionMutationVariables>(
+        ReviewSubmissionDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+
+export const MarkSubmissionPaidDocument = new TypedDocumentString(`
+    mutation MarkSubmissionPaid($submissionId: ID!, $transactionHash: String!) {
+  markSubmissionPaid(
+    submissionId: $submissionId
+    transactionHash: $transactionHash
+  ) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useMarkSubmissionPaidMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >({
+    mutationKey: ["MarkSubmissionPaid"],
+    mutationFn: (variables?: MarkSubmissionPaidMutationVariables) =>
+      fetcher<MarkSubmissionPaidMutation, MarkSubmissionPaidMutationVariables>(
+        MarkSubmissionPaidDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+    ...options,
+  });
+};
+
+export const ReviewSubmissionDocument = new TypedDocumentString(`
+    mutation ReviewSubmission($input: ReviewSubmissionInput!) {
+  reviewSubmission(input: $input) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useReviewSubmissionMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ReviewSubmissionMutation,
+    TError,
+    ReviewSubmissionMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ReviewSubmission"],
+    mutationFn: (variables?: ReviewSubmissionMutationVariables) =>
+      fetcher<ReviewSubmissionMutation, ReviewSubmissionMutationVariables>(
+        ReviewSubmissionDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+
+export const MarkSubmissionPaidDocument = new TypedDocumentString(`
+    mutation MarkSubmissionPaid($submissionId: ID!, $transactionHash: String!) {
+  markSubmissionPaid(
+    submissionId: $submissionId
+    transactionHash: $transactionHash
+  ) {
+    ...SubmissionFields
+  }
+}
+    fragment SubmissionFields on BountySubmissionType {
+  id
+  bountyId
+  submittedBy
+  submittedByUser {
+    id
+    name
+    image
+  }
+  githubPullRequestUrl
+  status
+  createdAt
+  updatedAt
+  reviewedAt
+  reviewedBy
+  reviewedByUser {
+    id
+    name
+    image
+  }
+  reviewComments
+  paidAt
+  rewardTransactionHash
+}`);
+
+export const useMarkSubmissionPaidMutation = <
+  TError = unknown,
+  TContext = unknown,
+>(
+  options?: UseMutationOptions<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    MarkSubmissionPaidMutation,
+    TError,
+    MarkSubmissionPaidMutationVariables,
+    TContext
+  >({
+    mutationKey: ["MarkSubmissionPaid"],
+    mutationFn: (variables?: MarkSubmissionPaidMutationVariables) =>
+      fetcher<MarkSubmissionPaidMutation, MarkSubmissionPaidMutationVariables>(
+        MarkSubmissionPaidDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
     ...options,
   });
 };

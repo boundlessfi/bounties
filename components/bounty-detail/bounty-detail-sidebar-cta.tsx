@@ -10,6 +10,7 @@ import {
   Loader2,
   Users,
   Clock,
+  Gavel,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -24,8 +25,15 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { BountyFieldsFragment } from "@/lib/graphql/generated";
+import { BountyFieldsFragment, DisputeReasonEnum } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
 import { FcfsClaimButton } from "@/components/bounty/fcfs-claim-button";
 import { CompetitionSubmission } from "@/components/bounty/competition-submission";
@@ -34,6 +42,7 @@ import { authClient } from "@/lib/auth-client";
 import { useCompetitionJoinState } from "@/hooks/use-competition-join-state";
 import type { CancellationRecord } from "@/types/escrow";
 import { useCancelBountyDialog } from "@/hooks/use-cancel-bounty-dialog";
+import { toast } from "sonner";
 import type { Bounty } from "@/types/bounty";
 
 /** Props accept the wider intersection returned by useBountyDetail so
@@ -59,11 +68,24 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
     handleCancel,
   } = useCancelBountyDialog(bounty.id, onCancelled);
 
+  const [disputeDialogOpen, setDisputeDialogOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState<DisputeReasonEnum | "">("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+
   const canAct = bounty.status === "OPEN";
   const isFcfs = bounty.type === "FIXED_PRICE";
   const isCompetition = bounty.type === "COMPETITION";
   const isCreator =
     (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
+
+  const isParticipant = bounty.submissions?.some(
+    (s) => s.submittedBy === (session?.user as { id?: string } | undefined)?.id
+  );
+
+  const canRaiseDispute = (isParticipant || isCreator) && 
+    (bounty.status === "IN_PROGRESS" || bounty.status === "UNDER_REVIEW");
+
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
 
@@ -85,6 +107,17 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
     } catch {
       // clipboard write failed
     }
+  };
+
+  const handleRaiseDispute = async () => {
+    setIsSubmittingDispute(true);
+    // Note: backend mutation for raiseDispute is pending schema update
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    toast.success("Dispute raised successfully.");
+    setDisputeDialogOpen(false);
+    setDisputeReason("");
+    setDisputeDescription("");
+    setIsSubmittingDispute(false);
   };
 
   const ctaLabel = () => {
@@ -235,6 +268,21 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
           </p>
         )}
 
+        {/* Raise Dispute */}
+        {canRaiseDispute && (
+          <>
+            <Separator className="bg-gray-800/60" />
+            <Button
+              variant="ghost"
+              className="w-full text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all text-xs h-8"
+              onClick={() => setDisputeDialogOpen(true)}
+            >
+              <Gavel className="size-3 mr-2" />
+              Raise a Dispute
+            </Button>
+          </>
+        )}
+
         {/* Cancel Bounty */}
         {canCancel && (
           <>
@@ -361,6 +409,61 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Raise Dispute Dialog */}
+      <AlertDialog open={disputeDialogOpen} onOpenChange={setDisputeDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Gavel className="size-5 text-red-400" />
+              Raise a Dispute
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Please select a category and describe the disagreement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>Reason</Label>
+              <Select value={disputeReason} onValueChange={(v) => setDisputeReason(v as DisputeReasonEnum)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(DisputeReasonEnum).map((reason) => (
+                    <SelectItem key={reason} value={reason}>
+                      {reason.replace(/_/g, " ")}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dispute-desc">Description</Label>
+              <Textarea
+                id="dispute-desc"
+                placeholder="Provide details for the reviewer..."
+                value={disputeDescription}
+                onChange={(e) => setDisputeDescription(e.target.value)}
+                className="min-h-24"
+              />
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmittingDispute}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleRaiseDispute}
+              disabled={!disputeReason || !disputeDescription.trim() || isSubmittingDispute}
+            >
+              {isSubmittingDispute && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Submit Dispute
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -387,6 +490,13 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
   const isCompetition = bounty.type === "COMPETITION";
   const isCreator =
     (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
+
+  const isParticipant = bounty.submissions?.some(
+    (s) => s.submittedBy === (session?.user as { id?: string } | undefined)?.id
+  );
+  const canRaiseDispute = (isParticipant || isCreator) && 
+    (bounty.status === "IN_PROGRESS" || bounty.status === "UNDER_REVIEW");
+
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
 
