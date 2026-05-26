@@ -209,6 +209,7 @@ export function RefundStatusTracker({
               onClick={handleCopyHash}
               className="shrink-0 p-1.5 rounded-md hover:bg-muted/50 transition-colors"
               title="Copy transaction hash"
+              aria-label="Copy transaction hash"
             >
               {copiedHash ? (
                 <Check className="h-3.5 w-3.5 text-emerald-400" />

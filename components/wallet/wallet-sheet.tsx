@@ -48,7 +48,7 @@ export function WalletSheet({ walletInfo, trigger }: WalletSheetProps) {
     <Sheet>
       <SheetTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" aria-label="Open wallet">
             <Wallet className="h-4 w-4" />
           </Button>
         )}

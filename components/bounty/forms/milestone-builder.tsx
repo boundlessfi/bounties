@@ -114,6 +114,7 @@ export function MilestoneBuilder<
                 onClick={() => remove(index)}
                 disabled={fields.length === 1}
                 className="text-muted-foreground hover:text-destructive"
+                aria-label={`Remove milestone ${index + 1}`}
               >
                 <Trash2 className="size-4" />
               </Button>

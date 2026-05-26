@@ -133,6 +133,11 @@ export function StellarLink({
     const networkText = network || getStellarNetwork();
     return `${prefix} on ${networkText} • ${explorer}`;
   }, [type, network, explorer, isValid, tooltipPrefix]);
+  const copyTooltipText = copied
+    ? "Copied!"
+    : copyError
+      ? "Failed"
+      : `Copy ${type}`;
 
   if (!value || !isValid) {
     return (
@@ -184,7 +189,7 @@ export function StellarLink({
                   copied && "text-green-600",
                   copyError && "text-red-600",
                 )}
-                aria-label={`Copy ${type} value`}
+                aria-label={copyTooltipText}
               >
                 {copied ? (
                   <Check className="h-3 w-3" />
@@ -196,9 +201,7 @@ export function StellarLink({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-xs">
-                {copied ? "Copied!" : copyError ? "Failed" : `Copy ${type}`}
-              </p>
+              <p className="text-xs">{copyTooltipText}</p>
             </TooltipContent>
           </Tooltip>
         )}

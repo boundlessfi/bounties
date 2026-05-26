@@ -78,6 +78,8 @@ export function Model4MaintainerDashboard({
                       ((currentMilestoneIndex + 1) / milestones.length) * 100,
                     ),
                   );
+            const messageActionLabel = `Send message to ${contributor.userName} (coming soon)`;
+            const removeActionLabel = `Remove ${contributor.userName} from slot (coming soon)`;
 
             return (
               <div
@@ -139,13 +141,12 @@ export function Model4MaintainerDashboard({
                               handleAction("Message", contributor.userName)
                             }
                             disabled={loadingAction !== null}
+                            aria-label={messageActionLabel}
                           >
                             <MessageSquare className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Send Message [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>{messageActionLabel}</TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -228,13 +229,12 @@ export function Model4MaintainerDashboard({
                               handleAction("Remove", contributor.userName)
                             }
                             disabled={loadingAction !== null}
+                            aria-label={removeActionLabel}
                           >
                             <UserMinus className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Remove from slot [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>{removeActionLabel}</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
