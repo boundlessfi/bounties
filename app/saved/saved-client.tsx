@@ -44,16 +44,19 @@ function SavedBountiesClient() {
 
   if (bookmarkedBounties.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="rounded-full bg-muted p-4 mb-4">
-          <Bookmark className="h-8 w-8 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-800 bg-background-card/30 py-24 text-center">
+        <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-gray-800/50">
+          <Bookmark className="size-8 text-gray-600" />
         </div>
-        <h2 className="text-xl font-semibold mb-2">No saved bounties yet</h2>
-        <p className="text-muted-foreground max-w-sm mb-6">
-          Bookmark interesting bounties to save them here for later review.
+        <h2 className="mb-2 text-xl font-bold text-gray-200">
+          No saved bounties yet
+        </h2>
+        <p className="mx-auto mb-6 max-w-md text-gray-400">
+          Bookmark interesting bounties while browsing and they will appear
+          here for quick review later.
         </p>
         <Button asChild>
-          <Link href="/">Explore Bounties</Link>
+          <Link href="/bounty">Browse bounties</Link>
         </Button>
       </div>
     );
