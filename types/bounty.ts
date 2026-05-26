@@ -65,6 +65,39 @@ export interface BountySubmission {
   updatedAt: string;
 }
 
+export type BountyApplicationStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "disputed";
+
+export interface BountyApplication {
+  id: string;
+  bountyId: string;
+  applicantId?: string | null;
+  applicantAddress: string;
+  applicantName?: string;
+  applicantAvatarUrl?: string | null;
+  coverLetter?: string | null;
+  portfolioUrl?: string | null;
+  proposal: {
+    approach: string;
+    estimatedTimeline: string;
+    relevantExperience: string;
+    portfolioUrl?: string;
+  };
+  reputation: {
+    score: number;
+    tier: string;
+    completionStats: string;
+  };
+  status: BountyApplicationStatus;
+  createdAt: string;
+  submittedAt: string;
+  reviewedAt?: string | null;
+  feedback?: string | null;
+}
+
 export interface BountyCount {
   submissions: number;
 }
@@ -105,7 +138,10 @@ export interface Bounty {
   bountyWindow?: BountyWindowType | null;
 
   submissions?: BountySubmission[] | null;
+  applications?: BountyApplication[] | null;
   _count?: BountyCount | null;
+  claimCount?: number | null;
+  maxParticipants?: number | null;
 
   milestones?: Milestone[] | null;
   contributorProgress?: ContributorProgress[] | null;

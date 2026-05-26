@@ -28,7 +28,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MilestoneSubmissionCard } from "./milestone-submission-card";
 import { Model4MaintainerDashboard } from "./model4-maintainer-dashboard";
-import type { Milestone, ContributorProgress } from "@/types/bounty";
+import type { Bounty, Milestone, ContributorProgress } from "@/types/bounty";
 import {
   ApplicationReviewDashboard,
   type Application,
@@ -36,7 +36,8 @@ import {
 import { SubmissionApprovalPanel } from "@/components/bounty/submission-approval-panel";
 import { ApplicationSubmitWorkPanel } from "@/components/bounty/application-submit-work-panel";
 
-type BountyData = ReturnType<typeof useBountyDetail>["data"];
+type BountyData = (ReturnType<typeof useBountyDetail>["data"] &
+  Partial<Bounty>) | null | undefined;
 
 /** Returns milestones with mock fallback. Safe for public display since
  * milestones are structural (titles/descriptions), not personal data.
@@ -71,10 +72,7 @@ function getFullMilestoneData(bounty: BountyData): {
 // Backend does not currently provide applications in the response.
 // Fall back to empty array until the schema supports it.
 const getApplications = (bounty: BountyData): Application[] => {
-  return (
-    (bounty as BountyData & { applications?: Application[] })?.applications ??
-    []
-  );
+  return bounty?.applications ?? [];
 };
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {

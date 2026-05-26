@@ -77,9 +77,8 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
   const canCancel =
     isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
 
-  // Fall back to _count.submissions until backend adds claimCount / maxParticipants
-  const claimCount = bounty._count?.submissions ?? 0;
-  const maxParticipants: number | null = null;
+  const claimCount = bounty.claimCount ?? bounty._count?.submissions ?? 0;
+  const maxParticipants = bounty.maxParticipants ?? null;
   const deadline = bounty.bountyWindow?.endDate ?? null;
   const isFinalized = bounty.status === "COMPLETED";
   const submissionCount = bounty._count?.submissions ?? 0;
