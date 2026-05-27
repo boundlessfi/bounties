@@ -39,7 +39,7 @@ export function useCompetitionJoinState(
   // BountyFieldsFragment (list queries) doesn't include submissions, so falls
   // back to false until the detail query resolves.
   const bountySubmissions = (
-    bounty as { submissions?: Array<{ submittedBy: string }> | null }
+    bounty
   ).submissions;
   const serverHasJoined =
     walletAddress != null &&

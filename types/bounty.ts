@@ -69,6 +69,15 @@ export interface BountyCount {
   submissions: number;
 }
 
+export interface BountyApplication {
+  id: string;
+  bountyId: string;
+  appliedBy: string;
+  status?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface Milestone {
   id: string;
   title: string;
@@ -105,13 +114,14 @@ export interface Bounty {
   bountyWindow?: BountyWindowType | null;
 
   submissions?: BountySubmission[] | null;
-  _count?: BountyCount | null;
-
-  milestones?: Milestone[] | null;
-  contributorProgress?: ContributorProgress[] | null;
-
+  applications?: BountyApplication[] | null;
+  claimCount?: number | null;
+  maxParticipants?: number | null;
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
+  milestones?: Milestone[] | null;
+  contributorProgress?: ContributorProgress[] | null;
+  _count?: BountyCount | null;
 
   createdBy: string;
   createdAt: string;
