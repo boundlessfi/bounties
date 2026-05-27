@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ExternalLink,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -18,7 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useApproveApplicationSubmission } from "@/hooks/use-bounty-application";
+import {
+  useApproveApplicationSubmission,
+  useRequestRevisions,
+} from "@/hooks/use-bounty-application";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import type { BountyFieldsFragment } from "@/lib/graphql/generated";
 import type { Bounty } from "@/types/bounty";
 
@@ -29,6 +35,7 @@ interface SubmissionApprovalPanelProps {
   creatorAddress: string;
   submittedWorkCid?: string;
   submissionDescription?: string;
+  submissionId?: string;
 }
 
 export function SubmissionApprovalPanel({
@@ -36,11 +43,16 @@ export function SubmissionApprovalPanel({
   creatorAddress,
   submittedWorkCid,
   submissionDescription,
+  submissionId,
 }: SubmissionApprovalPanelProps) {
   const [points, setPoints] = useState<number>(5);
+  const [showRevisionForm, setShowRevisionForm] = useState(false);
+  const [revisionFeedback, setRevisionFeedback] = useState("");
 
   const { mutate: approveSubmission, isPending: isApproving } =
     useApproveApplicationSubmission();
+  const { mutate: requestRevisions, isPending: isRequestingRevisions } =
+    useRequestRevisions();
 
   const handleApprove = () => {
     const clampedPoints = Math.max(1, Math.min(100, points || 0));
@@ -49,6 +61,31 @@ export function SubmissionApprovalPanel({
       creatorAddress,
       points: clampedPoints,
     });
+  };
+
+  const handleRequestRevisions = () => {
+    if (!submissionId || !revisionFeedback.trim()) return;
+    requestRevisions(
+      {
+        bountyId: bounty.id,
+        submissionId,
+        feedback: revisionFeedback.trim(),
+      },
+      {
+        onSuccess: () => {
+          toast.success("Revision request sent to contributor.");
+          setRevisionFeedback("");
+          setShowRevisionForm(false);
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to request revisions.",
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -131,24 +168,69 @@ export function SubmissionApprovalPanel({
             </Button>
           </div>
 
-          {/* Revision Section - Coming Soon */}
           <div className="space-y-4 border-l border-gray-800/50 pl-6">
-            <div className="h-full flex flex-col justify-center items-center text-center p-4 border border-dashed border-gray-800 rounded-lg opacity-60">
-              <AlertTriangle className="size-6 text-gray-500 mb-2" />
-              <h4 className="text-sm font-medium text-gray-400 mb-1">
-                Needs Changes?
-              </h4>
-              <p className="text-xs text-gray-500 mb-4">
-                Request revisions before releasing the escrow.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-700 text-gray-500 cursor-not-allowed"
-                disabled
-              >
-                Coming Soon
-              </Button>
+            <div className="space-y-4 p-4 border border-dashed border-amber-500/20 rounded-lg bg-amber-500/5">
+              <div className="text-center">
+                <AlertTriangle className="size-6 text-amber-400 mb-2 mx-auto" />
+                <h4 className="text-sm font-medium text-amber-200 mb-1">
+                  Needs Changes?
+                </h4>
+                <p className="text-xs text-amber-500/80">
+                  Send feedback before releasing the escrow.
+                </p>
+              </div>
+
+              {showRevisionForm ? (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="revision-feedback">Revision feedback</Label>
+                    <Textarea
+                      id="revision-feedback"
+                      value={revisionFeedback}
+                      onChange={(e) => setRevisionFeedback(e.target.value)}
+                      placeholder="Explain what needs to change before approval..."
+                      className="min-h-24 bg-background-card"
+                      disabled={isRequestingRevisions}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setShowRevisionForm(false)}
+                      disabled={isRequestingRevisions}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={handleRequestRevisions}
+                      disabled={
+                        !submissionId ||
+                        !revisionFeedback.trim() ||
+                        isRequestingRevisions
+                      }
+                    >
+                      {isRequestingRevisions && (
+                        <Loader2 className="size-4 mr-2 animate-spin" />
+                      )}
+                      Send Request
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                  onClick={() => setShowRevisionForm(true)}
+                  disabled={!submissionId || isApproving}
+                >
+                  Request Revisions
+                </Button>
+              )}
             </div>
           </div>
         </div>
