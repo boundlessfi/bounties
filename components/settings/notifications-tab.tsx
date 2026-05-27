@@ -68,9 +68,12 @@ const eventLabels: Record<
 };
 
 const digestTypeLabels: Record<NotificationType, string> = {
+  "bounty-completed": "Bounty completed",
   "bounty-updated": "New bounties",
+  mention: "Mentions and replies",
   "saved-bounty-updated": "New bounties",
   "new-application": "Application updates",
+  reply: "Mentions and replies",
   "submission-reviewed": "Application updates",
 };
 

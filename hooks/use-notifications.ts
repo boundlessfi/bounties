@@ -21,7 +21,10 @@ import { useGraphQLSubscription } from "./use-graphql-subscription";
 
 export type NotificationType =
   | "bounty-updated"
+  | "bounty-completed"
+  | "mention"
   | "new-application"
+  | "reply"
   | "submission-reviewed"
   | "saved-bounty-updated";
 
