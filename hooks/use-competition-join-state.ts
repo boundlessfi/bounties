@@ -9,6 +9,7 @@ import {
 } from "@/hooks/use-competition-bounty";
 import { useDeadlinePassed } from "@/hooks/use-deadline-passed";
 import type { BountyFieldsFragment } from "@/lib/graphql/generated";
+import type { Bounty } from "@/types/bounty";
 
 interface CompetitionJoinState {
   walletAddress: string | null;
@@ -19,7 +20,7 @@ interface CompetitionJoinState {
 }
 
 export function useCompetitionJoinState(
-  bounty: BountyFieldsFragment,
+  bounty: BountyFieldsFragment & Partial<Bounty>,
 ): CompetitionJoinState {
   const { data: session } = authClient.useSession();
   const joinMutation = useJoinCompetition();
@@ -38,9 +39,7 @@ export function useCompetitionJoinState(
   // Derive from server payload (submissions list on BountyQuery) + local optimism.
   // BountyFieldsFragment (list queries) doesn't include submissions, so falls
   // back to false until the detail query resolves.
-  const bountySubmissions = (
-    bounty as { submissions?: Array<{ submittedBy: string }> | null }
-  ).submissions;
+  const bountySubmissions = bounty.submissions;
   const serverHasJoined =
     walletAddress != null &&
     (bountySubmissions?.some((s) => s.submittedBy === walletAddress) ?? false);

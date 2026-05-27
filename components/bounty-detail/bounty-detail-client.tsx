@@ -21,10 +21,7 @@ import { authClient } from "@/lib/auth-client";
 import { useDeadlinePassed } from "@/hooks/use-deadline-passed";
 import type { CancellationRecord } from "@/types/escrow";
 import { MilestoneFunnel } from "@/components/bounty/milestone-funnel";
-import {
-  MOCK_MODEL4_MILESTONES,
-  MOCK_MODEL4_CONTRIBUTORS,
-} from "@/lib/mock-model4";
+import { MOCK_MODEL4_MILESTONES, MOCK_MODEL4_CONTRIBUTORS } from "@/lib/mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MilestoneSubmissionCard } from "./milestone-submission-card";
 import { Model4MaintainerDashboard } from "./model4-maintainer-dashboard";
@@ -71,10 +68,7 @@ function getFullMilestoneData(bounty: BountyData): {
 // Backend does not currently provide applications in the response.
 // Fall back to empty array until the schema supports it.
 const getApplications = (bounty: BountyData): Application[] => {
-  return (
-    (bounty as BountyData & { applications?: Application[] })?.applications ??
-    []
-  );
+  return bounty?.applications ?? [];
 };
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {
@@ -164,8 +158,7 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   // BountyFieldsFragment (list query). The cast is safe here because
   // useBountyDetail returns BountyFieldsFragment & Partial<BountyQuery["bounty"]>.
   const competitionSubmissions =
-    (bounty as { submissions?: CompetitionSubmissionEntry[] | null })
-      .submissions ?? [];
+    (bounty.submissions as CompetitionSubmissionEntry[] | undefined) ?? [];
 
   return (
     <div className="flex flex-col lg:flex-row gap-10">

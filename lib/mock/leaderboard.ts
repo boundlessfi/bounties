@@ -81,3 +81,10 @@ export const getMockUserRank = (userId: string) => {
     contributor: mockLeaderboardData[index],
   };
 };
+
+export const makeMockLeaderboardEntry = (
+  overrides?: Partial<LeaderboardContributor>,
+): LeaderboardContributor => ({
+  ...mockLeaderboardData[0],
+  ...overrides,
+});

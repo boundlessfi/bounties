@@ -59,3 +59,10 @@ export const MOCK_MODEL4_CONTRIBUTORS: ContributorProgress[] = [
     currentMilestoneId: "m4",
   },
 ];
+
+export const makeMockModel4Milestone = (
+  overrides?: Partial<Milestone>,
+): Milestone => ({
+  ...MOCK_MODEL4_MILESTONES[0],
+  ...overrides,
+});

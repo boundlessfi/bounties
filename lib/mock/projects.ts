@@ -130,3 +130,8 @@ export function getAllProjectTags(
   }
   return Array.from(set).sort((a, b) => a.localeCompare(b));
 }
+
+export const makeMockProject = (overrides?: Partial<Project>): Project => ({
+  ...mockProjects[0],
+  ...overrides,
+});

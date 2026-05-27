@@ -275,3 +275,8 @@ export function getBountyById(id: string): Bounty | undefined {
 export function getAllBounties(): Bounty[] {
   return mockBounties;
 }
+
+export const makeMockBounty = (overrides?: Partial<Bounty>): Bounty => ({
+  ...mockBounties[0],
+  ...overrides,
+});

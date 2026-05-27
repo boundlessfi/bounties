@@ -7,7 +7,7 @@ import { FilterPanel } from "@/components/filters/filter-panel";
 import { ProjectCard } from "@/components/cards/project-card";
 import { BountyCard } from "@/components/cards/bounty-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mockProjects, mockBounties as rawMockBounties } from "@/lib/mock-data";
+import { mockProjects, mockBounties as rawMockBounties } from "@/lib/mock";
 import { FilterState, TabType } from "@/lib/types";
 import { PackageOpen, Coins } from "lucide-react";
 import { BountyLogic } from "@/lib/logic/bounty-logic";
@@ -102,7 +102,7 @@ export default function DiscoverPage() {
       const searchLower = filters.search.toLowerCase();
       result = result.filter(
         (p) =>
-          p.title.toLowerCase().includes(searchLower) ||
+          p.name.toLowerCase().includes(searchLower) ||
           p.description.toLowerCase().includes(searchLower) ||
           p.tags.some((tag) => tag.toLowerCase().includes(searchLower)),
       );

@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Project } from "@/lib/types";
+import { Project } from "@/types/project";
 import { formatDistanceToNow } from "date-fns";
 
 interface ProjectCardProps {
@@ -18,33 +18,27 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const statusConfig = {
-    active: {
+    Active: {
       icon: Activity,
       label: "Active",
       className:
         "bg-success-green/20 text-success-green-darker border-success-green/30",
     },
-    completed: {
+    Ended: {
       icon: CheckCircle2,
-      label: "Completed",
+      label: "Ended",
       className: "bg-blue-ish/10 text-blue-800 border-blue-ish/30",
     },
-    paused: {
+    Draft: {
       icon: Pause,
-      label: "Paused",
+      label: "Draft",
       className:
         "bg-warning-orange/20 text-warning-orange-darker border-warning-orange/30",
     },
   };
 
-  const status = statusConfig[project.status];
+  const status = statusConfig[project.status] || statusConfig.Active;
   const StatusIcon = status.icon;
-
-  const progress = project.milestones
-    ? Math.round(
-        ((project.completedMilestones || 0) / project.milestones) * 100,
-      )
-    : 0;
 
   return (
     <div className="block group">
@@ -52,7 +46,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <CardHeader className="space-y-3">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg font-semibold text-gray-100 group-hover:text-primary transition-colors line-clamp-2">
-              {project.title}
+              {project.name}
             </CardTitle>
             <Badge variant="outline" className={`${status.className} shrink-0`}>
               <StatusIcon className="mr-1 h-3 w-3" />
@@ -85,39 +79,21 @@ export function ProjectCard({ project }: ProjectCardProps) {
             )}
           </div>
 
-          {/* Progress Bar */}
-          {project.milestones && (
-            <div className="space-y-1">
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>Progress</span>
-                <span>{progress}%</span>
-              </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-primary/80 to-primary transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="text-xs text-gray-400">
-                {project.completedMilestones} of {project.milestones} milestones
-              </div>
-            </div>
-          )}
+          {/* Progress Bar (Removed for Canonical Project) */}
 
           {/* Metadata */}
           <div className="flex items-center gap-4 text-xs text-gray-500 pt-2 border-t border-border/50">
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
               <span>
-                {formatDistanceToNow(project.createdAt, { addSuffix: true })}
+                {formatDistanceToNow(new Date(project.createdAt), {
+                  addSuffix: true,
+                })}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              <span>
-                Updated{" "}
-                {formatDistanceToNow(project.updatedAt, { addSuffix: true })}
-              </span>
+              <span>Created by {project.creatorName}</span>
             </div>
           </div>
         </CardContent>
