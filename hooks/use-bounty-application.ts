@@ -29,6 +29,11 @@ type ApplicationContractClient = {
     bountyId: bigint;
     points: number;
   }) => Promise<{ txHash: string }>;
+  requestRevisions: (params: {
+    bountyId: bigint;
+    submissionId: string;
+    feedback: string;
+  }) => Promise<{ txHash: string }>;
 };
 
 // ---------------------------------------------------------------------------
@@ -234,6 +239,66 @@ export function useApproveApplicationSubmission() {
             ...prev.bounty,
             status: "COMPLETED",
             updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+
+// ---------------------------------------------------------------------------
+// Hook: request revisions
+// ---------------------------------------------------------------------------
+
+export function useRequestRevisions() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      submissionId,
+      feedback,
+    }: {
+      bountyId: string;
+      submissionId: string;
+      feedback: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.requestRevisions({
+        bountyId: toBountyIdBigInt(bountyId),
+        submissionId,
+        feedback,
+      });
+    },
+    onMutate: async ({ bountyId, submissionId, feedback }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        qc.setQueryData<BountyQuery>(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...prev.bounty,
+            status: "UNDER_REVIEW",
+            updatedAt: new Date().toISOString(),
+            submissions: prev.bounty.submissions?.map((submission) =>
+              submission.id === submissionId
+                ? {
+                    ...submission,
+                    status: "REVISION_REQUESTED",
+                    reviewComments: feedback,
+                    reviewedAt: new Date().toISOString(),
+                  }
+                : submission,
+            ),
           },
         });
       }
