@@ -1,41 +1,43 @@
-import { notFound } from "next/navigation"
-import type { Metadata } from "next"
-import { getAllProjects, getProjectById } from "@/lib/mock-project"
-import { truncateAtWordBoundary } from "@/lib/truncate"
-import { ProjectLogo } from "@/components/projects/project-logo"
-import { ProjectBounties } from "@/components/projects/project-bounties"
-import { ProjectMaintainers } from "@/components/projects/project-maintainers"
-import { ProjectSidebar } from "@/components/projects/project-sidebar"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ChevronDown, Globe, ExternalLink } from "lucide-react"
-import Markdown from "react-markdown"
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getAllProjects, getProjectById } from "@/lib/mock";
+import { truncateAtWordBoundary } from "@/lib/truncate";
+import { ProjectLogo } from "@/components/projects/project-logo";
+import { ProjectBounties } from "@/components/projects/project-bounties";
+import { ProjectMaintainers } from "@/components/projects/project-maintainers";
+import { ProjectSidebar } from "@/components/projects/project-sidebar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ChevronDown, Globe, ExternalLink } from "lucide-react";
+import Markdown from "react-markdown";
 
 interface ProjectPageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 export async function generateStaticParams() {
-  return getAllProjects().map((p) => ({ id: p.id }))
+  return getAllProjects().map((p) => ({ id: p.id }));
 }
 
-export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
-  const { id } = await params
-  const project = getProjectById(id)
+export async function generateMetadata({
+  params,
+}: ProjectPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const project = getProjectById(id);
 
-  if (!project) return { title: "Project Not Found" }
+  if (!project) return { title: "Project Not Found" };
 
   return {
     title: `${project.name} | Projects`,
     description: truncateAtWordBoundary(project.description, 160),
-  }
+  };
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
-  const { id } = await params
-  const project = getProjectById(id)
+  const { id } = await params;
+  const project = getProjectById(id);
 
-  if (!project) notFound()
+  if (!project) notFound();
 
   return (
     <div className="min-h-screen">
@@ -46,13 +48,17 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             {/* Header Section */}
             <header className="space-y-6">
               <div className="flex items-start gap-4">
-                <ProjectLogo name={project.name} logoUrl={project.logoUrl} className="size-16" />
+                <ProjectLogo
+                  name={project.name}
+                  logoUrl={project.logoUrl}
+                  className="size-16"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-3 mb-2">
-                    <h1 className="text-3xl md:text-4xl font-bold">{project.name}</h1>
-                    <Badge>
-                      {project.openBountyCount} open
-                    </Badge>
+                    <h1 className="text-3xl md:text-4xl font-bold">
+                      {project.name}
+                    </h1>
+                    <Badge>{project.openBountyCount} open</Badge>
                     {project.websiteUrl && (
                       <a
                         href={project.websiteUrl}
@@ -66,7 +72,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       </a>
                     )}
                   </div>
-                  <p className="text-lg leading-relaxed">{project.description}</p>
+                  <p className="text-lg leading-relaxed">
+                    {project.description}
+                  </p>
                 </div>
               </div>
 
@@ -119,7 +127,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <Markdown>{project.description}</Markdown>
               </div>
               <div className="pt-4">
-                <a 
+                <a
                   href="#bounties"
                   className="inline-flex items-center gap-2 font-medium hover:underline"
                 >
@@ -144,6 +152,5 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

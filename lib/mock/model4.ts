@@ -1,5 +1,27 @@
 import { Milestone, ContributorProgress } from "@/types/bounty";
 
+export function makeMockMilestone(
+  overrides: Partial<Milestone> = {},
+): Milestone {
+  return {
+    id: "m-" + Math.random().toString(36).substr(2, 9),
+    title: "Mock Milestone",
+    description: "Mock description",
+    isCompleted: false,
+    ...overrides,
+  } as Milestone;
+}
+
+export function makeMockContributorProgress(
+  overrides: Partial<ContributorProgress> = {},
+): ContributorProgress {
+  return {
+    contributorId: "c-" + Math.random().toString(36).substr(2, 9),
+    completedMilestoneIds: [],
+    ...overrides,
+  } as ContributorProgress;
+}
+
 export const MOCK_MODEL4_MILESTONES: Milestone[] = [
   {
     id: "m1",

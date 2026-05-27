@@ -1,5 +1,28 @@
 import { LeaderboardContributor, ReputationTier } from "@/types/leaderboard";
 
+export function makeMockLeaderboardContributor(
+  overrides: Partial<LeaderboardContributor> = {},
+): LeaderboardContributor {
+  return {
+    id: "contributor-mock",
+    userId: "user-mock",
+    walletAddress: "0x1234567890abcdef",
+    displayName: "Mock Contributor",
+    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=mock",
+    totalScore: 1000,
+    tier: "SILVER",
+    stats: {
+      totalCompleted: 10,
+      totalEarnings: 500,
+      earningsCurrency: "USDC",
+      completionRate: 0.9,
+      averageRating: 4.5,
+    },
+    recentBadges: [],
+    ...overrides,
+  } as LeaderboardContributor;
+}
+
 const generateMockContributor = (
   id: string,
   rank: number,

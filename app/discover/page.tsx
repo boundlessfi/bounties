@@ -7,7 +7,10 @@ import { FilterPanel } from "@/components/filters/filter-panel";
 import { ProjectCard } from "@/components/cards/project-card";
 import { BountyCard } from "@/components/cards/bounty-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mockProjects, mockBounties as rawMockBounties } from "@/lib/mock-data";
+import {
+  mockDiscoverProjects as mockProjects,
+  mockDiscoverBounties as rawMockBounties,
+} from "@/lib/mock";
 import { FilterState, TabType } from "@/lib/types";
 import { PackageOpen, Coins } from "lucide-react";
 import { BountyLogic } from "@/lib/logic/bounty-logic";

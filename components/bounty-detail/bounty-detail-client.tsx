@@ -21,10 +21,7 @@ import { authClient } from "@/lib/auth-client";
 import { useDeadlinePassed } from "@/hooks/use-deadline-passed";
 import type { CancellationRecord } from "@/types/escrow";
 import { MilestoneFunnel } from "@/components/bounty/milestone-funnel";
-import {
-  MOCK_MODEL4_MILESTONES,
-  MOCK_MODEL4_CONTRIBUTORS,
-} from "@/lib/mock-model4";
+import { MOCK_MODEL4_MILESTONES, MOCK_MODEL4_CONTRIBUTORS } from "@/lib/mock";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MilestoneSubmissionCard } from "./milestone-submission-card";
 import { Model4MaintainerDashboard } from "./model4-maintainer-dashboard";
