@@ -133,6 +133,7 @@ export interface Bounty {
   maxParticipants?: number | null;
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
+  assignedContributorId?: string | null;
 
   createdBy: string;
   createdAt: string;

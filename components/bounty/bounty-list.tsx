@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { BountyCard } from "./bounty-card";
-import { BountyListSkeleton } from "./bounty-card-skeleton";
+import { BountyListSkeleton } from "@/components/ui/skeleton-loaders";
 import { BountyError } from "./bounty-error";
 import { BountyEmpty } from "./bounty-empty";
 import { useBounties } from "@/hooks/use-bounties";

@@ -691,6 +691,7 @@ enum BountyType {
   COMPETITION
   FIXED_PRICE
   MILESTONE_BASED
+  MULTI_WINNER_MILESTONE
 }
 
 type BountyWindowType {

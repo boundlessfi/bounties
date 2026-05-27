@@ -2,7 +2,7 @@
 
 import { useBookmarks } from "@/hooks/use-bookmarks";
 import { BountyCard } from "@/components/bounty/bounty-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { BountyListSkeleton } from "@/components/ui/skeleton-loaders";
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,15 +15,7 @@ function SavedBountiesClient() {
   const { data: bookmarks, isLoading, error } = useBookmarks();
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="space-y-3">
-            <Skeleton className="h-48 w-full" />
-          </div>
-        ))}
-      </div>
-    );
+    return <BountyListSkeleton />;
   }
 
   if (error) {

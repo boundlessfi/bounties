@@ -6,7 +6,7 @@ import { useBounties } from "@/hooks/use-bounties";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useActiveLightningRound } from "@/hooks/use-lightning-rounds";
 import { BountyCard } from "@/components/bounty/bounty-card";
-import { BountyListSkeleton } from "@/components/bounty/bounty-card-skeleton";
+import { BountyListSkeleton } from "@/components/ui/skeleton-loaders";
 import { BountyError } from "@/components/bounty/bounty-error";
 import { LightningRoundBanner } from "@/components/bounty/lightning-round-banner";
 import { Input } from "@/components/ui/input";
@@ -36,14 +36,14 @@ import {
 } from "@/lib/graphql/generated";
 
 const BOUNTY_TYPES: {
-  value: BountyType | "MULTI_WINNER_MILESTONE";
+  value: BountyType;
   label: string;
 }[] = [
   { value: BountyType.FixedPrice, label: "Fixed Price" },
   { value: BountyType.MilestoneBased, label: "Milestone Based" },
   { value: BountyType.Competition, label: "Competition" },
   {
-    value: "MULTI_WINNER_MILESTONE" as unknown as BountyType,
+    value: BountyType.MultiWinnerMilestone,
     label: "Multi-Winner Milestone",
   },
 ];
@@ -107,10 +107,8 @@ export default function BountiesPage() {
   const currentPage = pagination?.page ?? page;
   const totalPages = pagination?.totalPages ?? 1;
 
-  const toggleType = (type: BountyType | "MULTI_WINNER_MILESTONE") => {
-    setSelectedType((prev) =>
-      prev === type ? "all" : (type as unknown as BountyType),
-    );
+  const toggleType = (type: BountyType) => {
+    setSelectedType((prev) => (prev === type ? "all" : type));
     setPage(1);
   };
 

@@ -9,7 +9,7 @@ import { MobileCTA } from "./mobile-cta";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSubmissionsCard } from "./bounty-detail-submissions-card";
-import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
+import { BountyDetailSkeleton } from "@/components/ui/skeleton-loaders";
 import { useBountyDetail } from "@/hooks/use-bounty-detail";
 import { FcfsApprovalPanel } from "@/components/bounty/fcfs-approval-panel";
 import { CompetitionJudging } from "@/components/bounty/competition-judging";
@@ -150,9 +150,8 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   // Identify if the current user is the assigned contributor
   // using a fallback check on submissions or assumed backend field.
   const isAssignedApplicant =
-    (bounty as BountyData & { assignedContributorId?: string })
-      ?.assignedContributorId === session?.user?.id ||
-    bounty.submissions?.some((s) => s.submittedBy === session?.user?.id) ||
+    bounty?.assignedContributorId === session?.user?.id ||
+    bounty?.submissions?.some((s) => s.submittedBy === session?.user?.id) ||
     (!isCreator && bounty.status === "IN_PROGRESS");
 
   // submissions is present on BountyQuery (single-bounty query) but not on

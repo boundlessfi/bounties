@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { WalletSkeleton } from "@/components/ui/skeleton-loaders";
 import { WalletInfo } from "@/types/wallet";
 import { mockWalletWithAssets } from "@/lib/mock";
 import { useSearchParams } from "next/navigation";
@@ -52,27 +53,6 @@ function WalletConnectPrompt({ onConnect }: { onConnect: () => void }) {
         <Button size="lg" onClick={onConnect}>
           Connect with Passkey
         </Button>
-      </div>
-    </div>
-  );
-}
-
-function WalletPageSkeleton() {
-  return (
-    <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
-      <div className="space-y-2">
-        <Skeleton className="h-9 w-32" />
-        <Skeleton className="h-5 w-72" />
-      </div>
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-8">
-          <Skeleton className="h-52 rounded-2xl" />
-          <Skeleton className="h-64 rounded-xl" />
-        </div>
-        <div className="space-y-8">
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
-        </div>
       </div>
     </div>
   );
@@ -119,7 +99,7 @@ function WalletPageContent() {
     isError: escrowError,
   } = useEscrowSummary(walletAddress);
 
-  if (!isPreview && walletLoading) return <WalletPageSkeleton />;
+  if (!isPreview && walletLoading) return <WalletSkeleton />;
 
   if (!isPreview && (!isConnected || !providerInfo)) {
     return <WalletConnectPrompt onConnect={connect} />;
@@ -246,7 +226,7 @@ function WalletPageContent() {
 
 export default function WalletPage() {
   return (
-    <Suspense fallback={<WalletPageSkeleton />}>
+    <Suspense fallback={<WalletSkeleton />}>
       <WalletPageContent />
     </Suspense>
   );

@@ -36,6 +36,10 @@ type ApplicationContractClient = {
     applicant: string;
     reason?: string;
   }) => Promise<{ txHash: string }>;
+  applyForSlot?: (params: {
+    bountyId: bigint;
+    applicant: string;
+  }) => Promise<{ txHash: string }>;
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +106,86 @@ export function useApplyToBounty() {
         bountyId: toBountyIdBigInt(bountyId),
         proposal,
       });
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: apply for slot (Multi-Winner Milestone)
+// ---------------------------------------------------------------------------
+
+export function useApplyForSlot() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      applicantAddress,
+    }: {
+      bountyId: string;
+      applicantAddress: string;
+      applicantName: string;
+      applicantAvatarUrl: string;
+    }) => {
+      const client = resolveApplicationClient();
+      if (client.applyForSlot) {
+        return client.applyForSlot({
+          applicant: applicantAddress,
+          bountyId: toBountyIdBigInt(bountyId),
+        });
+      } else {
+        // Mock API call
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return { txHash: "mock_tx_hash" };
+      }
+    },
+    onMutate: async ({
+      bountyId,
+      applicantAddress,
+      applicantName,
+      applicantAvatarUrl,
+    }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        // We cast to an intersection type because the generated GraphQL type might not include all fields yet
+        const bountyData = prev.bounty as BountyQuery["bounty"] & {
+          milestones?: { id: string }[];
+          totalSlotsOccupied?: number;
+          contributorProgress?: {
+            userId: string;
+            userName: string;
+            userAvatarUrl: string;
+            currentMilestoneId: string;
+          }[];
+        };
+        const firstMilestoneId = bountyData.milestones?.[0]?.id || "m1";
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        qc.setQueryData<any>(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...bountyData,
+            totalSlotsOccupied: (bountyData.totalSlotsOccupied || 0) + 1,
+            contributorProgress: [
+              ...(bountyData.contributorProgress || []),
+              {
+                userId: applicantAddress,
+                userName: applicantName,
+                userAvatarUrl: applicantAvatarUrl,
+                currentMilestoneId: firstMilestoneId,
+              },
+            ],
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
     },
     onSettled: (_r, _e, v) => {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });

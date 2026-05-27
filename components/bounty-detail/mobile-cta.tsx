@@ -37,6 +37,7 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
     canAct,
     isFcfs,
     isCompetition,
+    isMultiWinnerMilestone,
     isCreator,
     canRaiseDispute,
     canCancel,
@@ -48,6 +49,10 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
       handleJoin,
     },
     handleApply,
+    handleApplyForSlot,
+    isApplyingForSlot,
+    isSlotFull,
+    hasAppliedForSlot,
     label,
   } = useBountyCtaState(bounty, onCancelled);
 
@@ -80,6 +85,39 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
               ? "Join Competition"
               : label()}
         </Button>
+      ) : isMultiWinnerMilestone && canAct && !isCreator ? (
+        <div className="flex gap-2">
+          <Button
+            className="flex-1 h-11 font-bold tracking-wide"
+            disabled={
+              hasAppliedForSlot ||
+              isSlotFull ||
+              isApplyingForSlot ||
+              !walletAddress
+            }
+            size="lg"
+            onClick={() => void handleApplyForSlot()}
+          >
+            {isApplyingForSlot && (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            )}
+            {hasAppliedForSlot
+              ? "Applied ✓"
+              : isSlotFull
+                ? "Slots Full"
+                : "Apply for Slot"}
+          </Button>
+          {canCancel && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="h-11 border-red-500/30 text-red-400 hover:bg-red-500/10 shrink-0"
+              onClick={() => setCancelDialogOpen(true)}
+            >
+              <XCircle className="size-4" />
+            </Button>
+          )}
+        </div>
       ) : bounty.type === "MILESTONE_BASED" && canAct && !isCreator ? (
         <div className="flex gap-2">
           <ApplicationDialog

@@ -136,7 +136,11 @@ export function GlobalNavbar() {
             <WalletSheet
               walletInfo={activeWalletInfo}
               trigger={
-                <Button variant="outline" size="icon">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Wallet Settings"
+                >
                   <Wallet className="h-4 w-4" />
                 </Button>
               }

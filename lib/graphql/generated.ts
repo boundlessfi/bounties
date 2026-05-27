@@ -7,7 +7,6 @@ import {
 import { fetcher } from "./client";
 export { TypedDocumentString } from "./typed-document-string";
 import { TypedDocumentString } from "./typed-document-string";
-
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -771,6 +770,7 @@ export enum BountyType {
   Competition = "COMPETITION",
   FixedPrice = "FIXED_PRICE",
   MilestoneBased = "MILESTONE_BASED",
+  MultiWinnerMilestone = "MULTI_WINNER_MILESTONE",
 }
 
 export type BountyWindowType = {
@@ -1016,7 +1016,7 @@ export type Mutation = {
   /** Submit to a bounty (any authenticated user) */
   submitToBounty: BountySubmissionType;
   /** Toggle a bookmark on a bounty (authenticated users) */
-  toggleBookmark: Bookmark;
+  toggleBookmark?: Maybe<Bookmark>;
   /** Update a blog post (Admin only) */
   updateAdminBlogPost: AdminBlogPostDto;
   /** Update an existing bounty (organization members only) */
@@ -1432,6 +1432,45 @@ export type UserLeaderboardRankResponse = {
   rank: Scalars["Int"]["output"];
 };
 
+export type AdminDisputeDetailQueryVariables = Exact<{
+  id: Scalars["ID"]["input"];
+}>;
+
+export type AdminDisputeDetailQuery = {
+  __typename?: "Query";
+  adminDisputeDetail: {
+    __typename?: "AdminDisputeDto";
+    id: string;
+    campaignId: string;
+    description: string;
+    reason: DisputeReasonEnum;
+    status: DisputeStatusEnum;
+    resolution?: string | null;
+    milestoneId?: string | null;
+    createdAt: string;
+  };
+};
+
+export type ResolveDisputeMutationVariables = Exact<{
+  id: Scalars["ID"]["input"];
+  input: AdminResolveDisputeDto;
+}>;
+
+export type ResolveDisputeMutation = {
+  __typename?: "Mutation";
+  resolveDispute: {
+    __typename?: "AdminDisputeDto";
+    id: string;
+    campaignId: string;
+    description: string;
+    reason: DisputeReasonEnum;
+    status: DisputeStatusEnum;
+    resolution?: string | null;
+    milestoneId?: string | null;
+    createdAt: string;
+  };
+};
+
 export type BookmarksQueryVariables = Exact<{ [key: string]: never }>;
 
 export type BookmarksQuery = {
@@ -1491,7 +1530,7 @@ export type ToggleBookmarkMutationVariables = Exact<{
 
 export type ToggleBookmarkMutation = {
   __typename?: "Mutation";
-  toggleBookmark: {
+  toggleBookmark?: {
     __typename?: "Bookmark";
     id: string;
     userId: string;
@@ -1537,7 +1576,7 @@ export type ToggleBookmarkMutation = {
       } | null;
       _count?: { __typename?: "BountyCount"; submissions: number } | null;
     };
-  };
+  } | null;
 };
 
 export type CreateBountyMutationVariables = Exact<{
@@ -1933,10 +1972,6 @@ export type BountyFieldsFragment = {
   githubIssueUrl: string;
   githubIssueNumber?: number | null;
   createdBy: string;
-  // Pending backend fields — will be populated once the backend schema adds them.
-  // Until then these are undefined and consumers must fall back gracefully.
-  maxParticipants?: number | null;
-  claimCount?: number | null;
   organization?: {
     __typename?: "BountyOrganization";
     id: string;
@@ -2238,45 +2273,6 @@ export type MarkSubmissionPaidMutation = {
   };
 };
 
-export type AdminDisputeDetailQueryVariables = Exact<{
-  id: Scalars["ID"]["input"];
-}>;
-
-export type AdminDisputeDetailQuery = {
-  __typename?: "Query";
-  adminDisputeDetail: {
-    __typename?: "AdminDisputeDto";
-    id: string;
-    campaignId: string;
-    description: string;
-    reason: DisputeReasonEnum;
-    status: DisputeStatusEnum;
-    resolution?: string | null;
-    milestoneId?: string | null;
-    createdAt: string;
-  };
-};
-
-export type ResolveDisputeMutationVariables = Exact<{
-  id: Scalars["ID"]["input"];
-  input: AdminResolveDisputeDto;
-}>;
-
-export type ResolveDisputeMutation = {
-  __typename?: "Mutation";
-  resolveDispute: {
-    __typename?: "AdminDisputeDto";
-    id: string;
-    campaignId: string;
-    description: string;
-    reason: DisputeReasonEnum;
-    status: DisputeStatusEnum;
-    resolution?: string | null;
-    milestoneId?: string | null;
-    createdAt: string;
-  };
-};
-
 export const BountyFieldsFragmentDoc = new TypedDocumentString(
   `
     fragment BountyFields on Bounty {
@@ -2386,6 +2382,90 @@ export const SubmissionFieldsWithContactFragmentDoc = new TypedDocumentString(
 }`,
   { fragmentName: "SubmissionFieldsWithContact" },
 );
+export const AdminDisputeDetailDocument = new TypedDocumentString(`
+    query AdminDisputeDetail($id: ID!) {
+  adminDisputeDetail(id: $id) {
+    id
+    campaignId
+    description
+    reason
+    status
+    resolution
+    milestoneId
+    createdAt
+  }
+}
+    `);
+
+export const useAdminDisputeDetailQuery = <
+  TData = AdminDisputeDetailQuery,
+  TError = unknown,
+>(
+  variables: AdminDisputeDetailQueryVariables,
+  options?: Omit<
+    UseQueryOptions<AdminDisputeDetailQuery, TError, TData>,
+    "queryKey"
+  > & {
+    queryKey?: UseQueryOptions<
+      AdminDisputeDetailQuery,
+      TError,
+      TData
+    >["queryKey"];
+  },
+) => {
+  return useQuery<AdminDisputeDetailQuery, TError, TData>({
+    queryKey: ["AdminDisputeDetail", variables],
+    queryFn: fetcher<AdminDisputeDetailQuery, AdminDisputeDetailQueryVariables>(
+      AdminDisputeDetailDocument,
+      variables,
+    ),
+    ...options,
+  });
+};
+
+useAdminDisputeDetailQuery.getKey = (
+  variables: AdminDisputeDetailQueryVariables,
+) => ["AdminDisputeDetail", variables];
+
+export const ResolveDisputeDocument = new TypedDocumentString(`
+    mutation ResolveDispute($id: ID!, $input: AdminResolveDisputeDto!) {
+  resolveDispute(id: $id, input: $input) {
+    id
+    campaignId
+    description
+    reason
+    status
+    resolution
+    milestoneId
+    createdAt
+  }
+}
+    `);
+
+export const useResolveDisputeMutation = <TError = unknown, TContext = unknown>(
+  options?: UseMutationOptions<
+    ResolveDisputeMutation,
+    TError,
+    ResolveDisputeMutationVariables,
+    TContext
+  >,
+) => {
+  return useMutation<
+    ResolveDisputeMutation,
+    TError,
+    ResolveDisputeMutationVariables,
+    TContext
+  >({
+    mutationKey: ["ResolveDispute"],
+    mutationFn: (variables?: ResolveDisputeMutationVariables) =>
+      fetcher<ResolveDisputeMutation, ResolveDisputeMutationVariables>(
+        ResolveDisputeDocument,
+        variables,
+      )(),
+    ...options,
+  });
+};
+
 export const BookmarksDocument = new TypedDocumentString(`
     query Bookmarks {
   bookmarks {
@@ -2450,89 +2530,6 @@ export const useBookmarksQuery = <TData = BookmarksQuery, TError = unknown>(
       BookmarksDocument,
       variables,
     ),
-    ...options,
-  });
-};
-
-export const AdminDisputeDetailDocument = new TypedDocumentString(`
-    query AdminDisputeDetail($id: ID!) {
-  adminDisputeDetail(id: $id) {
-    id
-    campaignId
-    description
-    reason
-    status
-    resolution
-    milestoneId
-    createdAt
-  }
-}
-    `);
-
-export const useAdminDisputeDetailQuery = <
-  TData = AdminDisputeDetailQuery,
-  TError = unknown,
->(
-  variables: AdminDisputeDetailQueryVariables,
-  options?: Omit<
-    UseQueryOptions<AdminDisputeDetailQuery, TError, TData>,
-    "queryKey"
-  > & {
-    queryKey?: UseQueryOptions<AdminDisputeDetailQuery, TError, TData>["queryKey"];
-  },
-) => {
-  return useQuery<AdminDisputeDetailQuery, TError, TData>({
-    queryKey: ["AdminDisputeDetail", variables],
-    queryFn: fetcher<AdminDisputeDetailQuery, AdminDisputeDetailQueryVariables>(
-      AdminDisputeDetailDocument,
-      variables,
-    ),
-    ...options,
-  });
-};
-
-useAdminDisputeDetailQuery.getKey = (
-  variables: AdminDisputeDetailQueryVariables,
-) => ["AdminDisputeDetail", variables];
-
-export const ResolveDisputeDocument = new TypedDocumentString(`
-    mutation ResolveDispute($id: ID!, $input: AdminResolveDisputeDto!) {
-  resolveDispute(id: $id, input: $input) {
-    id
-    campaignId
-    description
-    reason
-    status
-    resolution
-    milestoneId
-    createdAt
-  }
-}
-    `);
-
-export const useResolveDisputeMutation = <
-  TError = unknown,
-  TContext = unknown,
->(
-  options?: UseMutationOptions<
-    ResolveDisputeMutation,
-    TError,
-    ResolveDisputeMutationVariables,
-    TContext
-  >,
-) => {
-  return useMutation<
-    ResolveDisputeMutation,
-    TError,
-    ResolveDisputeMutationVariables,
-    TContext
-  >({
-    mutationKey: ["ResolveDispute"],
-    mutationFn: (variables?: ResolveDisputeMutationVariables) =>
-      fetcher<ResolveDisputeMutation, ResolveDisputeMutationVariables>(
-        ResolveDisputeDocument,
-        variables,
-      )(),
     ...options,
   });
 };

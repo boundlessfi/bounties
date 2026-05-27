@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { type BountyFieldsFragment } from "@/lib/graphql/generated";
 import { BountyCard } from "@/components/bounty/bounty-card";
-import { BountyListSkeleton } from "@/components/bounty/bounty-card-skeleton";
+import { BountyListSkeleton } from "@/components/ui/skeleton-loaders";
 import { BountyError } from "@/components/bounty/bounty-error";
 import { Button } from "@/components/ui/button";
 

@@ -1,7 +1,10 @@
 import { useCancelBountyDialog } from "@/hooks/use-cancel-bounty-dialog";
 import { useCanRaiseDispute } from "@/hooks/use-can-raise-dispute";
 import { useCompetitionJoinState } from "@/hooks/use-competition-join-state";
-import { useApplyToBounty } from "@/hooks/use-bounty-application";
+import {
+  useApplyToBounty,
+  useApplyForSlot,
+} from "@/hooks/use-bounty-application";
 import { authClient } from "@/lib/auth-client";
 import { SidebarBounty } from "./types";
 import { ApplicationFormValues } from "@/components/bounty/application-dialog";
@@ -18,6 +21,8 @@ export function useBountyCtaState(
   const canAct = bounty.status === "OPEN";
   const isFcfs = bounty.type === "FIXED_PRICE";
   const isCompetition = bounty.type === "COMPETITION";
+  const isMultiWinnerMilestone = bounty.type === "MULTI_WINNER_MILESTONE";
+
   const isCreator =
     (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
 
@@ -30,12 +35,36 @@ export function useBountyCtaState(
 
   const { mutateAsync: applyToBounty } = useApplyToBounty();
 
+  // MULTI_WINNER_MILESTONE state
+  const { mutateAsync: applyForSlot, isPending: isApplyingForSlot } =
+    useApplyForSlot();
+
+  const isSlotFull =
+    isMultiWinnerMilestone &&
+    (bounty.totalSlotsOccupied || 0) >= (bounty.maxSlots || 0);
+  const hasAppliedForSlot =
+    isMultiWinnerMilestone &&
+    (bounty.contributorProgress?.some(
+      (cp) => cp.userId === joinState.walletAddress,
+    ) ||
+      false);
+
   const handleApply = async (values: ApplicationFormValues) => {
     if (!joinState.walletAddress) return;
     await applyToBounty({
       bountyId: bounty.id,
       applicantAddress: joinState.walletAddress,
       proposal: JSON.stringify(values),
+    });
+  };
+
+  const handleApplyForSlot = async () => {
+    if (!joinState.walletAddress || !session?.user) return;
+    await applyForSlot({
+      bountyId: bounty.id,
+      applicantAddress: joinState.walletAddress,
+      applicantName: session.user.name || "Anonymous",
+      applicantAvatarUrl: session.user.image || "",
     });
   };
 
@@ -58,11 +87,16 @@ export function useBountyCtaState(
     canAct,
     isFcfs,
     isCompetition,
+    isMultiWinnerMilestone,
     isCreator,
     canRaiseDispute,
     canCancel,
     joinState,
     handleApply,
+    handleApplyForSlot,
+    isApplyingForSlot,
+    isSlotFull,
+    hasAppliedForSlot,
     label,
   };
 }

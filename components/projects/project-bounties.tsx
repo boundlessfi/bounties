@@ -15,7 +15,7 @@ interface ProjectBountiesProps {
 }
 
 const bountyTypes: {
-  value: BountyType | "all" | "MULTI_WINNER_MILESTONE";
+  value: BountyType | "all";
   label: string;
 }[] = [
   { value: "all", label: "All Types" },
@@ -23,7 +23,7 @@ const bountyTypes: {
   { value: BountyType.MilestoneBased, label: "Milestone" },
   { value: BountyType.Competition, label: "Competition" },
   {
-    value: "MULTI_WINNER_MILESTONE" as unknown as BountyType,
+    value: BountyType.MultiWinnerMilestone,
     label: "Multi-Winner",
   },
 ];
@@ -95,9 +95,7 @@ export function ProjectBounties({ projectId }: ProjectBountiesProps) {
               >
                 <button
                   type="button"
-                  onClick={() =>
-                    setSelectedType(type.value as unknown as BountyType)
-                  }
+                  onClick={() => setSelectedType(type.value as BountyType)}
                   aria-pressed={selectedType === type.value}
                 >
                   {type.label}
