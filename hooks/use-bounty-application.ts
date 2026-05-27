@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bountyKeys } from "@/lib/query/query-keys";
 import type { BountyQuery } from "@/lib/graphql/generated";
+import type { Bounty } from "@/types/bounty";
 
 // ---------------------------------------------------------------------------
 // Contract client shape (resolved from globalThis.__applicationContracts)
@@ -28,6 +29,12 @@ type ApplicationContractClient = {
     creator: string;
     bountyId: bigint;
     points: number;
+  }) => Promise<{ txHash: string }>;
+  declineApplicant?: (params: {
+    creator: string;
+    bountyId: bigint;
+    applicant: string;
+    reason?: string;
   }) => Promise<{ txHash: string }>;
 };
 
@@ -245,6 +252,66 @@ export function useApproveApplicationSubmission() {
     onSettled: (_r, _e, v) => {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: decline applicant
+// ---------------------------------------------------------------------------
+
+export function useDeclineApplicant() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      creatorAddress,
+      applicantAddress,
+      reason,
+    }: {
+      bountyId: string;
+      creatorAddress: string;
+      applicantAddress: string;
+      reason?: string;
+    }) => {
+      const client = resolveApplicationClient();
+      if (client.declineApplicant) {
+        return client.declineApplicant({
+          creator: creatorAddress,
+          bountyId: toBountyIdBigInt(bountyId),
+          applicant: applicantAddress,
+          reason,
+        });
+      } else {
+        // Mock delay for UI if contract method is not yet implemented
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        return { txHash: "mock_tx_hash" };
+      }
+    },
+    onMutate: async ({ bountyId, applicantAddress }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<{ bounty?: Bounty }>(
+        bountyKeys.detail(bountyId),
+      );
+      if (prev?.bounty?.applications) {
+        qc.setQueryData(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...prev.bounty,
+            applications: prev.bounty.applications.filter(
+              (app) => app.applicantAddress !== applicantAddress,
+            ),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
     },
   });
 }

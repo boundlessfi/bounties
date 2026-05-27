@@ -8,12 +8,29 @@ import {
   Star,
   Trophy,
   ArrowRight,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
-import { useSelectApplicant } from "@/hooks/use-bounty-application";
+import {
+  useSelectApplicant,
+  useDeclineApplicant,
+} from "@/hooks/use-bounty-application";
 
 export interface Application {
   id: string;
@@ -47,6 +64,14 @@ export function ApplicationReviewDashboard({
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
   const { mutate: selectApplicant, isPending: isSelecting } =
     useSelectApplicant();
+  const { mutate: declineApplicant, isPending: isDeclining } =
+    useDeclineApplicant();
+
+  const [declineState, setDeclineState] = useState<{
+    isOpen: boolean;
+    address: string;
+    reason: string;
+  }>({ isOpen: false, address: "", reason: "" });
 
   const handleSelectApplicant = (applicantAddress: string) => {
     selectApplicant({
@@ -54,6 +79,30 @@ export function ApplicationReviewDashboard({
       creatorAddress,
       applicantAddress,
     });
+  };
+
+  const handleDeclineSubmit = () => {
+    if (!declineState.address) return;
+    declineApplicant(
+      {
+        bountyId,
+        creatorAddress,
+        applicantAddress: declineState.address,
+        reason: declineState.reason,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Applicant declined successfully");
+          const app = applications.find(
+            (a) => a.applicantAddress === declineState.address,
+          );
+          if (app) {
+            setSelectedForCompare((prev) => prev.filter((id) => id !== app.id));
+          }
+          setDeclineState({ isOpen: false, address: "", reason: "" });
+        },
+      },
+    );
   };
 
   const toggleCompare = (id: string) => {
@@ -114,9 +163,24 @@ export function ApplicationReviewDashboard({
               </Button>
             )}
             <Button
+              variant="destructive"
+              size="sm"
+              onClick={() =>
+                setDeclineState({
+                  isOpen: true,
+                  address: app.applicantAddress,
+                  reason: "",
+                })
+              }
+              disabled={isSelecting || isDeclining}
+              className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20"
+            >
+              <XCircle className="size-4 mr-1" /> Decline
+            </Button>
+            <Button
               size="sm"
               onClick={() => handleSelectApplicant(app.applicantAddress)}
-              disabled={isSelecting}
+              disabled={isSelecting || isDeclining}
             >
               <CheckCircle className="size-4 mr-1" /> Select
             </Button>
@@ -204,6 +268,58 @@ export function ApplicationReviewDashboard({
           {applications.map((app) => renderApplicationCard(app, false))}
         </div>
       )}
+
+      <AlertDialog
+        open={declineState.isOpen}
+        onOpenChange={(isOpen) =>
+          setDeclineState((prev) => ({ ...prev, isOpen }))
+        }
+      >
+        <AlertDialogContent className="bg-gray-900 border border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Decline Application</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              Are you sure you want to decline this applicant? You can
+              optionally provide a reason.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4 space-y-2">
+            <Label
+              htmlFor="decline-reason"
+              className="text-sm font-medium text-gray-300"
+            >
+              Reason (Optional)
+            </Label>
+            <Textarea
+              id="decline-reason"
+              placeholder="e.g., Lacking required specific experience..."
+              value={declineState.reason}
+              onChange={(e) =>
+                setDeclineState((prev) => ({ ...prev, reason: e.target.value }))
+              }
+              className="bg-gray-800/50 border-gray-700 resize-none"
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeclining}>Cancel</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              onClick={handleDeclineSubmit}
+              disabled={isDeclining}
+            >
+              {isDeclining ? (
+                <>
+                  <Loader2 className="size-4 mr-2 animate-spin" />
+                  Declining...
+                </>
+              ) : (
+                "Decline Applicant"
+              )}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
