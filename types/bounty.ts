@@ -83,6 +83,24 @@ export interface ContributorProgress {
   currentMilestoneId: string;
 }
 
+export interface BountyApplication {
+  id: string;
+  applicantAddress: string;
+  applicantName?: string;
+  proposal: {
+    approach: string;
+    estimatedTimeline: string;
+    relevantExperience: string;
+    portfolioUrl?: string;
+  };
+  reputation: {
+    score: number;
+    tier: string;
+    completionStats: string;
+  };
+  createdAt: string;
+}
+
 export interface Bounty {
   id: string;
   title: string;
@@ -105,13 +123,18 @@ export interface Bounty {
   bountyWindow?: BountyWindowType | null;
 
   submissions?: BountySubmission[] | null;
+  applications?: BountyApplication[] | null;
   _count?: BountyCount | null;
+  claimCount?: number | null;
 
   milestones?: Milestone[] | null;
   contributorProgress?: ContributorProgress[] | null;
 
+  maxParticipants?: number | null;
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
+
+  assignedContributorId?: string | null;
 
   createdBy: string;
   createdAt: string;

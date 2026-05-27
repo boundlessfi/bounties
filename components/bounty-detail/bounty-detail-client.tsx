@@ -71,10 +71,7 @@ function getFullMilestoneData(bounty: BountyData): {
 // Backend does not currently provide applications in the response.
 // Fall back to empty array until the schema supports it.
 const getApplications = (bounty: BountyData): Application[] => {
-  return (
-    (bounty as BountyData & { applications?: Application[] })?.applications ??
-    []
-  );
+  return (bounty?.applications as Application[]) ?? [];
 };
 
 export function BountyDetailClient({ bountyId }: { bountyId: string }) {
@@ -155,17 +152,18 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
   // Identify if the current user is the assigned contributor
   // using a fallback check on submissions or assumed backend field.
   const isAssignedApplicant =
-    (bounty as BountyData & { assignedContributorId?: string })
-      ?.assignedContributorId === session?.user?.id ||
+    bounty?.assignedContributorId === session?.user?.id ||
     bounty.submissions?.some((s) => s.submittedBy === session?.user?.id) ||
     (!isCreator && bounty.status === "IN_PROGRESS");
 
-  // submissions is present on BountyQuery (single-bounty query) but not on
-  // BountyFieldsFragment (list query). The cast is safe here because
-  // useBountyDetail returns BountyFieldsFragment & Partial<BountyQuery["bounty"]>.
-  const competitionSubmissions =
-    (bounty as { submissions?: CompetitionSubmissionEntry[] | null })
-      .submissions ?? [];
+  const competitionSubmissions = bounty.submissions ?? [];
+
+  // Use the casted submissions list or fallback to our placeholder
+  const userSubmission = competitionSubmissions.find(
+    (s) =>
+      s.submittedBy ===
+      (session?.user as { walletAddress?: string })?.walletAddress,
+  );
 
   return (
     <div className="flex flex-col lg:flex-row gap-10">
