@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   Github,
   Copy,
@@ -26,27 +25,14 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-import { BountyFieldsFragment } from "@/lib/graphql/generated";
 import { StatusBadge, TypeBadge } from "./bounty-badges";
 import { FcfsClaimButton } from "@/components/bounty/fcfs-claim-button";
 import { CompetitionSubmission } from "@/components/bounty/competition-submission";
 import { CompetitionStatus } from "@/components/bounty/competition-status";
-import { authClient } from "@/lib/auth-client";
-import { useCompetitionJoinState } from "@/hooks/use-competition-join-state";
 import type { CancellationRecord } from "@/types/escrow";
-import { useCancelBountyDialog } from "@/hooks/use-cancel-bounty-dialog";
-import { useCanRaiseDispute } from "@/hooks/use-can-raise-dispute";
-import type { Bounty } from "@/types/bounty";
-import {
-  ApplicationDialog,
-  type ApplicationFormValues,
-} from "@/components/bounty/application-dialog";
-import { useApplyToBounty } from "@/hooks/use-bounty-application";
+import { ApplicationDialog } from "@/components/bounty/application-dialog";
 
-/** Props accept the wider intersection returned by useBountyDetail so
- * callers don't need a cast. Optional Bounty fields (maxSlots, etc.)
- * are accessible without unsafe assertions. */
-type SidebarBounty = BountyFieldsFragment & Partial<Bounty>;
+import { useBountyCTAState, type SidebarBounty } from "./use-bounty-cta-state";
 
 interface SidebarCTAProps {
   bounty: SidebarBounty;
@@ -54,75 +40,34 @@ interface SidebarCTAProps {
 }
 
 export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
-  const [copied, setCopied] = useState(false);
-  const { data: session } = authClient.useSession();
-
   const {
+    copied,
     cancelDialogOpen,
     setCancelDialogOpen,
     cancelReason,
     setCancelReason,
     isCancelling,
     handleCancel,
-  } = useCancelBountyDialog(bounty.id, onCancelled);
-
-  const canAct = bounty.status === "OPEN";
-  const isFcfs = bounty.type === "FIXED_PRICE";
-  const isCompetition = bounty.type === "COMPETITION";
-  const isCreator =
-    (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
-
-  const canRaiseDispute = useCanRaiseDispute(bounty);
-
-  const canCancel =
-    isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
-
-  // Fall back to _count.submissions until backend adds claimCount / maxParticipants
-  const claimCount = bounty._count?.submissions ?? 0;
-  const maxParticipants: number | null = null;
-  const deadline = bounty.bountyWindow?.endDate ?? null;
-  const isFinalized = bounty.status === "COMPLETED";
-  const submissionCount = bounty._count?.submissions ?? 0;
-
-  const { walletAddress, hasJoined, isPastDeadline, joinMutation, handleJoin } =
-    useCompetitionJoinState(bounty);
-
-  const { mutateAsync: applyToBounty } = useApplyToBounty();
-
-  const handleApply = async (values: ApplicationFormValues) => {
-    if (!walletAddress) return;
-    await applyToBounty({
-      bountyId: bounty.id,
-      applicantAddress: walletAddress,
-      proposal: JSON.stringify(values),
-    });
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard write failed
-    }
-  };
-
-  const ctaLabel = () => {
-    if (!canAct) {
-      switch (bounty.status) {
-        case "IN_PROGRESS":
-          return "In Progress";
-        case "COMPLETED":
-          return "Completed";
-        case "CANCELLED":
-          return "Cancelled";
-        default:
-          return "Not Available";
-      }
-    }
-    return "Submit to Bounty";
-  };
+    canAct,
+    isFcfs,
+    isCompetition,
+    isCreator,
+    canRaiseDispute,
+    canCancel,
+    claimCount,
+    maxParticipants,
+    deadline,
+    isFinalized,
+    submissionCount,
+    walletAddress,
+    hasJoined,
+    isPastDeadline,
+    joinMutation,
+    handleJoin,
+    handleApply,
+    handleCopy,
+    ctaLabel,
+  } = useBountyCTAState(bounty, onCancelled);
 
   return (
     <div className="space-y-4">
@@ -407,204 +352,6 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
             >
               {isCancelling && <Loader2 className="mr-2 size-4 animate-spin" />}
               Cancel Bounty & Refund
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  );
-}
-
-interface MobileCTAProps {
-  bounty: SidebarBounty;
-  onCancelled?: (record: CancellationRecord) => void;
-}
-
-export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
-  const { data: session } = authClient.useSession();
-
-  const {
-    cancelDialogOpen,
-    setCancelDialogOpen,
-    cancelReason,
-    setCancelReason,
-    isCancelling,
-    handleCancel,
-  } = useCancelBountyDialog(bounty.id, onCancelled);
-
-  const canAct = bounty.status === "OPEN";
-  const isFcfs = bounty.type === "FIXED_PRICE";
-  const isCompetition = bounty.type === "COMPETITION";
-  const isCreator =
-    (session?.user as { id?: string } | undefined)?.id === bounty.createdBy;
-
-  const canRaiseDispute = useCanRaiseDispute(bounty);
-
-  const canCancel =
-    isCreator && (bounty.status === "OPEN" || bounty.status === "IN_PROGRESS");
-
-  const { walletAddress, hasJoined, isPastDeadline, joinMutation, handleJoin } =
-    useCompetitionJoinState(bounty);
-
-  const { mutateAsync: applyToBounty } = useApplyToBounty();
-
-  const handleApply = async (values: ApplicationFormValues) => {
-    if (!walletAddress) return;
-    await applyToBounty({
-      bountyId: bounty.id,
-      applicantAddress: walletAddress,
-      proposal: JSON.stringify(values),
-    });
-  };
-
-  const label = () => {
-    if (!canAct) {
-      switch (bounty.status) {
-        case "IN_PROGRESS":
-          return "In Progress";
-        case "COMPLETED":
-          return "Completed";
-        default:
-          return "Not Available";
-      }
-    }
-    return "Submit to Bounty";
-  };
-
-  return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-background/90 backdrop-blur-xl border-t border-gray-800/60 z-20">
-      {isFcfs ? (
-        <FcfsClaimButton bounty={bounty} />
-      ) : isCompetition ? (
-        <Button
-          data-testid="apply-to-bounty-btn"
-          className="w-full h-11 font-bold tracking-wide"
-          disabled={
-            !canAct ||
-            hasJoined ||
-            isPastDeadline ||
-            joinMutation.isPending ||
-            !walletAddress
-          }
-          size="lg"
-          onClick={() => void handleJoin()}
-        >
-          {joinMutation.isPending ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : (
-            <Users className="mr-2 size-4" />
-          )}
-          {hasJoined
-            ? "Joined ✓"
-            : canAct && !isPastDeadline
-              ? "Join Competition"
-              : label()}
-        </Button>
-      ) : bounty.type === "MILESTONE_BASED" && canAct && !isCreator ? (
-        <div className="flex gap-2">
-          <ApplicationDialog
-            bountyTitle={bounty.title}
-            onApply={handleApply}
-            trigger={
-              <Button
-                className="flex-1 h-11 font-bold tracking-wide"
-                size="lg"
-                disabled={!walletAddress}
-              >
-                Apply for Bounty
-              </Button>
-            }
-          />
-          {canCancel && (
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-11 border-red-500/30 text-red-400 hover:bg-red-500/10 shrink-0"
-              onClick={() => setCancelDialogOpen(true)}
-            >
-              <XCircle className="size-4" />
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          <Button
-            className="flex-1 h-11 font-bold tracking-wide"
-            disabled={!canAct}
-            size="lg"
-            onClick={() =>
-              canAct &&
-              window.open(
-                bounty.githubIssueUrl,
-                "_blank",
-                "noopener,noreferrer",
-              )
-            }
-          >
-            {label()}
-          </Button>
-          {canCancel && (
-            <Button
-              variant="outline"
-              size="lg"
-              className="h-11 border-red-500/30 text-red-400 hover:bg-red-500/10 shrink-0"
-              onClick={() => setCancelDialogOpen(true)}
-            >
-              <XCircle className="size-4" />
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* Mobile Raise Dispute — coming soon */}
-      {canRaiseDispute && (
-        <Button
-          variant="ghost"
-          className="w-full mt-2 text-gray-400 text-xs h-8"
-          disabled
-        >
-          <Gavel className="size-3 mr-2" />
-          Raise a Dispute (Coming Soon)
-        </Button>
-      )}
-
-      {/* Mobile Cancel Dialog */}
-      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-red-400">
-              <XCircle className="size-5" />
-              Cancel Bounty
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              This will cancel the bounty and refund escrowed funds. This action
-              cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-2">
-            <Label htmlFor="mobile-cancel-reason">
-              Reason <span className="text-red-400">*</span>
-            </Label>
-            <Textarea
-              id="mobile-cancel-reason"
-              placeholder="Reason for cancellation..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              className="min-h-20"
-              disabled={isCancelling}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCancelling}>
-              Keep Bounty
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleCancel}
-              disabled={!cancelReason.trim() || isCancelling}
-            >
-              {isCancelling && <Loader2 className="mr-2 size-4 animate-spin" />}
-              Cancel & Refund
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
