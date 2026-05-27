@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { getAllProjects } from "@/lib/mock/projects";
 import { useDebounce } from "@/hooks/use-debounce";
 import { fetcher } from "@/lib/graphql/client";
 import {
@@ -68,6 +73,7 @@ export function useBountySearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const queryClient = useQueryClient();
 
   const debouncedSearch = useDebounce(searchTerm, 300);
 
@@ -127,6 +133,86 @@ export function useBountySearch() {
 
   const toggleOpen = () => setIsOpen((prev) => !prev);
 
+  // Dynamic grouping logic
+  const searchLower = debouncedSearch.toLowerCase().trim();
+
+  // Local caching logic for Bounties
+  let cachedBountyResults: BountyFieldsFragment[] = [];
+  if (searchLower) {
+    interface CachedQueryData {
+      bounties?: { bounties?: BountyFieldsFragment[] };
+      pages?: Array<{ bounties?: { bounties?: BountyFieldsFragment[] } }>;
+    }
+    const cachedQueries = queryClient.getQueriesData<CachedQueryData>({
+      queryKey: ["Bounties"],
+    });
+    const allCachedBounties = new Map<string, BountyFieldsFragment>();
+
+    cachedQueries.forEach(([_, queryData]) => {
+      // Data might be paginated (pages) or just single list (bounties.bounties)
+      // or from the specific search queries
+      let items: BountyFieldsFragment[] = [];
+      if (queryData?.pages) {
+        items = queryData.pages.flatMap((p) => p.bounties?.bounties || []);
+      } else if (queryData?.bounties?.bounties) {
+        items = queryData.bounties.bounties;
+      }
+
+      if (Array.isArray(items)) {
+        items.forEach((b) => {
+          if (b && b.id) {
+            allCachedBounties.set(b.id, b);
+          }
+        });
+      }
+    });
+
+    cachedBountyResults = Array.from(allCachedBounties.values()).filter(
+      (b) =>
+        b.title.toLowerCase().includes(searchLower) ||
+        (b.description && b.description.toLowerCase().includes(searchLower)),
+    );
+  }
+
+  // Combine API results and Local Cache
+  const apiBountyResults = data?.data ?? [];
+  const mergedBounties = [...apiBountyResults];
+  const mergedIds = new Set(apiBountyResults.map((b) => b.id));
+
+  for (const b of cachedBountyResults) {
+    if (!mergedIds.has(b.id)) {
+      mergedBounties.push(b);
+      mergedIds.add(b.id);
+    }
+  }
+
+  const bountyResults = mergedBounties.slice(0, 5);
+
+  // Projects
+  const allProjects = typeof window !== "undefined" ? getAllProjects() : [];
+  const projectResults = searchLower
+    ? allProjects
+        .filter(
+          (p) =>
+            p.name.toLowerCase().includes(searchLower) ||
+            p.description?.toLowerCase().includes(searchLower),
+        )
+        .slice(0, 5)
+    : [];
+
+  // Pages
+  const allPages = [
+    { title: "Home", url: "/" },
+    { title: "Discover", url: "/discover" },
+    { title: "Leaderboard", url: "/leaderboard" },
+    { title: "My Profile", url: "/profile" },
+  ];
+  const pageResults = searchLower
+    ? allPages
+        .filter((p) => p.title.toLowerCase().includes(searchLower))
+        .slice(0, 5)
+    : [];
+
   return {
     searchTerm,
     setSearchTerm,
@@ -134,7 +220,10 @@ export function useBountySearch() {
     isOpen,
     setIsOpen,
     toggleOpen,
-    results: data?.data ?? [],
+    bountyResults,
+    projectResults,
+    pageResults,
+    results: bountyResults, // maintain backwards compatibility if needed
     isLoading: isLoading || isFetching,
     recentSearches,
     addRecentSearch,

@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Clock, X } from "lucide-react";
+import { FileText, Clock, X, Folder, Compass } from "lucide-react";
 
 import {
   CommandDialog,
@@ -26,7 +26,9 @@ export function SearchCommand() {
     isOpen,
     setIsOpen,
     toggleOpen,
-    results,
+    bountyResults,
+    projectResults,
+    pageResults,
     isLoading,
     recentSearches,
     addRecentSearch,
@@ -67,9 +69,9 @@ export function SearchCommand() {
     [setIsOpen],
   );
 
-  const handleSelect = (bountyId: string, title: string) => {
+  const handleSelect = (url: string, title: string) => {
     addRecentSearch(title);
-    runCommand(() => router.push(`/bounty/${bountyId}`));
+    runCommand(() => router.push(url));
   };
 
   const handleRecentSelect = (term: string) => {
@@ -137,31 +139,74 @@ export function SearchCommand() {
               <Skeleton className="h-4 w-[60%]" />
             </div>
           ) : (
-            results.length > 0 && (
-              <CommandGroup heading="Bounties">
-                {results.map((bounty) => (
-                  <CommandItem
-                    key={bounty.id}
-                    value={bounty.title}
-                    onSelect={() => handleSelect(bounty.id, bounty.title)}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    <div className="flex flex-col">
-                      <span>{bounty.title}</span>
-                      <span className="text-xs text-gray-500">
-                        {bounty.organization?.name ?? "Unknown"} •{" "}
-                        {bounty.status}
-                      </span>
-                    </div>
-                    {bounty.rewardAmount && (
-                      <Badge variant="secondary" className="ml-auto">
-                        {bounty.rewardAmount} {bounty.rewardCurrency}
-                      </Badge>
-                    )}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )
+            <>
+              {pageResults && pageResults.length > 0 && (
+                <CommandGroup heading="Pages">
+                  {pageResults.map((page) => (
+                    <CommandItem
+                      key={page.url}
+                      value={page.title}
+                      onSelect={() => handleSelect(page.url, page.title)}
+                    >
+                      <Compass className="mr-2 h-4 w-4" />
+                      <span>{page.title}</span>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {projectResults && projectResults.length > 0 && (
+                <CommandGroup heading="Projects">
+                  {projectResults.map((project) => (
+                    <CommandItem
+                      key={project.id}
+                      value={project.name}
+                      onSelect={() =>
+                        handleSelect(`/projects/${project.id}`, project.name)
+                      }
+                    >
+                      <Folder className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>{project.name}</span>
+                        {project.description && (
+                          <span className="text-xs text-gray-500 line-clamp-1">
+                            {project.description}
+                          </span>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {bountyResults && bountyResults.length > 0 && (
+                <CommandGroup heading="Bounties">
+                  {bountyResults.map((bounty) => (
+                    <CommandItem
+                      key={bounty.id}
+                      value={bounty.title}
+                      onSelect={() =>
+                        handleSelect(`/bounty/${bounty.id}`, bounty.title)
+                      }
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      <div className="flex flex-col">
+                        <span>{bounty.title}</span>
+                        <span className="text-xs text-gray-500 line-clamp-1">
+                          {bounty.organization?.name ?? "Unknown"} •{" "}
+                          {bounty.status}
+                        </span>
+                      </div>
+                      {bounty.rewardAmount && (
+                        <Badge variant="secondary" className="ml-auto">
+                          {bounty.rewardAmount} {bounty.rewardCurrency}
+                        </Badge>
+                      )}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </>
           )}
         </CommandList>
       </CommandDialog>
