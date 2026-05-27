@@ -9,7 +9,7 @@ import { MobileCTA } from "./bounty-detail-mobile-cta";
 import { HeaderCard } from "./bounty-detail-header-card";
 import { DescriptionCard } from "./bounty-detail-description-card";
 import { BountyDetailSubmissionsCard } from "./bounty-detail-submissions-card";
-import { BountyDetailSkeleton } from "./bounty-detail-bounty-detail-skeleton";
+import { BountyDetailSkeleton } from "@/components/ui/loading/bounty-detail-skeleton";
 import { useBountyDetail } from "@/hooks/use-bounty-detail";
 import { FcfsApprovalPanel } from "@/components/bounty/fcfs-approval-panel";
 import { CompetitionJudging } from "@/components/bounty/competition-judging";

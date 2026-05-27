@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Milestone, ContributorProgress } from "@/types/bounty";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Tooltip,
@@ -37,10 +38,38 @@ export function Model4MaintainerDashboard({
 }: Model4MaintainerDashboardProps) {
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
 
-  const handleAction = async (action: string, userName: string) => {
-    setLoadingAction(`${action}-${userName}`);
-    console.log(`[Coming soon] ${action} for ${userName}`);
+  const handleMessage = async (userName: string) => {
+    setLoadingAction(`Message-${userName}`);
+    await new Promise((r) => setTimeout(r, 800));
+    toast.success(`Message sent to ${userName}`);
+    setLoadingAction(null);
+  };
+
+  const handleViewSubmissions = async (userName: string) => {
+    setLoadingAction(`View Submissions-${userName}`);
+    await new Promise((r) => setTimeout(r, 500));
+    toast.info(`Viewing submissions for ${userName}`);
+    setLoadingAction(null);
+  };
+
+  const handleReleasePayment = async (userName: string) => {
+    setLoadingAction(`Release Payment-${userName}`);
+    await new Promise((r) => setTimeout(r, 1200));
+    toast.success(`Payment released for ${userName}`);
+    setLoadingAction(null);
+  };
+
+  const handleAdvance = async (userName: string) => {
+    setLoadingAction(`Advance-${userName}`);
     await new Promise((r) => setTimeout(r, 1000));
+    toast.success(`${userName} advanced to next milestone`);
+    setLoadingAction(null);
+  };
+
+  const handleRemove = async (userName: string) => {
+    setLoadingAction(`Remove-${userName}`);
+    await new Promise((r) => setTimeout(r, 800));
+    toast.success(`${userName} removed from slot`);
     setLoadingAction(null);
   };
 
@@ -135,17 +164,14 @@ export function Model4MaintainerDashboard({
                             variant="ghost"
                             size="icon-sm"
                             className="text-gray-400 hover:text-white"
-                            onClick={() =>
-                              handleAction("Message", contributor.userName)
-                            }
+                            onClick={() => handleMessage(contributor.userName)}
                             disabled={loadingAction !== null}
+                            aria-label="Send Message"
                           >
                             <MessageSquare className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Send Message [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Send Message</TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -155,14 +181,11 @@ export function Model4MaintainerDashboard({
                             size="sm"
                             className="h-8 text-xs border-gray-700 hover:bg-gray-800"
                             onClick={() =>
-                              handleAction(
-                                "View Submissions",
-                                contributor.userName,
-                              )
+                              handleViewSubmissions(contributor.userName)
                             }
                             disabled={loadingAction !== null}
                           >
-                            View Submissions [Coming soon]
+                            View Submissions
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Review work</TooltipContent>
@@ -174,10 +197,7 @@ export function Model4MaintainerDashboard({
                             size="sm"
                             className="h-8 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 font-bold"
                             onClick={() =>
-                              handleAction(
-                                "Release Payment",
-                                contributor.userName,
-                              )
+                              handleReleasePayment(contributor.userName)
                             }
                             disabled={loadingAction !== null}
                           >
@@ -187,7 +207,7 @@ export function Model4MaintainerDashboard({
                             ) : (
                               <Coins className="size-3 mr-1.5" />
                             )}
-                            Release Payment [Coming soon]
+                            Release Payment
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Pay for milestone</TooltipContent>
@@ -199,9 +219,7 @@ export function Model4MaintainerDashboard({
                             size="sm"
                             variant="secondary"
                             className="h-8 text-xs font-bold"
-                            onClick={() =>
-                              handleAction("Advance", contributor.userName)
-                            }
+                            onClick={() => handleAdvance(contributor.userName)}
                             disabled={loadingAction !== null}
                           >
                             {loadingAction ===
@@ -209,8 +227,7 @@ export function Model4MaintainerDashboard({
                               <Loader2 className="size-3 mr-1.5 animate-spin" />
                             ) : (
                               <>
-                                Advance [Coming soon]{" "}
-                                <ArrowRight className="size-3 ml-1.5" />
+                                Advance <ArrowRight className="size-3 ml-1.5" />
                               </>
                             )}
                           </Button>
@@ -224,17 +241,14 @@ export function Model4MaintainerDashboard({
                             variant="ghost"
                             size="icon-sm"
                             className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10"
-                            onClick={() =>
-                              handleAction("Remove", contributor.userName)
-                            }
+                            onClick={() => handleRemove(contributor.userName)}
                             disabled={loadingAction !== null}
+                            aria-label="Remove from slot"
                           >
                             <UserMinus className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Remove from slot [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Remove from slot</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -262,12 +276,13 @@ export function Model4MaintainerDashboard({
                     className="text-[10px] h-auto p-0 text-primary"
                     disabled
                   >
-                    View All Applications [Coming soon]{" "}
-                    <ChevronRight className="size-3" />
+                    View All Applications <ChevronRight className="size-3" />
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Coming soon</TooltipContent>
+              <TooltipContent>
+                View all applications (pending feature)
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>

@@ -6,7 +6,7 @@ import { useBounties } from "@/hooks/use-bounties";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useActiveLightningRound } from "@/hooks/use-lightning-rounds";
 import { BountyCard } from "@/components/bounty/bounty-card";
-import { BountyListSkeleton } from "@/components/bounty/bounty-card-skeleton";
+import { BountyListSkeleton } from "@/components/ui/loading/bounty-card-skeleton";
 import { BountyError } from "@/components/bounty/bounty-error";
 import { LightningRoundBanner } from "@/components/bounty/lightning-round-banner";
 import { Input } from "@/components/ui/input";
