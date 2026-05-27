@@ -529,3 +529,55 @@ export function useReleaseMilestonePayment() {
     },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Hook: request revisions on a submission
+// ---------------------------------------------------------------------------
+
+export function useRequestRevisions() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      submissionId,
+      feedback,
+    }: {
+      bountyId: string;
+      submissionId: string;
+      feedback: string;
+    }) => {
+      // Mock API call – params consumed by contract when wired
+      void bountyId;
+      void submissionId;
+      void feedback;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { txHash: "mock_tx_hash" };
+    },
+    onMutate: async ({ bountyId, feedback }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const bountyData = prev.bounty as any;
+        qc.setQueryData(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...bountyData,
+            status: "REVISION_REQUESTED",
+            latestRevisionFeedback: feedback,
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}

@@ -238,10 +238,16 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
         {bounty.type === "MILESTONE_BASED" &&
           isAssignedApplicant &&
           walletAddress &&
-          bounty.status === "IN_PROGRESS" && (
+          (bounty.status === "IN_PROGRESS" ||
+            (bounty.status as string) === "REVISION_REQUESTED") && (
             <ApplicationSubmitWorkPanel
               bountyId={bountyId}
               contributorAddress={walletAddress}
+              latestRevisionFeedback={
+                (bounty as Record<string, unknown>).latestRevisionFeedback as
+                  | string
+                  | undefined
+              }
             />
           )}
 
