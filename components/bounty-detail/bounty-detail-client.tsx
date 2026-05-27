@@ -199,6 +199,8 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
             if (!myProgress) return null;
             return (
               <MilestoneSubmissionCard
+                bountyId={bounty.id}
+                contributorAddress={walletAddress || session.user.id}
                 milestones={milestones}
                 contributorProgress={myProgress}
               />

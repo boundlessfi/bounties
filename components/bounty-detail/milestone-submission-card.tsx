@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useSubmitApplicationWork } from "@/hooks/use-bounty-application";
 import { Milestone, ContributorProgress } from "@/types/bounty";
 import { cn } from "@/lib/utils";
 import {
@@ -12,20 +14,27 @@ import {
   ExternalLink,
   Clock,
   Loader2,
+  Link as LinkIcon,
 } from "lucide-react";
 
 interface MilestoneSubmissionCardProps {
+  bountyId: string;
+  contributorAddress: string;
   milestones: Milestone[];
   contributorProgress: ContributorProgress;
   className?: string;
 }
 
 export function MilestoneSubmissionCard({
+  bountyId,
+  contributorAddress,
   milestones,
   contributorProgress,
   className,
 }: MilestoneSubmissionCardProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [workCid, setWorkCid] = useState("");
+  const { mutate: submitWork, isPending: isSubmitting } =
+    useSubmitApplicationWork();
 
   // Guard: nothing to render if there are no milestones yet
   if (milestones.length === 0) return null;
@@ -38,13 +47,22 @@ export function MilestoneSubmissionCard({
   const safeCurrentIndex = currentIdx === -1 ? milestones.length : currentIdx;
   const displayPosition = Math.min(safeCurrentIndex + 1, milestones.length);
 
-  async function handleSubmitWork(milestoneTitle: string) {
-    // TODO: replace with a real GraphQL mutation once the backend supports it.
-    setIsSubmitting(true);
-    console.log("[Coming soon] Submit work for milestone:", milestoneTitle);
-    // Simulate async work so the user gets visual feedback
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSubmitting(false);
+  function handleSubmitWork(e: React.FormEvent) {
+    e.preventDefault();
+    if (!workCid.trim()) return;
+
+    submitWork(
+      {
+        bountyId,
+        contributorAddress,
+        workCid,
+      },
+      {
+        onSuccess: () => {
+          setWorkCid("");
+        },
+      },
+    );
   }
 
   return (
@@ -126,33 +144,49 @@ export function MilestoneSubmissionCard({
                   </div>
 
                   {isCurrent && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 text-xs border-primary/30 hover:bg-primary/10"
-                        onClick={() =>
-                          milestone.id &&
-                          window.open(`#milestone-${milestone.id}`, "_self")
-                        }
+                    <div className="flex flex-col gap-3 mt-4 sm:mt-0 w-full sm:w-auto">
+                      <form
+                        onSubmit={(e) => handleSubmitWork(e)}
+                        className="flex flex-col gap-2 w-full sm:min-w-[260px]"
                       >
-                        <ExternalLink className="size-3 mr-1.5" /> View Task
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="h-8 text-xs font-bold"
-                        disabled={isSubmitting}
-                        onClick={() => handleSubmitWork(milestone.title)}
-                      >
-                        {isSubmitting ? (
-                          <Loader2 className="size-3 mr-1.5 animate-spin" />
-                        ) : (
-                          <Send className="size-3 mr-1.5" />
-                        )}
-                        {isSubmitting
-                          ? "Submitting…"
-                          : "Submit Work [Coming soon]"}
-                      </Button>
+                        <div className="relative">
+                          <LinkIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                          <Input
+                            placeholder="Deliverable URL or CID..."
+                            value={workCid}
+                            onChange={(e) => setWorkCid(e.target.value)}
+                            className="pl-8 h-9 text-xs bg-background-card"
+                            required
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 justify-end sm:justify-start">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs border-primary/30 hover:bg-primary/10"
+                            onClick={() =>
+                              milestone.id &&
+                              window.open(`#milestone-${milestone.id}`, "_self")
+                            }
+                          >
+                            <ExternalLink className="size-3 mr-1.5" /> View Task
+                          </Button>
+                          <Button
+                            type="submit"
+                            size="sm"
+                            className="h-8 text-xs font-bold"
+                            disabled={!workCid.trim() || isSubmitting}
+                          >
+                            {isSubmitting ? (
+                              <Loader2 className="size-3 mr-1.5 animate-spin" />
+                            ) : (
+                              <Send className="size-3 mr-1.5" />
+                            )}
+                            {isSubmitting ? "Submitting…" : "Submit Work"}
+                          </Button>
+                        </div>
+                      </form>
                     </div>
                   )}
 
