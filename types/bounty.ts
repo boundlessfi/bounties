@@ -65,6 +65,25 @@ export interface BountySubmission {
   updatedAt: string;
 }
 
+/** Application to a bounty. Fields inferred from UI usage. */
+export interface BountyApplication {
+  id: string;
+  applicantAddress: string;
+  applicantName?: string;
+  proposal?: {
+    approach: string;
+    estimatedTimeline: string;
+    relevantExperience: string;
+    portfolioUrl?: string;
+  };
+  reputation?: {
+    score: number;
+    tier: string;
+    completionStats: string;
+  };
+  createdAt?: string;
+}
+
 export interface BountyCount {
   submissions: number;
 }
@@ -112,6 +131,13 @@ export interface Bounty {
 
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
+
+  // Extended UI fields — not in BountyFieldsFragment, populated by
+  // useBountyDetail and similar hooks that augment the codegen shape.
+  applications?: BountyApplication[] | null;
+  assignedContributorId?: string | null;
+  claimCount?: number | null;
+  maxParticipants?: number | null;
 
   createdBy: string;
   createdAt: string;
