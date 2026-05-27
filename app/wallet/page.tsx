@@ -21,6 +21,7 @@ import { WalletInfo } from "@/types/wallet";
 import { mockWalletWithAssets } from "@/lib/mock-wallet";
 import { useSearchParams } from "next/navigation";
 import { AlertCircle } from "lucide-react";
+import { WalletPageSkeleton } from "@/components/ui/loading";
 
 function WalletConnectPrompt({ onConnect }: { onConnect: () => void }) {
   return (
@@ -52,27 +53,6 @@ function WalletConnectPrompt({ onConnect }: { onConnect: () => void }) {
         <Button size="lg" onClick={onConnect}>
           Connect with Passkey
         </Button>
-      </div>
-    </div>
-  );
-}
-
-function WalletPageSkeleton() {
-  return (
-    <div className="container mx-auto max-w-6xl px-4 py-8 space-y-8">
-      <div className="space-y-2">
-        <Skeleton className="h-9 w-32" />
-        <Skeleton className="h-5 w-72" />
-      </div>
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-8">
-          <Skeleton className="h-52 rounded-2xl" />
-          <Skeleton className="h-64 rounded-xl" />
-        </div>
-        <div className="space-y-8">
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
-        </div>
       </div>
     </div>
   );

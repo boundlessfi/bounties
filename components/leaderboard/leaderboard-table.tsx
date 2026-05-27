@@ -10,12 +10,12 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { LeaderboardEntry } from "@/types/leaderboard";
 import { cn } from "@/lib/utils";
 import { RankBadge } from "./rank-badge";
 import { TierBadge } from "@/components/reputation/tier-badge";
 import { StreakBadge } from "@/components/reputation/streak-badge";
+import { LeaderboardSkeleton } from "@/components/ui/loading";
 
 interface LeaderboardTableProps {
     entries: LeaderboardEntry[];
@@ -58,13 +58,7 @@ export function LeaderboardTable({
     }, [hasNextPage, onLoadMore, isFetchingNextPage]);
 
     if (isLoading && entries.length === 0) {
-        return (
-            <div className="space-y-4">
-                {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-16 w-full" />
-                ))}
-            </div>
-        );
+        return <LeaderboardSkeleton rows={5} />;
     }
 
     const handleKeyDown = (e: React.KeyboardEvent, entry: LeaderboardEntry) => {
