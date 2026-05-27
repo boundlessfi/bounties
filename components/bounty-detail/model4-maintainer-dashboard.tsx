@@ -21,8 +21,15 @@ import {
   ArrowRight,
   Trophy,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useAdvanceMilestone,
+  useRemoveFromSlot,
+  useReleaseMilestonePayment,
+} from "@/hooks/use-bounty-application";
 
 interface Model4MaintainerDashboardProps {
+  bountyId: string;
   milestones: Milestone[];
   contributors: ContributorProgress[];
   maxSlots?: number;
@@ -30,6 +37,7 @@ interface Model4MaintainerDashboardProps {
 }
 
 export function Model4MaintainerDashboard({
+  bountyId,
   milestones,
   contributors: initialContributors,
   maxSlots = 5,
@@ -37,11 +45,60 @@ export function Model4MaintainerDashboard({
 }: Model4MaintainerDashboardProps) {
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
 
-  const handleAction = async (action: string, userName: string) => {
+  const advanceMutation = useAdvanceMilestone();
+  const removeMutation = useRemoveFromSlot();
+  const releaseMutation = useReleaseMilestonePayment();
+
+  const handleAction = async (
+    action: string,
+    userName: string,
+    userId: string,
+    currentMilestoneId?: string,
+  ) => {
     setLoadingAction(`${action}-${userName}`);
-    console.log(`[Coming soon] ${action} for ${userName}`);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoadingAction(null);
+    try {
+      if (action === "Advance") {
+        if (!currentMilestoneId) throw new Error("No current milestone");
+        const currentIndex = milestones.findIndex(
+          (m) => m.id === currentMilestoneId,
+        );
+        if (currentIndex < milestones.length - 1) {
+          const nextMilestone = milestones[currentIndex + 1];
+          await advanceMutation.mutateAsync({
+            bountyId,
+            contributorAddress: userId,
+            nextMilestoneId: nextMilestone.id,
+          });
+          toast.success(`${userName} advanced to ${nextMilestone.title}`);
+        } else {
+          toast.success(`${userName} has completed all milestones!`);
+        }
+      } else if (action === "Remove") {
+        await removeMutation.mutateAsync({
+          bountyId,
+          contributorAddress: userId,
+        });
+        toast.success(`${userName} removed from slot`);
+      } else if (action === "Release Payment") {
+        await releaseMutation.mutateAsync({
+          bountyId,
+          contributorAddress: userId,
+        });
+        toast.success(`Payment released to ${userName}`);
+      } else if (action === "Message") {
+        toast.info(`Messaging with ${userName} coming soon!`);
+      } else if (action === "View Submissions") {
+        toast.info(`Submissions drawer coming soon!`);
+      }
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : `Failed to ${action.toLowerCase()}`,
+      );
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
   return (
@@ -136,16 +193,19 @@ export function Model4MaintainerDashboard({
                             size="icon-sm"
                             className="text-gray-400 hover:text-white"
                             onClick={() =>
-                              handleAction("Message", contributor.userName)
+                              handleAction(
+                                "Message",
+                                contributor.userName,
+                                contributor.userId,
+                              )
                             }
+                            aria-label={`Send message to ${contributor.userName}`}
                             disabled={loadingAction !== null}
                           >
                             <MessageSquare className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Send Message [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Send Message</TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -158,11 +218,12 @@ export function Model4MaintainerDashboard({
                               handleAction(
                                 "View Submissions",
                                 contributor.userName,
+                                contributor.userId,
                               )
                             }
                             disabled={loadingAction !== null}
                           >
-                            View Submissions [Coming soon]
+                            View Submissions
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Review work</TooltipContent>
@@ -177,6 +238,7 @@ export function Model4MaintainerDashboard({
                               handleAction(
                                 "Release Payment",
                                 contributor.userName,
+                                contributor.userId,
                               )
                             }
                             disabled={loadingAction !== null}
@@ -187,7 +249,7 @@ export function Model4MaintainerDashboard({
                             ) : (
                               <Coins className="size-3 mr-1.5" />
                             )}
-                            Release Payment [Coming soon]
+                            Release Payment
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Pay for milestone</TooltipContent>
@@ -200,7 +262,12 @@ export function Model4MaintainerDashboard({
                             variant="secondary"
                             className="h-8 text-xs font-bold"
                             onClick={() =>
-                              handleAction("Advance", contributor.userName)
+                              handleAction(
+                                "Advance",
+                                contributor.userName,
+                                contributor.userId,
+                                contributor.currentMilestoneId,
+                              )
                             }
                             disabled={loadingAction !== null}
                           >
@@ -209,8 +276,7 @@ export function Model4MaintainerDashboard({
                               <Loader2 className="size-3 mr-1.5 animate-spin" />
                             ) : (
                               <>
-                                Advance [Coming soon]{" "}
-                                <ArrowRight className="size-3 ml-1.5" />
+                                Advance <ArrowRight className="size-3 ml-1.5" />
                               </>
                             )}
                           </Button>
@@ -225,16 +291,19 @@ export function Model4MaintainerDashboard({
                             size="icon-sm"
                             className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10"
                             onClick={() =>
-                              handleAction("Remove", contributor.userName)
+                              handleAction(
+                                "Remove",
+                                contributor.userName,
+                                contributor.userId,
+                              )
                             }
+                            aria-label={`Remove ${contributor.userName} from slot`}
                             disabled={loadingAction !== null}
                           >
                             <UserMinus className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Remove from slot [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Remove from slot</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -260,14 +329,15 @@ export function Model4MaintainerDashboard({
                   <Button
                     variant="link"
                     className="text-[10px] h-auto p-0 text-primary"
-                    disabled
+                    onClick={() =>
+                      toast.info("View All Applications coming soon")
+                    }
                   >
-                    View All Applications [Coming soon]{" "}
-                    <ChevronRight className="size-3" />
+                    View All Applications <ChevronRight className="size-3" />
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Coming soon</TooltipContent>
+              <TooltipContent>View application dashboard</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>

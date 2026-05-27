@@ -399,3 +399,133 @@ export function useDeclineApplicant() {
     },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Hook: advance milestone (Model 4)
+// ---------------------------------------------------------------------------
+
+export function useAdvanceMilestone() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorAddress,
+      nextMilestoneId,
+    }: {
+      bountyId: string;
+      contributorAddress: string;
+      nextMilestoneId: string;
+    }) => {
+      // Mock API call – params consumed by contract when wired
+      void bountyId;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { txHash: "mock_tx_hash", contributorAddress, nextMilestoneId };
+    },
+    onMutate: async ({ bountyId, contributorAddress, nextMilestoneId }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const bountyData = prev.bounty as any;
+        const progress = bountyData.contributorProgress || [];
+
+        qc.setQueryData(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...bountyData,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            contributorProgress: progress.map((p: any) =>
+              p.userId === contributorAddress
+                ? { ...p, currentMilestoneId: nextMilestoneId }
+                : p,
+            ),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: remove from slot (Model 4)
+// ---------------------------------------------------------------------------
+
+export function useRemoveFromSlot() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorAddress,
+    }: {
+      bountyId: string;
+      contributorAddress: string;
+    }) => {
+      // Mock API call – params consumed by contract when wired
+      void bountyId;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { txHash: "mock_tx_hash", contributorAddress };
+    },
+    onMutate: async ({ bountyId, contributorAddress }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const bountyData = prev.bounty as any;
+        const progress = bountyData.contributorProgress || [];
+
+        qc.setQueryData(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...bountyData,
+            totalSlotsOccupied: Math.max(
+              0,
+              (bountyData.totalSlotsOccupied || 1) - 1,
+            ),
+            contributorProgress: progress.filter(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (p: any) => p.userId !== contributorAddress,
+            ),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: release milestone payment (Model 4)
+// ---------------------------------------------------------------------------
+
+export function useReleaseMilestonePayment() {
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorAddress,
+    }: {
+      bountyId: string;
+      contributorAddress: string;
+    }) => {
+      // Mock API call – params consumed by contract when wired
+      void bountyId;
+      void contributorAddress;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { txHash: "mock_tx_hash" };
+    },
+  });
+}
