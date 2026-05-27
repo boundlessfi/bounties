@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Link as LinkIcon, Send } from "lucide-react";
+import { Upload, Link as LinkIcon, Send, AlertTriangle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,11 +17,13 @@ import { useSubmitApplicationWork } from "@/hooks/use-bounty-application";
 interface ApplicationSubmitWorkPanelProps {
   bountyId: string;
   contributorAddress: string;
+  revisionFeedback?: string;
 }
 
 export function ApplicationSubmitWorkPanel({
   bountyId,
   contributorAddress,
+  revisionFeedback,
 }: ApplicationSubmitWorkPanelProps) {
   const [workCid, setWorkCid] = useState("");
 
@@ -51,6 +53,17 @@ export function ApplicationSubmitWorkPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
+        {revisionFeedback && (
+          <div className="mb-6 rounded-lg border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-100">
+            <div className="flex items-center gap-2 font-medium text-amber-200 mb-2">
+              <AlertTriangle className="size-4" />
+              Revision requested
+            </div>
+            <p className="whitespace-pre-wrap text-amber-100/80">
+              {revisionFeedback}
+            </p>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="work-cid">
