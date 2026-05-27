@@ -8,12 +8,28 @@ import {
   Star,
   Trophy,
   ArrowRight,
+  XCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
-import { useSelectApplicant } from "@/hooks/use-bounty-application";
+import {
+  useDeclineApplicant,
+  useSelectApplicant,
+} from "@/hooks/use-bounty-application";
 
 export interface Application {
   id: string;
@@ -45,8 +61,13 @@ export function ApplicationReviewDashboard({
   applications,
 }: ApplicationReviewDashboardProps) {
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [declineReason, setDeclineReason] = useState("");
+  const [applicationToDecline, setApplicationToDecline] =
+    useState<Application | null>(null);
   const { mutate: selectApplicant, isPending: isSelecting } =
     useSelectApplicant();
+  const { mutate: declineApplicant, isPending: isDeclining } =
+    useDeclineApplicant();
 
   const handleSelectApplicant = (applicantAddress: string) => {
     selectApplicant({
@@ -62,6 +83,45 @@ export function ApplicationReviewDashboard({
     } else if (selectedForCompare.length < 2) {
       setSelectedForCompare([...selectedForCompare, id]);
     }
+  };
+
+  const openDeclineDialog = (app: Application) => {
+    setApplicationToDecline(app);
+    setDeclineReason("");
+  };
+
+  const closeDeclineDialog = () => {
+    setApplicationToDecline(null);
+    setDeclineReason("");
+  };
+
+  const handleDeclineApplicant = () => {
+    if (!applicationToDecline) return;
+
+    const declinedApplication = applicationToDecline;
+    declineApplicant(
+      {
+        bountyId,
+        applicantAddress: declinedApplication.applicantAddress,
+        reason: declineReason,
+      },
+      {
+        onSuccess: () => {
+          setSelectedForCompare((current) =>
+            current.filter((id) => id !== declinedApplication.id),
+          );
+          toast.success("Application declined");
+          closeDeclineDialog();
+        },
+        onError: (error) => {
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Failed to decline application",
+          );
+        },
+      },
+    );
   };
 
   const renderApplicationCard = (app: Application, isCompact = false) => (
@@ -119,6 +179,15 @@ export function ApplicationReviewDashboard({
               disabled={isSelecting}
             >
               <CheckCircle className="size-4 mr-1" /> Select
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-red-500/40 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              onClick={() => openDeclineDialog(app)}
+              disabled={isDeclining}
+            >
+              <XCircle className="size-4 mr-1" /> Decline
             </Button>
           </div>
         </div>
@@ -204,6 +273,42 @@ export function ApplicationReviewDashboard({
           {applications.map((app) => renderApplicationCard(app, false))}
         </div>
       )}
+
+      <AlertDialog
+        open={applicationToDecline !== null}
+        onOpenChange={(open) => {
+          if (!open) closeDeclineDialog();
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Decline application</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the application from the review queue.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Textarea
+            value={declineReason}
+            onChange={(event) => setDeclineReason(event.target.value)}
+            placeholder="Optional reason"
+            disabled={isDeclining}
+            className="min-h-24"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeclining}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                handleDeclineApplicant();
+              }}
+              disabled={isDeclining}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Decline
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

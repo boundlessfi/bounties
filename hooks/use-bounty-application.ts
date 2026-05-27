@@ -19,6 +19,11 @@ type ApplicationContractClient = {
     bountyId: bigint;
     applicant: string;
   }) => Promise<{ txHash: string }>;
+  declineApplicant?: (params: {
+    bountyId: bigint;
+    applicant: string;
+    reason?: string;
+  }) => Promise<{ txHash: string }>;
   submitWork: (params: {
     contributor: string;
     bountyId: bigint;
@@ -147,6 +152,110 @@ export function useSelectApplicant() {
     onSettled: (_r, _e, v) => {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+type ApplicationCacheEntry = {
+  id: string;
+  applicantAddress: string;
+  status?: string;
+  declineReason?: string;
+};
+
+type BountyWithApplications = BountyQuery["bounty"] & {
+  applications?: ApplicationCacheEntry[];
+  declinedApplications?: ApplicationCacheEntry[];
+};
+
+type BountyQueryWithApplications = Omit<BountyQuery, "bounty"> & {
+  bounty: BountyWithApplications;
+};
+
+// ---------------------------------------------------------------------------
+// Hook: decline applicant
+// ---------------------------------------------------------------------------
+
+export function useDeclineApplicant() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      applicantAddress,
+      reason,
+    }: {
+      bountyId: string;
+      applicantAddress: string;
+      reason?: string;
+    }) => {
+      const client = (
+        globalThis as { __applicationContracts?: ApplicationContractClient }
+      ).__applicationContracts;
+
+      if (client?.declineApplicant) {
+        return {
+          persisted: true,
+          result: await client.declineApplicant({
+            bountyId: toBountyIdBigInt(bountyId),
+            applicant: applicantAddress,
+            reason,
+          }),
+        };
+      }
+
+      return {
+        persisted: false,
+        result: { txHash: "local-decline-applicant" },
+      };
+    },
+    onMutate: async ({ bountyId, applicantAddress, reason }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQueryWithApplications>(
+        bountyKeys.detail(bountyId),
+      );
+
+      if (prev?.bounty?.applications) {
+        const declinedApplication = prev.bounty.applications.find(
+          (app) => app.applicantAddress === applicantAddress,
+        );
+        const declineReason = reason?.trim() || undefined;
+
+        qc.setQueryData<BountyQueryWithApplications>(
+          bountyKeys.detail(bountyId),
+          {
+            ...prev,
+            bounty: {
+              ...prev.bounty,
+              applications: prev.bounty.applications.filter(
+                (app) => app.applicantAddress !== applicantAddress,
+              ),
+              declinedApplications: declinedApplication
+                ? [
+                    ...(prev.bounty.declinedApplications ?? []),
+                    {
+                      ...declinedApplication,
+                      status: "declined",
+                      declineReason,
+                    },
+                  ]
+                : prev.bounty.declinedApplications,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        );
+      }
+
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSuccess: (response, v) => {
+      if (response.persisted) {
+        qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+        qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+      }
     },
   });
 }
