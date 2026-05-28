@@ -204,10 +204,9 @@ export function useDeclineApplicant() {
         };
       }
 
-      return {
-        persisted: false,
-        result: { txHash: "local-decline-applicant" },
-      };
+      throw new Error(
+        "Decline is not available for this bounty. Please check the application contract.",
+      );
     },
     onMutate: async ({ bountyId, applicantAddress, reason }) => {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
