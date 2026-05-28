@@ -314,6 +314,8 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
 
         {/* Copy link */}
         <button
+          type="button"
+          aria-label="Copy link"
           onClick={handleCopy}
           className="w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors py-1"
         >

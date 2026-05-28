@@ -134,6 +134,7 @@ export function Model4MaintainerDashboard({
                           <Button
                             variant="ghost"
                             size="icon-sm"
+                            aria-label={`Send message to ${contributor.userName}`}
                             className="text-gray-400 hover:text-white"
                             onClick={() =>
                               handleAction("Message", contributor.userName)
@@ -223,6 +224,7 @@ export function Model4MaintainerDashboard({
                           <Button
                             variant="ghost"
                             size="icon-sm"
+                            aria-label={`Remove ${contributor.userName} from slot`}
                             className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10"
                             onClick={() =>
                               handleAction("Remove", contributor.userName)
