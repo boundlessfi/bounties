@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bountyKeys } from "@/lib/query/query-keys";
-import type { BountyQuery } from "@/lib/graphql/generated";
+import type { BountyQuery, DisputeReasonEnum } from "@/lib/graphql/generated";
 import type { Bounty } from "@/types/bounty";
 
 // ---------------------------------------------------------------------------
@@ -578,6 +578,39 @@ export function useRequestRevisions() {
     onSettled: (_r, _e, v) => {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: raise dispute
+// ---------------------------------------------------------------------------
+
+export function useRaiseDispute() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      reason,
+      description,
+    }: {
+      bountyId: string;
+      reason: DisputeReasonEnum;
+      description: string;
+    }) => {
+      // Mock API call – params consumed by backend when wired
+      void bountyId;
+      void reason;
+      void description;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return { disputeId: `dispute_${Date.now()}` };
+    },
+    onSettled: (_r, _e, v) => {
+      if (v?.bountyId) {
+        qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+        qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+      }
     },
   });
 }

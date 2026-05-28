@@ -18,6 +18,7 @@ import type { CancellationRecord } from "@/types/escrow";
 import { ApplicationDialog } from "@/components/bounty/application-dialog";
 import { SidebarBounty } from "./types";
 import { useBountyCtaState } from "./use-bounty-cta-state";
+import { DisputeDialog } from "./dispute-dialog";
 
 interface MobileCTAProps {
   bounty: SidebarBounty;
@@ -174,16 +175,20 @@ export function MobileCTA({ bounty, onCancelled }: MobileCTAProps) {
         </div>
       )}
 
-      {/* Mobile Raise Dispute — coming soon */}
+      {/* Mobile Raise Dispute */}
       {canRaiseDispute && (
-        <Button
-          variant="ghost"
-          className="w-full mt-2 text-gray-400 text-xs h-8"
-          disabled
-        >
-          <Gavel className="size-3 mr-2" />
-          Raise a Dispute (Coming Soon)
-        </Button>
+        <DisputeDialog
+          bountyId={bounty.id}
+          trigger={
+            <Button
+              variant="ghost"
+              className="w-full mt-2 text-gray-400 text-xs h-8"
+            >
+              <Gavel className="size-3 mr-2" />
+              Raise a Dispute
+            </Button>
+          }
+        />
       )}
 
       {/* Mobile Cancel Dialog */}

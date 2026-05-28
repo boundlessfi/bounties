@@ -32,6 +32,7 @@ import type { CancellationRecord } from "@/types/escrow";
 import { ApplicationDialog } from "@/components/bounty/application-dialog";
 import { SidebarBounty } from "./types";
 import { useBountyCtaState } from "./use-bounty-cta-state";
+import { DisputeDialog } from "./dispute-dialog";
 
 interface SidebarCTAProps {
   bounty: SidebarBounty;
@@ -190,14 +191,18 @@ export function SidebarCTA({ bounty, onCancelled }: SidebarCTAProps) {
 
         {/* Dispute Button */}
         {canRaiseDispute && (
-          <Button
-            variant="ghost"
-            className="w-full text-gray-400 hover:text-gray-200"
-            disabled
-          >
-            <Gavel className="size-4 mr-2" />
-            Raise a Dispute (Coming Soon)
-          </Button>
+          <DisputeDialog
+            bountyId={bounty.id}
+            trigger={
+              <Button
+                variant="ghost"
+                className="w-full text-gray-400 hover:text-gray-200"
+              >
+                <Gavel className="size-4 mr-2" />
+                Raise a Dispute
+              </Button>
+            }
+          />
         )}
 
         <div className="flex gap-3">
