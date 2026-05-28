@@ -134,6 +134,7 @@ export interface Bounty {
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
   assignedContributorId?: string | null;
+  latestRevisionFeedback?: string | null;
 
   createdBy: string;
   createdAt: string;

@@ -151,17 +151,8 @@ export function useApplyForSlot() {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
       const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
       if (prev?.bounty) {
-        // We cast to an intersection type because the generated GraphQL type might not include all fields yet
-        const bountyData = prev.bounty as BountyQuery["bounty"] & {
-          milestones?: { id: string }[];
-          totalSlotsOccupied?: number;
-          contributorProgress?: {
-            userId: string;
-            userName: string;
-            userAvatarUrl: string;
-            currentMilestoneId: string;
-          }[];
-        };
+        const bountyData = prev.bounty as BountyQuery["bounty"] &
+          Partial<Bounty>;
         const firstMilestoneId = bountyData.milestones?.[0]?.id || "m1";
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -426,8 +417,8 @@ export function useAdvanceMilestone() {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
       const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
       if (prev?.bounty) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bountyData = prev.bounty as any;
+        const bountyData = prev.bounty as BountyQuery["bounty"] &
+          Partial<Bounty>;
         const progress = bountyData.contributorProgress || [];
 
         qc.setQueryData(bountyKeys.detail(bountyId), {
@@ -478,8 +469,8 @@ export function useRemoveFromSlot() {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
       const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
       if (prev?.bounty) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bountyData = prev.bounty as any;
+        const bountyData = prev.bounty as BountyQuery["bounty"] &
+          Partial<Bounty>;
         const progress = bountyData.contributorProgress || [];
 
         qc.setQueryData(bountyKeys.detail(bountyId), {
@@ -558,8 +549,8 @@ export function useRequestRevisions() {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
       const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
       if (prev?.bounty) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const bountyData = prev.bounty as any;
+        const bountyData = prev.bounty as BountyQuery["bounty"] &
+          Partial<Bounty>;
         qc.setQueryData(bountyKeys.detail(bountyId), {
           ...prev,
           bounty: {

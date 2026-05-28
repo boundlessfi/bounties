@@ -244,9 +244,7 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
               bountyId={bountyId}
               contributorAddress={walletAddress}
               latestRevisionFeedback={
-                (bounty as Record<string, unknown>).latestRevisionFeedback as
-                  | string
-                  | undefined
+                bounty.latestRevisionFeedback ?? undefined
               }
             />
           )}
