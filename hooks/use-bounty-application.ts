@@ -29,7 +29,35 @@ type ApplicationContractClient = {
     bountyId: bigint;
     points: number;
   }) => Promise<{ txHash: string }>;
+  declineApplicant?: (params: {
+    bountyId: bigint;
+    applicant: string;
+    reason?: string;
+  }) => Promise<{ txHash?: string }>;
 };
+
+type CachedApplication = {
+  applicantAddress?: string;
+  status?: string;
+  declinedReason?: string;
+  declinedAt?: string;
+};
+
+type BountyQueryWithApplications = BountyQuery & {
+  bounty?: BountyQuery["bounty"] & {
+    applications?: CachedApplication[];
+  };
+};
+
+type DeclinedApplicationRecord = {
+  bountyId: string;
+  applicantAddress: string;
+  reason?: string;
+  declinedAt: string;
+};
+
+const declinedApplicationsKey = (bountyId: string) =>
+  ["bounty", bountyId, "declined-applications"] as const;
 
 // ---------------------------------------------------------------------------
 // Error
@@ -143,6 +171,104 @@ export function useSelectApplicant() {
     },
     onError: (_e, _v, ctx) => {
       if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: decline applicant
+// ---------------------------------------------------------------------------
+
+export function useDeclineApplicant() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      applicantAddress,
+      reason,
+    }: {
+      bountyId: string;
+      applicantAddress: string;
+      reason?: string;
+    }) => {
+      const client = (
+        globalThis as { __applicationContracts?: ApplicationContractClient }
+      ).__applicationContracts;
+      const trimmedReason = reason?.trim() || undefined;
+
+      if (client?.declineApplicant) {
+        return client.declineApplicant({
+          bountyId: toBountyIdBigInt(bountyId),
+          applicant: applicantAddress,
+          reason: trimmedReason,
+        });
+      }
+
+      return {
+        applicantAddress,
+        bountyId,
+        reason: trimmedReason,
+      };
+    },
+    onMutate: async ({ bountyId, applicantAddress, reason }) => {
+      const detailKey = bountyKeys.detail(bountyId);
+      const declinedKey = declinedApplicationsKey(bountyId);
+      await qc.cancelQueries({ queryKey: detailKey });
+
+      const prevDetail =
+        qc.getQueryData<BountyQueryWithApplications>(detailKey);
+      const prevDeclined =
+        qc.getQueryData<DeclinedApplicationRecord[]>(declinedKey) ?? [];
+      const declinedAt = new Date().toISOString();
+      const trimmedReason = reason?.trim() || undefined;
+
+      qc.setQueryData<DeclinedApplicationRecord[]>(declinedKey, [
+        ...prevDeclined.filter(
+          (item) => item.applicantAddress !== applicantAddress,
+        ),
+        {
+          bountyId,
+          applicantAddress,
+          reason: trimmedReason,
+          declinedAt,
+        },
+      ]);
+
+      if (prevDetail?.bounty?.applications) {
+        qc.setQueryData<BountyQueryWithApplications>(detailKey, {
+          ...prevDetail,
+          bounty: {
+            ...prevDetail.bounty,
+            applications: prevDetail.bounty.applications
+              .map((application) =>
+                application.applicantAddress === applicantAddress
+                  ? {
+                      ...application,
+                      status: "DECLINED",
+                      declinedReason: trimmedReason,
+                      declinedAt,
+                    }
+                  : application,
+              )
+              .filter(
+                (application) =>
+                  application.applicantAddress !== applicantAddress,
+              ),
+          },
+        });
+      }
+
+      return { bountyId, detailKey, declinedKey, prevDetail, prevDeclined };
+    },
+    onError: (_e, _v, ctx) => {
+      if (!ctx) return;
+      qc.setQueryData(ctx.detailKey, ctx.prevDetail);
+      qc.setQueryData(ctx.declinedKey, ctx.prevDeclined);
     },
     onSettled: (_r, _e, v) => {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
