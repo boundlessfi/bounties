@@ -8,12 +8,26 @@ import {
   Star,
   Trophy,
   ArrowRight,
+  XCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-import { useSelectApplicant } from "@/hooks/use-bounty-application";
+import {
+  useSelectApplicant,
+  useDeclineApplicant,
+} from "@/hooks/use-bounty-application";
 
 export interface Application {
   id: string;
@@ -45,8 +59,11 @@ export function ApplicationReviewDashboard({
   applications,
 }: ApplicationReviewDashboardProps) {
   const [selectedForCompare, setSelectedForCompare] = useState<string[]>([]);
+  const [declineTarget, setDeclineTarget] = useState<Application | null>(null);
   const { mutate: selectApplicant, isPending: isSelecting } =
     useSelectApplicant();
+  const { mutate: declineApplicant, isPending: isDeclining } =
+    useDeclineApplicant();
 
   const handleSelectApplicant = (applicantAddress: string) => {
     selectApplicant({
@@ -54,6 +71,20 @@ export function ApplicationReviewDashboard({
       creatorAddress,
       applicantAddress,
     });
+  };
+
+  const handleDeclineApplicant = () => {
+    if (!declineTarget) return;
+    declineApplicant(
+      {
+        bountyId,
+        creatorAddress,
+        applicantAddress: declineTarget.applicantAddress,
+      },
+      {
+        onSettled: () => setDeclineTarget(null),
+      },
+    );
   };
 
   const toggleCompare = (id: string) => {
@@ -113,6 +144,15 @@ export function ApplicationReviewDashboard({
                 {selectedForCompare.includes(app.id) ? "Comparing" : "Compare"}
               </Button>
             )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-red-400 border-red-400/30 hover:bg-red-400/10 hover:text-red-300"
+              onClick={() => setDeclineTarget(app)}
+              disabled={isDeclining}
+            >
+              <XCircle className="size-4 mr-1" /> Decline
+            </Button>
             <Button
               size="sm"
               onClick={() => handleSelectApplicant(app.applicantAddress)}
@@ -204,6 +244,37 @@ export function ApplicationReviewDashboard({
           {applications.map((app) => renderApplicationCard(app, false))}
         </div>
       )}
+
+      {/* Decline Confirmation Dialog */}
+      <AlertDialog
+        open={!!declineTarget}
+        onOpenChange={(open) => !open && setDeclineTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Decline Applicant</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to decline{" "}
+              <span className="font-semibold text-foreground">
+                {declineTarget?.applicantName ||
+                  `${declineTarget?.applicantAddress.slice(0, 8)}...`}
+              </span>
+              ? They will be notified and removed from the review queue. This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeclining}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeclineApplicant}
+              disabled={isDeclining}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeclining ? "Declining..." : "Decline Applicant"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

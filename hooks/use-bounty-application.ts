@@ -19,6 +19,11 @@ type ApplicationContractClient = {
     bountyId: bigint;
     applicant: string;
   }) => Promise<{ txHash: string }>;
+  declineApplicant: (params: {
+    creator: string;
+    bountyId: bigint;
+    applicant: string;
+  }) => Promise<{ txHash: string }>;
   submitWork: (params: {
     contributor: string;
     bountyId: bigint;
@@ -142,6 +147,59 @@ export function useSelectApplicant() {
       return { prev, bountyId };
     },
     onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: decline applicant (BountyRegistry.decline_applicant)
+// ---------------------------------------------------------------------------
+
+export function useDeclineApplicant() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      creatorAddress,
+      applicantAddress,
+    }: {
+      bountyId: string;
+      creatorAddress: string;
+      applicantAddress: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.declineApplicant({
+        creator: creatorAddress,
+        bountyId: toBountyIdBigInt(bountyId),
+        applicant: applicantAddress,
+      });
+    },
+    onMutate: async ({ bountyId, applicantAddress }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      // Optimistically remove the declined applicant from the cache
+      if (prev?.bounty?.applications) {
+        qc.setQueryData<BountyQuery>(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...prev.bounty,
+            applications: prev.bounty.applications.filter(
+              (app: { applicantAddress: string }) =>
+                app.applicantAddress !== applicantAddress,
+            ),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      // Rollback on error
       if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
     },
     onSettled: (_r, _e, v) => {
