@@ -8,6 +8,7 @@ import { FormFieldWrapper } from "@/components/ui/form-field-wrapper";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useUpdateUserMutation } from "@/hooks/use-user-mutations";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,6 +49,7 @@ const profileSchema = z.object({
     .url("Must be a valid URL")
     .or(z.literal(""))
     .optional(),
+  role: z.enum(["sponsor", "contributor"]).optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -176,6 +178,46 @@ export function ProfileTab({ defaultValues }: ProfileTabProps) {
               />
             )}
           />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium">Account Role</h3>
+          <div className="flex items-center justify-between p-4 border border-gray-800 rounded-lg bg-background-card/50">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-medium">Sponsor Mode</Label>
+              <p className="text-xs text-muted-foreground">
+                Enable this to post bounties. You can switch back at any time.
+              </p>
+            </div>
+            <FormFieldWrapper
+              control={form.control}
+              name="role"
+              label=""
+              render={({ field }) => (
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Contributor
+                  </span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={field.value === "sponsor"}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.checked ? "sponsor" : "contributor",
+                        )
+                      }
+                    />
+                    <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                  <span className="text-xs font-medium text-foreground">
+                    Sponsor
+                  </span>
+                </div>
+              )}
+            />
+          </div>
         </div>
 
         {form.formState.errors.root && (

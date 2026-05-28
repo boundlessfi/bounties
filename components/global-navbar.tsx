@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { authClient } from "@/lib/auth-client";
+
 import { SearchCommand } from "@/components/search-command";
 import { NavRankBadge } from "@/components/leaderboard/nav-rank-badge";
 import { NotificationCenter } from "@/components/notifications/notification-center";
@@ -28,6 +30,10 @@ export function GlobalNavbar() {
   const pathname = usePathname();
   const { walletInfo, isConnected, isRegistered, connect, isLoading } =
     useSmartWallet();
+  const { data: session } = authClient.useSession();
+  const userRole = (session?.user as Record<string, unknown> | undefined)
+    ?.role as string | undefined;
+  const isSponsor = userRole === "sponsor";
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -122,6 +128,18 @@ export function GlobalNavbar() {
             >
               Review
             </Link>
+            {isSponsor && (
+              <Link
+                href="/bounty/create"
+                className={`transition-colors hover:text-foreground/80 ${
+                  pathname === "/bounty/create"
+                    ? "text-foreground"
+                    : "text-foreground/60"
+                }`}
+              >
+                Create
+              </Link>
+            )}
           </div>
         </div>
 

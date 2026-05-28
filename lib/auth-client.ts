@@ -18,6 +18,7 @@ export const authClient = createAuthClient({
         github: { type: "string", required: false },
         twitter: { type: "string", required: false },
         website: { type: "string", required: false },
+        role: { type: "string", required: false },
       },
     }),
   ],
