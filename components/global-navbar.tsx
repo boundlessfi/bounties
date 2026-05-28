@@ -148,7 +148,7 @@ export function GlobalNavbar() {
           <CreditBalance userId="user-1" className="hidden sm:flex" />
           {/* TODO: Replace with actual auth user ID */}
 
-          <NotificationCenter />
+          {session?.user ? <NotificationCenter /> : null}
 
           {isConnected ? (
             <WalletSheet

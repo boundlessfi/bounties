@@ -23,7 +23,9 @@ export type NotificationType =
   | "bounty-updated"
   | "new-application"
   | "submission-reviewed"
-  | "saved-bounty-updated";
+  | "saved-bounty-updated"
+  | "dispute-raised"
+  | "payment-received";
 
 export interface NotificationItem {
   id: string;
@@ -31,6 +33,8 @@ export interface NotificationItem {
   type: NotificationType;
   timestamp: string;
   read: boolean;
+  /** URL path to navigate to when the notification is clicked */
+  resourceUrl?: string;
 }
 
 const MAX_NOTIFICATIONS = 25;
@@ -168,6 +172,7 @@ export function useNotifications() {
             type: "bounty-updated",
             timestamp: normaliseTimestamp(bounty.updatedAt),
             read: false,
+            resourceUrl: `/bounty/${bounty.id}`,
           },
           bountyKeys.allListKeys,
         );
@@ -200,6 +205,7 @@ export function useNotifications() {
                   type: "saved-bounty-updated",
                   timestamp: normaliseTimestamp(bounty.updatedAt),
                   read: false,
+                  resourceUrl: `/bounty/${bounty.id}`,
                 },
                 [],
               );
@@ -242,6 +248,7 @@ export function useNotifications() {
             type: "new-application",
             timestamp: normaliseTimestamp(application.createdAt),
             read: false,
+            resourceUrl: `/bounty/${application.bountyId}`,
           },
           [submissionKeys.all],
         );
@@ -273,6 +280,7 @@ export function useNotifications() {
             type: "submission-reviewed",
             timestamp: normaliseTimestamp(submission.reviewedAt),
             read: false,
+            resourceUrl: `/bounty/${submission.bountyId}`,
           },
           [submissionKeys.all],
         );
@@ -308,11 +316,23 @@ export function useNotifications() {
     );
   }, []);
 
+  const clearAll = useCallback(() => {
+    setNotifications([]);
+    if (userId) {
+      try {
+        localStorage.removeItem(`${STORAGE_KEY}:${userId}`);
+      } catch {
+        // Storage unavailable — silently ignore
+      }
+    }
+  }, [userId]);
+
   return {
     notifications,
     isLoading,
     unreadCount,
     markAsRead,
     markAllAsRead,
+    clearAll,
   };
 }
