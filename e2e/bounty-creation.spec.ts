@@ -89,7 +89,7 @@ test.describe("Bounty creation flow", () => {
     await page.goto("/bounty/create");
 
     // Attempt to proceed without filling anything
-    await page.getByRole("button", { name: /Next/i }).click();
+    await page.getByRole("button", { name: "Next", exact: true }).click();
 
     // Should stay on step 1 and show an error for title
     await expect(page.getByText(/Title is required/i)).toBeVisible();
@@ -106,29 +106,30 @@ test.describe("Bounty creation flow", () => {
       .fill("This is a detailed description for the bounty.");
 
     // Select Organization
-    await page.getByLabel(/Organization/i).click();
-    await page.getByRole("option", { name: "Stellar Privacy Lab" }).click();
+    await page
+      .getByLabel(/Organization/i)
+      .selectOption({ label: "Stellar Privacy Lab" });
 
     await page
       .getByLabel(/GitHub URL/i)
       .fill("https://github.com/stellar/stellar-core/issues/1");
 
     // Select Bounty Type
-    await page.getByLabel(/Bounty Type/i).click();
-    await page.getByRole("option", { name: /Fixed Price/i }).click();
+    await page
+      .getByLabel(/Bounty Type/i)
+      .selectOption({ label: "Fixed Price" });
 
-    await page.getByRole("button", { name: /Next/i }).click();
+    await page.getByRole("button", { name: "Next", exact: true }).click();
 
     // Step 2: Rewards and Timeline
     await expect(page.getByRole("heading", { name: /Step 2/i })).toBeVisible();
 
     await page.getByLabel(/Reward Amount/i).fill("1000");
-    await page.getByLabel(/Currency/i).click();
-    await page.getByRole("option", { name: "XLM" }).click();
+    await page.getByLabel(/Currency/i).selectOption({ label: "XLM" });
 
     await page.getByLabel(/Deadline/i).fill("2026-12-31");
 
-    await page.getByRole("button", { name: /Next/i }).click();
+    await page.getByRole("button", { name: "Next", exact: true }).click();
 
     // Step 3: Review
     await expect(page.getByRole("heading", { name: /Step 3/i })).toBeVisible();
