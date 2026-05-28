@@ -189,24 +189,22 @@ export function useDeclineApplicant() {
       applicantAddress: string;
       reason?: string;
     }) => {
-      const client = (
-        globalThis as { __applicationContracts?: ApplicationContractClient }
-      ).__applicationContracts;
-
-      if (client?.declineApplicant) {
-        return {
-          persisted: true,
-          result: await client.declineApplicant({
-            bountyId: toBountyIdBigInt(bountyId),
-            applicant: applicantAddress,
-            reason,
-          }),
-        };
+      const client = resolveApplicationClient();
+      if (!client.declineApplicant) {
+        throw new ApplicationError(
+          "missing_contract_bindings",
+          "Decline is not available for this bounty. Please check the application contract.",
+        );
       }
 
-      throw new Error(
-        "Decline is not available for this bounty. Please check the application contract.",
-      );
+      return {
+        persisted: true,
+        result: await client.declineApplicant({
+          bountyId: toBountyIdBigInt(bountyId),
+          applicant: applicantAddress,
+          reason,
+        }),
+      };
     },
     onMutate: async ({ bountyId, applicantAddress, reason }) => {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
