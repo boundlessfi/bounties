@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/server-auth";
-import { BountyCreationWizard } from "./wizard";
+import { BountyCreateWizard } from "@/components/bounty/bounty-create-wizard";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ export default async function CreateBountyPage() {
         </CardHeader>
         <CardContent className="pt-6">
           <CardContent className="pt-6">
-            <BountyCreationWizard />
+            <BountyCreateWizard />
           </CardContent>
         </CardContent>
       </Card>

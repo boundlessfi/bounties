@@ -20,7 +20,7 @@ export async function graphqlRequest<T>(
   }
 
   // Normalize: if TypedDocumentString, convert to string
-  const queryString = typeof query === "string" ? query : query.toString();
+  const unused_query = typeof query === "string" ? query : query.toString();
 
   const response = await fetch(GRAPHQL_URL, {
     method: "POST",

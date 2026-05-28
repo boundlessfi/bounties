@@ -36,14 +36,17 @@ async function setupMocks(page: Page) {
 
   // GraphQL mock
   await page.route("**/api/graphql", async (route) => {
-    let body: { operationName?: string } = {};
+    let body: { operationName?: string; query?: string } = {};
     try {
       body = JSON.parse(route.request().postData() ?? "{}");
     } catch {
       /* ignore */
     }
 
-    if (body.operationName === "CreateBounty") {
+    if (
+      body.operationName === "CreateBounty" ||
+      body.query?.includes("mutation CreateBounty")
+    ) {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -106,18 +109,16 @@ test.describe("Bounty creation flow", () => {
       .fill("This is a detailed description for the bounty.");
 
     // Select Organization
-    await page
-      .getByLabel(/Organization/i)
-      .selectOption({ label: "Stellar Privacy Lab" });
+    await page.getByLabel(/Organization/i).click();
+    await page.getByRole("option", { name: "Stellar Privacy Lab" }).click();
 
     await page
       .getByLabel(/GitHub URL/i)
       .fill("https://github.com/stellar/stellar-core/issues/1");
 
     // Select Bounty Type
-    await page
-      .getByLabel(/Bounty Type/i)
-      .selectOption({ label: "Fixed Price" });
+    await page.getByLabel(/Bounty Type/i).click();
+    await page.getByRole("option", { name: "Fixed Price" }).click();
 
     await page.getByRole("button", { name: "Next", exact: true }).click();
 
@@ -125,7 +126,8 @@ test.describe("Bounty creation flow", () => {
     await expect(page.getByRole("heading", { name: /Step 2/i })).toBeVisible();
 
     await page.getByLabel(/Reward Amount/i).fill("1000");
-    await page.getByLabel(/Currency/i).selectOption({ label: "XLM" });
+    await page.getByLabel(/Currency/i).click();
+    await page.getByRole("option", { name: "XLM" }).click();
 
     await page.getByLabel(/Deadline/i).fill("2026-12-31");
 
