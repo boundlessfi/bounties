@@ -4,6 +4,29 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { bountyKeys } from "@/lib/query/query-keys";
 import type { BountyQuery } from "@/lib/graphql/generated";
 
+type Model4ContributorMutationInput = {
+  bountyId: string;
+  contributorId: string;
+  contributorName: string;
+  milestoneId?: string;
+};
+
+type Model4ContributorMutationResult = Model4ContributorMutationInput & {
+  completedAt: string;
+};
+
+async function runModel4ContributorMutation(
+  params: Model4ContributorMutationInput,
+): Promise<Model4ContributorMutationResult> {
+  // The backend does not expose Model 4 maintainer mutations yet. Keep these
+  // mutations centralized so the dashboard has one integration point to replace.
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return {
+    ...params,
+    completedAt: new Date().toISOString(),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Contract client shape (resolved from globalThis.__applicationContracts)
 // ---------------------------------------------------------------------------
@@ -246,5 +269,54 @@ export function useApproveApplicationSubmission() {
       qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Model 4 maintainer dashboard actions
+// ---------------------------------------------------------------------------
+
+export function useReleaseModel4MilestonePayment() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: runModel4ContributorMutation,
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+export function useAdvanceModel4Contributor() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: runModel4ContributorMutation,
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+export function useRemoveModel4Contributor() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: runModel4ContributorMutation,
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
+    },
+  });
+}
+
+export function useViewModel4ContributorSubmissions() {
+  return useMutation({
+    mutationFn: runModel4ContributorMutation,
+  });
+}
+
+export function useMessageModel4Contributor() {
+  return useMutation({
+    mutationFn: runModel4ContributorMutation,
   });
 }

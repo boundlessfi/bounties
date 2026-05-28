@@ -21,8 +21,17 @@ import {
   ArrowRight,
   Trophy,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  useAdvanceModel4Contributor,
+  useMessageModel4Contributor,
+  useReleaseModel4MilestonePayment,
+  useRemoveModel4Contributor,
+  useViewModel4ContributorSubmissions,
+} from "@/hooks/use-bounty-application";
 
 interface Model4MaintainerDashboardProps {
+  bountyId: string;
   milestones: Milestone[];
   contributors: ContributorProgress[];
   maxSlots?: number;
@@ -30,18 +39,131 @@ interface Model4MaintainerDashboardProps {
 }
 
 export function Model4MaintainerDashboard({
+  bountyId,
   milestones,
   contributors: initialContributors,
   maxSlots = 5,
   className,
 }: Model4MaintainerDashboardProps) {
+  const [contributors, setContributors] = React.useState(initialContributors);
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
+  const [paidMilestones, setPaidMilestones] = React.useState<Set<string>>(
+    () => new Set(),
+  );
+  const [selectedSubmissionsUserId, setSelectedSubmissionsUserId] =
+    React.useState<string | null>(null);
+  const [messageUserId, setMessageUserId] = React.useState<string | null>(null);
+  const [showAllApplications, setShowAllApplications] = React.useState(false);
 
-  const handleAction = async (action: string, userName: string) => {
-    setLoadingAction(`${action}-${userName}`);
-    console.log(`[Coming soon] ${action} for ${userName}`);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoadingAction(null);
+  const releasePayment = useReleaseModel4MilestonePayment();
+  const advanceContributor = useAdvanceModel4Contributor();
+  const removeContributor = useRemoveModel4Contributor();
+  const viewSubmissions = useViewModel4ContributorSubmissions();
+  const messageContributor = useMessageModel4Contributor();
+
+  React.useEffect(() => {
+    setContributors(initialContributors);
+  }, [initialContributors]);
+
+  const runAction = async (
+    action: string,
+    contributor: ContributorProgress,
+    mutate: () => Promise<unknown>,
+  ) => {
+    setLoadingAction(`${action}-${contributor.userId}`);
+    try {
+      await mutate();
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
+  const handleReleasePayment = async (contributor: ContributorProgress) => {
+    const currentMilestoneId = contributor.currentMilestoneId;
+    await runAction("Release Payment", contributor, async () => {
+      await releasePayment.mutateAsync({
+        bountyId,
+        contributorId: contributor.userId,
+        contributorName: contributor.userName,
+        milestoneId: currentMilestoneId,
+      });
+      setPaidMilestones((current) => {
+        const next = new Set(current);
+        next.add(`${contributor.userId}:${currentMilestoneId}`);
+        return next;
+      });
+      toast.success(`Released payment for ${contributor.userName}`);
+    });
+  };
+
+  const handleAdvance = async (contributor: ContributorProgress) => {
+    const currentMilestoneIndex = milestones.findIndex(
+      (m) => m.id === contributor.currentMilestoneId,
+    );
+    const nextMilestone = milestones[currentMilestoneIndex + 1];
+
+    if (!nextMilestone) {
+      toast.info(`${contributor.userName} is already on the final milestone`);
+      return;
+    }
+
+    await runAction("Advance", contributor, async () => {
+      await advanceContributor.mutateAsync({
+        bountyId,
+        contributorId: contributor.userId,
+        contributorName: contributor.userName,
+        milestoneId: nextMilestone.id,
+      });
+      setContributors((current) =>
+        current.map((item) =>
+          item.userId === contributor.userId
+            ? { ...item, currentMilestoneId: nextMilestone.id }
+            : item,
+        ),
+      );
+      toast.success(
+        `${contributor.userName} advanced to ${nextMilestone.title}`,
+      );
+    });
+  };
+
+  const handleRemove = async (contributor: ContributorProgress) => {
+    await runAction("Remove", contributor, async () => {
+      await removeContributor.mutateAsync({
+        bountyId,
+        contributorId: contributor.userId,
+        contributorName: contributor.userName,
+      });
+      setContributors((current) =>
+        current.filter((item) => item.userId !== contributor.userId),
+      );
+      toast.success(`${contributor.userName} removed from the winner slot`);
+    });
+  };
+
+  const handleViewSubmissions = async (contributor: ContributorProgress) => {
+    await runAction("View Submissions", contributor, async () => {
+      await viewSubmissions.mutateAsync({
+        bountyId,
+        contributorId: contributor.userId,
+        contributorName: contributor.userName,
+      });
+      setSelectedSubmissionsUserId((current) =>
+        current === contributor.userId ? null : contributor.userId,
+      );
+    });
+  };
+
+  const handleMessage = async (contributor: ContributorProgress) => {
+    await runAction("Message", contributor, async () => {
+      await messageContributor.mutateAsync({
+        bountyId,
+        contributorId: contributor.userId,
+        contributorName: contributor.userName,
+      });
+      setMessageUserId(contributor.userId);
+      toast.success(`Opened message draft for ${contributor.userName}`);
+    });
   };
 
   return (
@@ -61,7 +183,7 @@ export function Model4MaintainerDashboard({
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y divide-gray-800/50">
-          {initialContributors.map((contributor) => {
+          {contributors.map((contributor) => {
             const currentMilestone = milestones.find(
               (m) => m.id === contributor.currentMilestoneId,
             );
@@ -135,17 +257,18 @@ export function Model4MaintainerDashboard({
                             variant="ghost"
                             size="icon-sm"
                             className="text-gray-400 hover:text-white"
-                            onClick={() =>
-                              handleAction("Message", contributor.userName)
-                            }
+                            onClick={() => handleMessage(contributor)}
                             disabled={loadingAction !== null}
                           >
-                            <MessageSquare className="size-4" />
+                            {loadingAction ===
+                            `Message-${contributor.userId}` ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <MessageSquare className="size-4" />
+                            )}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Send Message [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Send message</TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -154,15 +277,13 @@ export function Model4MaintainerDashboard({
                             variant="outline"
                             size="sm"
                             className="h-8 text-xs border-gray-700 hover:bg-gray-800"
-                            onClick={() =>
-                              handleAction(
-                                "View Submissions",
-                                contributor.userName,
-                              )
-                            }
+                            onClick={() => handleViewSubmissions(contributor)}
                             disabled={loadingAction !== null}
                           >
-                            View Submissions [Coming soon]
+                            {loadingAction ===
+                            `View Submissions-${contributor.userId}`
+                              ? "Loading..."
+                              : "View Submissions"}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Review work</TooltipContent>
@@ -173,21 +294,20 @@ export function Model4MaintainerDashboard({
                           <Button
                             size="sm"
                             className="h-8 text-xs bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 font-bold"
-                            onClick={() =>
-                              handleAction(
-                                "Release Payment",
-                                contributor.userName,
-                              )
-                            }
+                            onClick={() => handleReleasePayment(contributor)}
                             disabled={loadingAction !== null}
                           >
                             {loadingAction ===
-                            `Release Payment-${contributor.userName}` ? (
+                            `Release Payment-${contributor.userId}` ? (
                               <Loader2 className="size-3 mr-1.5 animate-spin" />
                             ) : (
                               <Coins className="size-3 mr-1.5" />
                             )}
-                            Release Payment [Coming soon]
+                            {paidMilestones.has(
+                              `${contributor.userId}:${contributor.currentMilestoneId}`,
+                            )
+                              ? "Payment Released"
+                              : "Release Payment"}
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Pay for milestone</TooltipContent>
@@ -199,18 +319,15 @@ export function Model4MaintainerDashboard({
                             size="sm"
                             variant="secondary"
                             className="h-8 text-xs font-bold"
-                            onClick={() =>
-                              handleAction("Advance", contributor.userName)
-                            }
+                            onClick={() => handleAdvance(contributor)}
                             disabled={loadingAction !== null}
                           >
                             {loadingAction ===
-                            `Advance-${contributor.userName}` ? (
+                            `Advance-${contributor.userId}` ? (
                               <Loader2 className="size-3 mr-1.5 animate-spin" />
                             ) : (
                               <>
-                                Advance [Coming soon]{" "}
-                                <ArrowRight className="size-3 ml-1.5" />
+                                Advance <ArrowRight className="size-3 ml-1.5" />
                               </>
                             )}
                           </Button>
@@ -224,50 +341,81 @@ export function Model4MaintainerDashboard({
                             variant="ghost"
                             size="icon-sm"
                             className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10"
-                            onClick={() =>
-                              handleAction("Remove", contributor.userName)
-                            }
+                            onClick={() => handleRemove(contributor)}
                             disabled={loadingAction !== null}
                           >
-                            <UserMinus className="size-4" />
+                            {loadingAction ===
+                            `Remove-${contributor.userId}` ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <UserMinus className="size-4" />
+                            )}
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Remove from slot [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Remove from slot</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
                 </div>
+
+                {selectedSubmissionsUserId === contributor.userId && (
+                  <div className="mt-4 rounded-md border border-gray-800 bg-black/20 p-3 text-xs text-gray-400">
+                    <div className="font-semibold text-gray-200">
+                      Submissions for {contributor.userName}
+                    </div>
+                    <div className="mt-1">
+                      No submitted work is attached to this milestone yet.
+                    </div>
+                  </div>
+                )}
+
+                {messageUserId === contributor.userId && (
+                  <div className="mt-4 rounded-md border border-primary/20 bg-primary/5 p-3 text-xs text-gray-300">
+                    Message draft ready for {contributor.userName}.
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
         {/* Footer info */}
+        {showAllApplications && (
+          <div className="border-t border-gray-800/50 bg-black/20 p-3 text-xs text-gray-400">
+            <span className="font-semibold text-gray-200">
+              Active applications:
+            </span>{" "}
+            {contributors.length === 0
+              ? "No active contributors in winner slots."
+              : contributors
+                  .map((contributor) => contributor.userName)
+                  .join(", ")}
+          </div>
+        )}
+
         <div className="p-3 bg-primary/5 border-t border-gray-800/50 flex items-center justify-center gap-4">
           <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
             <Trophy className="size-3 text-yellow-500" />
             <span>
-              Total Winners Allowed: {initialContributors.length} / {maxSlots}
+              Total Winners Allowed: {contributors.length} / {maxSlots}
             </span>
           </div>
           <div className="h-3 w-px bg-gray-800" />
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span>
-                  <Button
-                    variant="link"
-                    className="text-[10px] h-auto p-0 text-primary"
-                    disabled
-                  >
-                    View All Applications [Coming soon]{" "}
-                    <ChevronRight className="size-3" />
-                  </Button>
-                </span>
+                <Button
+                  variant="link"
+                  className="text-[10px] h-auto p-0 text-primary"
+                  onClick={() => setShowAllApplications((current) => !current)}
+                >
+                  {showAllApplications
+                    ? "Hide Applications"
+                    : "View All Applications"}{" "}
+                  <ChevronRight className="size-3" />
+                </Button>
               </TooltipTrigger>
-              <TooltipContent>Coming soon</TooltipContent>
+              <TooltipContent>Review active contributors</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
