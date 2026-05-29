@@ -538,12 +538,16 @@ export function useRequestRevisions() {
       submissionId: string;
       feedback: string;
     }) => {
-      // Mock API call – params consumed by contract when wired
-      void bountyId;
-      void submissionId;
-      void feedback;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return { txHash: "mock_tx_hash" };
+      const { fetcher } = await import("@/lib/graphql/client");
+      const { ReviewSubmissionDocument } =
+        await import("@/lib/graphql/generated");
+      return fetcher(ReviewSubmissionDocument, {
+        input: {
+          submissionId,
+          status: "REVISION_REQUESTED",
+          reviewComments: feedback,
+        },
+      })();
     },
     onMutate: async ({ bountyId, feedback }) => {
       await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
