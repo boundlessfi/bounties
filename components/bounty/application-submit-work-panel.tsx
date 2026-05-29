@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Upload, Link as LinkIcon, Send } from "lucide-react";
+import { Upload, Link as LinkIcon, Send, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Card,
   CardContent,
@@ -17,11 +18,13 @@ import { useSubmitApplicationWork } from "@/hooks/use-bounty-application";
 interface ApplicationSubmitWorkPanelProps {
   bountyId: string;
   contributorAddress: string;
+  revisionFeedback?: string;
 }
 
 export function ApplicationSubmitWorkPanel({
   bountyId,
   contributorAddress,
+  revisionFeedback,
 }: ApplicationSubmitWorkPanelProps) {
   const [workCid, setWorkCid] = useState("");
 
@@ -51,6 +54,21 @@ export function ApplicationSubmitWorkPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
+        {revisionFeedback && (
+          <Alert
+            variant="destructive"
+            className="mb-6 bg-red-500/10 text-red-500 border-red-500/20"
+          >
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Revisions Requested</AlertTitle>
+            <AlertDescription className="mt-2 text-sm opacity-90">
+              <span className="font-semibold block mb-1">
+                Feedback from reviewer:
+              </span>
+              <span className="whitespace-pre-wrap">{revisionFeedback}</span>
+            </AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="work-cid">

@@ -18,7 +18,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useApproveApplicationSubmission } from "@/hooks/use-bounty-application";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import {
+  useApproveApplicationSubmission,
+  useRequestRevisions,
+} from "@/hooks/use-bounty-application";
 import type { BountyFieldsFragment } from "@/lib/graphql/generated";
 import type { Bounty } from "@/types/bounty";
 
@@ -38,9 +43,13 @@ export function SubmissionApprovalPanel({
   submissionDescription,
 }: SubmissionApprovalPanelProps) {
   const [points, setPoints] = useState<number>(5);
+  const [revisionFeedback, setRevisionFeedback] = useState<string>("");
+  const [showRevisionForm, setShowRevisionForm] = useState<boolean>(false);
 
   const { mutate: approveSubmission, isPending: isApproving } =
     useApproveApplicationSubmission();
+  const { mutate: requestRevisions, isPending: isRequesting } =
+    useRequestRevisions();
 
   const handleApprove = () => {
     const clampedPoints = Math.max(1, Math.min(100, points || 0));
@@ -49,6 +58,41 @@ export function SubmissionApprovalPanel({
       creatorAddress,
       points: clampedPoints,
     });
+  };
+
+  const handleRequestRevisions = () => {
+    if (!revisionFeedback.trim()) {
+      toast.error("Please provide feedback for the revisions");
+      return;
+    }
+
+    // Check if we have a submissionId from submissions array
+    const submissionId = bounty.submissions?.[0]?.id;
+
+    if (!submissionId) {
+      toast.error("No active submission found to request revisions on");
+      return;
+    }
+
+    requestRevisions(
+      {
+        bountyId: bounty.id,
+        submissionId: submissionId,
+        feedback: revisionFeedback,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Revisions requested successfully");
+          setRevisionFeedback("");
+          setShowRevisionForm(false);
+        },
+        onError: (err) => {
+          toast.error(
+            `Failed to request revisions: ${err instanceof Error ? err.message : "Unknown error"}`,
+          );
+        },
+      },
+    );
   };
 
   return (
@@ -131,25 +175,65 @@ export function SubmissionApprovalPanel({
             </Button>
           </div>
 
-          {/* Revision Section - Coming Soon */}
+          {/* Revision Section */}
           <div className="space-y-4 border-l border-gray-800/50 pl-6">
-            <div className="h-full flex flex-col justify-center items-center text-center p-4 border border-dashed border-gray-800 rounded-lg opacity-60">
-              <AlertTriangle className="size-6 text-gray-500 mb-2" />
-              <h4 className="text-sm font-medium text-gray-400 mb-1">
-                Needs Changes?
-              </h4>
-              <p className="text-xs text-gray-500 mb-4">
-                Request revisions before releasing the escrow.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-gray-700 text-gray-500 cursor-not-allowed"
-                disabled
-              >
-                Coming Soon
-              </Button>
-            </div>
+            {!showRevisionForm ? (
+              <div className="h-full flex flex-col justify-center items-center text-center p-4 border border-dashed border-gray-800 rounded-lg">
+                <AlertTriangle className="size-6 text-yellow-500 mb-2" />
+                <h4 className="text-sm font-medium text-gray-200 mb-1">
+                  Needs Changes?
+                </h4>
+                <p className="text-xs text-gray-400 mb-4">
+                  Request revisions before releasing the escrow.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-700 text-gray-300 hover:text-white"
+                  onClick={() => setShowRevisionForm(true)}
+                >
+                  Request Revisions
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <Label
+                    htmlFor="revision-feedback"
+                    className="text-sm font-medium text-gray-300"
+                  >
+                    Feedback
+                  </Label>
+                  <p className="text-xs text-gray-500 mt-1 mb-2">
+                    Explain what needs to be changed for approval.
+                  </p>
+                  <Textarea
+                    id="revision-feedback"
+                    placeholder="Please update..."
+                    value={revisionFeedback}
+                    onChange={(e) => setRevisionFeedback(e.target.value)}
+                    className="min-h-[80px] bg-gray-900/50 border-gray-700 text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-gray-700"
+                    onClick={() => setShowRevisionForm(false)}
+                    disabled={isRequesting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
+                    onClick={handleRequestRevisions}
+                    disabled={isRequesting || !revisionFeedback.trim()}
+                  >
+                    {isRequesting ? "Sending..." : "Submit Feedback"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

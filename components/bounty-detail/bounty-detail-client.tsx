@@ -247,6 +247,9 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
             <ApplicationSubmitWorkPanel
               bountyId={bountyId}
               contributorAddress={walletAddress}
+              revisionFeedback={
+                bounty.submissions?.[0]?.reviewComments || undefined
+              }
             />
           )}
 

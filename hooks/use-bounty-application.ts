@@ -27,6 +27,15 @@ type ApplicationContractClient = {
     bountyId: bigint;
     workCid: string;
   }) => Promise<{ txHash: string }>;
+  removeContributor: (params: {
+    bountyId: bigint;
+    contributor: string;
+  }) => Promise<{ txHash: string }>;
+  requestRevisions: (params: {
+    bountyId: bigint;
+    submissionId: string;
+    feedback: string;
+  }) => Promise<{ txHash: string }>;
   approveSubmission: (params: {
     creator: string;
     bountyId: bigint;
@@ -320,6 +329,55 @@ export function useApplyForSlot() {
           queryKey: bountyKeys.detail(variables.bountyId),
         });
       }
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: request revisions (BountyRegistry.request_revisions)
+// ---------------------------------------------------------------------------
+
+export function useRequestRevisions() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      submissionId,
+      feedback,
+    }: {
+      bountyId: string;
+      submissionId: string;
+      feedback: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.requestRevisions({
+        bountyId: toBountyIdBigInt(bountyId),
+        submissionId,
+        feedback,
+      });
+    },
+    onMutate: async ({ bountyId }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery>(bountyKeys.detail(bountyId));
+      if (prev?.bounty) {
+        qc.setQueryData<BountyQuery>(bountyKeys.detail(bountyId), {
+          ...prev,
+          bounty: {
+            ...prev.bounty,
+            status: "IN_PROGRESS",
+            updatedAt: new Date().toISOString(),
+          },
+        });
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });
