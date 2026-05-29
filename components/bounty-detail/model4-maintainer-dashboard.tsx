@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Milestone, ContributorProgress } from "@/types/bounty";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import {
+  useAdvanceContributor,
+  useRemoveContributor,
+  useReleaseMilestonePayment,
+} from "@/hooks/use-bounty-application";
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +29,7 @@ import {
 } from "lucide-react";
 
 interface Model4MaintainerDashboardProps {
+  bountyId: string;
   milestones: Milestone[];
   contributors: ContributorProgress[];
   maxSlots?: number;
@@ -30,6 +37,7 @@ interface Model4MaintainerDashboardProps {
 }
 
 export function Model4MaintainerDashboard({
+  bountyId,
   milestones,
   contributors: initialContributors,
   maxSlots = 5,
@@ -37,11 +45,32 @@ export function Model4MaintainerDashboard({
 }: Model4MaintainerDashboardProps) {
   const [loadingAction, setLoadingAction] = React.useState<string | null>(null);
 
+  const { mutateAsync: advanceContributor } = useAdvanceContributor();
+  const { mutateAsync: removeContributor } = useRemoveContributor();
+  const { mutateAsync: releasePayment } = useReleaseMilestonePayment();
+
   const handleAction = async (action: string, userName: string) => {
     setLoadingAction(`${action}-${userName}`);
-    console.log(`[Coming soon] ${action} for ${userName}`);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoadingAction(null);
+    try {
+      if (action === "Advance") {
+        await advanceContributor({ bountyId, contributorUserName: userName });
+        toast.success(`${userName} advanced to next milestone`);
+      } else if (action === "Remove") {
+        await removeContributor({ bountyId, contributorUserName: userName });
+        toast.success(`${userName} removed from bounty`);
+      } else if (action === "Release Payment") {
+        await releasePayment({ bountyId, contributorUserName: userName });
+        toast.success(`Payment released for ${userName}`);
+      } else if (action === "Message" || action === "View Submissions") {
+        toast.info(`${action} is coming soon`);
+      }
+    } catch (e) {
+      toast.error(
+        `Failed to perform action: ${e instanceof Error ? e.message : "Unknown error"}`,
+      );
+    } finally {
+      setLoadingAction(null);
+    }
   };
 
   return (
@@ -144,9 +173,7 @@ export function Model4MaintainerDashboard({
                             <MessageSquare className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Send Message [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Send Message</TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
@@ -163,7 +190,7 @@ export function Model4MaintainerDashboard({
                             }
                             disabled={loadingAction !== null}
                           >
-                            View Submissions [Coming soon]
+                            View Submissions
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Review work</TooltipContent>
@@ -188,7 +215,7 @@ export function Model4MaintainerDashboard({
                             ) : (
                               <Coins className="size-3 mr-1.5" />
                             )}
-                            Release Payment [Coming soon]
+                            Release Payment
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Pay for milestone</TooltipContent>
@@ -210,8 +237,7 @@ export function Model4MaintainerDashboard({
                               <Loader2 className="size-3 mr-1.5 animate-spin" />
                             ) : (
                               <>
-                                Advance [Coming soon]{" "}
-                                <ArrowRight className="size-3 ml-1.5" />
+                                Advance <ArrowRight className="size-3 ml-1.5" />
                               </>
                             )}
                           </Button>
@@ -234,9 +260,7 @@ export function Model4MaintainerDashboard({
                             <UserMinus className="size-4" />
                           </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
-                          Remove from slot [Coming soon]
-                        </TooltipContent>
+                        <TooltipContent>Remove from slot</TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
                   </div>
@@ -264,8 +288,7 @@ export function Model4MaintainerDashboard({
                     className="text-[10px] h-auto p-0 text-primary"
                     disabled
                   >
-                    View All Applications [Coming soon]{" "}
-                    <ChevronRight className="size-3" />
+                    View All Applications <ChevronRight className="size-3" />
                   </Button>
                 </span>
               </TooltipTrigger>

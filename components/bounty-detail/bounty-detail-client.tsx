@@ -220,6 +220,7 @@ export function BountyDetailClient({ bountyId }: { bountyId: string }) {
               getFullMilestoneData(bounty);
             return (
               <Model4MaintainerDashboard
+                bountyId={bounty.id}
                 milestones={milestones}
                 contributors={contributorProgress}
               />

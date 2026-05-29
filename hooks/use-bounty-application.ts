@@ -36,6 +36,18 @@ type ApplicationContractClient = {
     applicant: string;
     bountyId: bigint;
   }) => Promise<{ txHash: string }>;
+  releasePayment: (params: {
+    bountyId: bigint;
+    contributor: string;
+  }) => Promise<{ txHash: string }>;
+  advanceMilestone: (params: {
+    bountyId: bigint;
+    contributor: string;
+  }) => Promise<{ txHash: string }>;
+  removeContributor: (params: {
+    bountyId: bigint;
+    contributor: string;
+  }) => Promise<{ txHash: string }>;
 };
 
 // ---------------------------------------------------------------------------
@@ -321,6 +333,168 @@ export function useApplyForSlot() {
         });
       }
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: advance contributor milestone
+// ---------------------------------------------------------------------------
+
+export function useAdvanceContributor() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorUserName,
+    }: {
+      bountyId: string;
+      contributorUserName: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.advanceMilestone({
+        bountyId: toBountyIdBigInt(bountyId),
+        contributor: contributorUserName,
+      });
+    },
+    onMutate: async ({ bountyId, contributorUserName }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+        bountyKeys.detail(bountyId),
+      );
+      if (prev?.bounty) {
+        const milestones = prev.bounty.milestones ?? MOCK_MODEL4_MILESTONES;
+        const progress = prev.bounty.contributorProgress ?? [];
+
+        const updatedProgress = progress.map((p) => {
+          if (p.userName === contributorUserName) {
+            const currentIndex = milestones.findIndex(
+              (m) => m.id === p.currentMilestoneId,
+            );
+            const nextMilestone = milestones[currentIndex + 1];
+            if (nextMilestone) {
+              return { ...p, currentMilestoneId: nextMilestone.id };
+            }
+          }
+          return p;
+        });
+
+        qc.setQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+          bountyKeys.detail(bountyId),
+          {
+            ...prev,
+            bounty: {
+              ...prev.bounty,
+              contributorProgress: updatedProgress,
+            },
+          },
+        );
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, variables) => {
+      if (variables?.bountyId) {
+        qc.invalidateQueries({
+          queryKey: bountyKeys.detail(variables.bountyId),
+        });
+      }
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: remove contributor
+// ---------------------------------------------------------------------------
+
+export function useRemoveContributor() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorUserName,
+    }: {
+      bountyId: string;
+      contributorUserName: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.removeContributor({
+        bountyId: toBountyIdBigInt(bountyId),
+        contributor: contributorUserName,
+      });
+    },
+    onMutate: async ({ bountyId, contributorUserName }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+        bountyKeys.detail(bountyId),
+      );
+      if (prev?.bounty) {
+        const progress = prev.bounty.contributorProgress ?? [];
+        const updatedProgress = progress.filter(
+          (p) => p.userName !== contributorUserName,
+        );
+        const occupied = Math.max(0, (prev.bounty.totalSlotsOccupied ?? 0) - 1);
+
+        qc.setQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+          bountyKeys.detail(bountyId),
+          {
+            ...prev,
+            bounty: {
+              ...prev.bounty,
+              totalSlotsOccupied: occupied,
+              contributorProgress: updatedProgress,
+            },
+          },
+        );
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, variables) => {
+      if (variables?.bountyId) {
+        qc.invalidateQueries({
+          queryKey: bountyKeys.detail(variables.bountyId),
+        });
+      }
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: release milestone payment
+// ---------------------------------------------------------------------------
+
+export function useReleaseMilestonePayment() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      contributorUserName,
+    }: {
+      bountyId: string;
+      contributorUserName: string;
+    }) => {
+      const client = resolveApplicationClient();
+      return client.releasePayment({
+        bountyId: toBountyIdBigInt(bountyId),
+        contributor: contributorUserName,
+      });
+    },
+    onSettled: (_r, _e, variables) => {
+      if (variables?.bountyId) {
+        qc.invalidateQueries({
+          queryKey: bountyKeys.detail(variables.bountyId),
+        });
+        qc.invalidateQueries({ queryKey: ["escrow"] });
+      }
     },
   });
 }
