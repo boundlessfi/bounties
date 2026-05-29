@@ -4,12 +4,13 @@ import { useState, useMemo } from "react";
 import { useCompetitionJoinState } from "@/hooks/use-competition-join-state";
 import { useCanRaiseDispute } from "@/hooks/use-can-raise-dispute";
 import { useCancelBountyDialog } from "@/hooks/use-cancel-bounty-dialog";
-import { useApplyToBounty, useApplyForSlot } from "@/hooks/use-bounty-application";
+import {
+  useApplyToBounty,
+  useApplyForSlot,
+} from "@/hooks/use-bounty-application";
 import { authClient } from "@/lib/auth-client";
 import type { BountyFieldsFragment } from "@/lib/graphql/generated";
-import type {
-  ApplicationFormValues,
-} from "@/components/bounty/application-dialog";
+import type { ApplicationFormValues } from "@/components/bounty/application-dialog";
 import type { Bounty } from "@/types/bounty";
 import type { CancellationRecord } from "@/types/escrow";
 
@@ -52,7 +53,8 @@ export function useBountyCTAState({
   const isFcfs = bounty.type === "FIXED_PRICE";
   const isCompetition = bounty.type === "COMPETITION";
   const isCreator = useMemo(
-    () => (session?.user as { id?: string } | undefined)?.id === bounty.createdBy,
+    () =>
+      (session?.user as { id?: string } | undefined)?.id === bounty.createdBy,
     [session?.user, bounty.createdBy],
   );
 
@@ -65,9 +67,9 @@ export function useBountyCTAState({
     [isCreator, bounty.status],
   );
 
-  // Fallback to _count.submissions until backend adds claimCount / maxParticipants
-  const claimCount = bounty._count?.submissions ?? 0;
-  const maxParticipants: number | null = null;
+  // Prefer typed fields on Bounty; fall back to _count.submissions for backward compat.
+  const claimCount = bounty.claimCount ?? bounty._count?.submissions ?? 0;
+  const maxParticipants = bounty.maxParticipants ?? null;
   const deadline = bounty.bountyWindow?.endDate ?? null;
   const isFinalized = bounty.status === "COMPLETED";
   const submissionCount = bounty._count?.submissions ?? 0;
@@ -89,7 +91,9 @@ export function useBountyCTAState({
   );
 
   const isAlreadyJoined = useMemo(
-    () => bounty.contributorProgress?.some((c) => c.userId === session?.user?.id) ?? false,
+    () =>
+      bounty.contributorProgress?.some((c) => c.userId === session?.user?.id) ??
+      false,
     [bounty.contributorProgress, session?.user?.id],
   );
 

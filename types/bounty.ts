@@ -2,6 +2,25 @@
  * Frontend types aligned with the backend GraphQL schema (schema.gql).
  */
 
+/** Application shape returned by the bounty detail query. */
+export interface BountyApplication {
+  id: string;
+  applicantAddress: string;
+  applicantName?: string;
+  proposal: {
+    approach: string;
+    estimatedTimeline: string;
+    relevantExperience: string;
+    portfolioUrl?: string;
+  };
+  reputation: {
+    score: number;
+    tier: string;
+    completionStats: string;
+  };
+  createdAt: string;
+}
+
 export type BountyType =
   | "FIXED_PRICE"
   | "MILESTONE_BASED"
@@ -106,12 +125,16 @@ export interface Bounty {
 
   submissions?: BountySubmission[] | null;
   _count?: BountyCount | null;
+  applications?: BountyApplication[] | null;
 
   milestones?: Milestone[] | null;
   contributorProgress?: ContributorProgress[] | null;
 
   maxSlots?: number | null;
   totalSlotsOccupied?: number | null;
+  maxParticipants?: number | null;
+  claimCount?: number | null;
+  assignedContributorId?: string | null;
 
   createdBy: string;
   createdAt: string;
