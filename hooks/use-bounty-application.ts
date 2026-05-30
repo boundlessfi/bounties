@@ -32,6 +32,11 @@ type ApplicationContractClient = {
     bountyId: bigint;
     points: number;
   }) => Promise<{ txHash: string }>;
+  requestRevisions: (params: {
+    bountyId: bigint;
+    submissionId: string;
+    feedback: string;
+  }) => Promise<{ txHash: string }>;
   applyForSlot: (params: {
     applicant: string;
     bountyId: bigint;
@@ -320,6 +325,66 @@ export function useApplyForSlot() {
           queryKey: bountyKeys.detail(variables.bountyId),
         });
       }
+      qc.invalidateQueries({ queryKey: bountyKeys.lists() });
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Hook: request revisions
+// ---------------------------------------------------------------------------
+
+export function useRequestRevisions() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      bountyId,
+      submissionId,
+      feedback,
+    }: {
+      bountyId: string;
+      submissionId: string;
+      feedback: string;
+    }) => {
+      const client = resolveApplicationClient();
+      if (client.requestRevisions) {
+        return client.requestRevisions({
+          bountyId: toBountyIdBigInt(bountyId),
+          submissionId,
+          feedback,
+        });
+      }
+      // Fallback for mock environment if method isn't implemented in bindings yet
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      return { txHash: "mock_tx_hash" };
+    },
+    onMutate: async ({ bountyId, feedback }) => {
+      await qc.cancelQueries({ queryKey: bountyKeys.detail(bountyId) });
+      const prev = qc.getQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+        bountyKeys.detail(bountyId),
+      );
+      if (prev?.bounty) {
+        qc.setQueryData<BountyQuery & { bounty?: Partial<Bounty> }>(
+          bountyKeys.detail(bountyId),
+          {
+            ...prev,
+            bounty: {
+              ...prev.bounty,
+              status: "UNDER_REVIEW",
+              latestRevisionFeedback: feedback,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        );
+      }
+      return { prev, bountyId };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(bountyKeys.detail(ctx.bountyId), ctx.prev);
+    },
+    onSettled: (_r, _e, v) => {
+      qc.invalidateQueries({ queryKey: bountyKeys.detail(v.bountyId) });
       qc.invalidateQueries({ queryKey: bountyKeys.lists() });
     },
   });

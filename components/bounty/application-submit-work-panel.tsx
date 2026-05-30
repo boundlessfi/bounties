@@ -12,16 +12,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useSubmitApplicationWork } from "@/hooks/use-bounty-application";
 
 interface ApplicationSubmitWorkPanelProps {
   bountyId: string;
   contributorAddress: string;
+  latestRevisionFeedback?: string | null;
 }
 
 export function ApplicationSubmitWorkPanel({
   bountyId,
   contributorAddress,
+  latestRevisionFeedback,
 }: ApplicationSubmitWorkPanelProps) {
   const [workCid, setWorkCid] = useState("");
 
@@ -51,6 +54,19 @@ export function ApplicationSubmitWorkPanel({
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
+        {latestRevisionFeedback && (
+          <Alert
+            variant="destructive"
+            className="mb-6 bg-amber-500/10 text-amber-500 border-amber-500/20"
+          >
+            <AlertTitle className="font-semibold text-amber-400">
+              Revisions Requested
+            </AlertTitle>
+            <AlertDescription className="mt-2 text-sm opacity-90 whitespace-pre-wrap">
+              {latestRevisionFeedback}
+            </AlertDescription>
+          </Alert>
+        )}
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="work-cid">
