@@ -32,7 +32,7 @@ type ApplicationContractClient = {
     bountyId: bigint;
     points: number;
   }) => Promise<{ txHash: string }>;
-  requestRevisions: (params: {
+  requestRevisions?: (params: {
     bountyId: bigint;
     submissionId: string;
     feedback: string;
@@ -371,7 +371,7 @@ export function useRequestRevisions() {
             ...prev,
             bounty: {
               ...prev.bounty,
-              status: "UNDER_REVIEW",
+              status: "IN_PROGRESS",
               latestRevisionFeedback: feedback,
               updatedAt: new Date().toISOString(),
             },

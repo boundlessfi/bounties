@@ -66,10 +66,18 @@ export function SubmissionApprovalPanel({
       return;
     }
 
+    const targetSubmission =
+      bounty.submissions && bounty.submissions.length > 0
+        ? [...bounty.submissions].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          )[0]
+        : null;
+
     requestRevisions(
       {
         bountyId: bounty.id,
-        submissionId: "latest", // Assuming latest or using bounty.id if submissionId is not passed in props
+        submissionId: targetSubmission?.id || "latest",
         feedback: revisionFeedback,
       },
       {
