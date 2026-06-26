@@ -35,6 +35,40 @@ interface SearchProject {
   logoUrl: string | null;
 }
 
+type CacheRecord =
+  | BountyFieldsFragment
+  | { bounties: { bounties: unknown[] } }
+  | { data: unknown[] }
+  | { pages: unknown[] }
+  | unknown[];
+
+function isBountyFragment(obj: unknown): obj is BountyFieldsFragment {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "id" in obj &&
+    typeof (obj as Record<string, unknown>).id === "string" &&
+    "title" in obj &&
+    typeof (obj as Record<string, unknown>).title === "string"
+  );
+}
+
+function isProjectRecord(obj: unknown): obj is {
+  id: string;
+  title?: string;
+  name?: string;
+  description?: string;
+  logoUrl?: string;
+  logo?: string;
+} {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "id" in obj &&
+    typeof (obj as Record<string, unknown>).id === "string"
+  );
+}
+
 export function SearchCommand() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -86,24 +120,19 @@ export function SearchCommand() {
     const extractFromObject = (obj: unknown) => {
       if (!obj || typeof obj !== "object") return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const record = obj as any;
-
       // Directly check for BountyFieldsFragment/Bounty properties
-      if (typeof record.id === "string" && typeof record.title === "string") {
-        const bounty = record as BountyFieldsFragment;
-        if (!seenBounties.has(bounty.id)) {
-          seenBounties.add(bounty.id);
-          bounties.push(bounty);
+      if (isBountyFragment(obj)) {
+        if (!seenBounties.has(obj.id)) {
+          seenBounties.add(obj.id);
+          bounties.push(obj);
         }
 
         // Dynamically extract cached project from bounty fields
-        if (bounty.project && typeof bounty.project.id === "string") {
-          const projId = bounty.project.id;
+        if (obj.project && isProjectRecord(obj.project)) {
+          const projId = obj.project.id;
           if (!seenProjects.has(projId)) {
             seenProjects.add(projId);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const proj = bounty.project as any;
+            const proj = obj.project;
             projects.push({
               id: projId,
               name: proj.title || proj.name || "Unnamed Project",
@@ -115,14 +144,22 @@ export function SearchCommand() {
         return;
       }
 
+      const record = obj as CacheRecord;
+
       // BountiesQuery structure
-      if (record.bounties && Array.isArray(record.bounties.bounties)) {
-        record.bounties.bounties.forEach((b: unknown) => extractFromObject(b));
+      if (
+        "bounties" in record &&
+        record.bounties &&
+        typeof record.bounties === "object" &&
+        "bounties" in record.bounties &&
+        Array.isArray((record.bounties as Record<string, unknown>).bounties)
+      ) {
+        (record.bounties as Record<string, unknown>).bounties.forEach((b: unknown) => extractFromObject(b));
         return;
       }
 
       // Array structure (PaginatedResponse.data or raw array)
-      if (Array.isArray(record.data)) {
+      if ("data" in record && Array.isArray(record.data)) {
         record.data.forEach((b: unknown) => extractFromObject(b));
         return;
       }
@@ -132,7 +169,7 @@ export function SearchCommand() {
       }
 
       // InfiniteQuery pages structure
-      if (Array.isArray(record.pages)) {
+      if ("pages" in record && Array.isArray(record.pages)) {
         record.pages.forEach((page: unknown) => extractFromObject(page));
         return;
       }
