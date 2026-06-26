@@ -35,6 +35,57 @@ interface SearchProject {
   logoUrl: string | null;
 }
 
+type CacheRecord =
+  | BountyFieldsFragment
+  | unknown[]
+  | { bounties: { bounties: unknown[] } }
+  | { data: unknown[] }
+  | { pages: unknown[] };
+
+type CacheProject = {
+  id: string;
+  title?: unknown;
+  name?: unknown;
+  description?: unknown;
+  logoUrl?: unknown;
+  logo?: unknown;
+};
+
+const isObject = (value: unknown): value is Record<PropertyKey, unknown> =>
+  typeof value === "object" && value !== null;
+
+const isBountyFragment = (value: unknown): value is BountyFieldsFragment =>
+  isObject(value) &&
+  typeof value.id === "string" &&
+  typeof value.title === "string";
+
+const isCacheProject = (value: unknown): value is CacheProject =>
+  isObject(value) && typeof value.id === "string";
+
+const stringOrUndefined = (value: unknown) =>
+  typeof value === "string" ? value : undefined;
+
+const getCachedArray = (
+  record: Record<PropertyKey, unknown>,
+  key: "data" | "pages",
+): unknown[] | undefined =>
+  Array.isArray(record[key]) ? record[key] : undefined;
+
+const getBountiesQueryItems = (record: Record<PropertyKey, unknown>) => {
+  const bountiesRecord = record.bounties;
+  return isObject(bountiesRecord) && Array.isArray(bountiesRecord.bounties)
+    ? bountiesRecord.bounties
+    : undefined;
+};
+
+const isCacheRecord = (value: unknown): value is CacheRecord =>
+  Array.isArray(value) ||
+  isBountyFragment(value) ||
+  (isObject(value) &&
+    (getBountiesQueryItems(value) !== undefined ||
+      getCachedArray(value, "data") !== undefined ||
+      getCachedArray(value, "pages") !== undefined));
+
 export function SearchCommand() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -84,31 +135,41 @@ export function SearchCommand() {
     const seenProjects = new Set<string>();
 
     const extractFromObject = (obj: unknown) => {
-      if (!obj || typeof obj !== "object") return;
+      const visitAll = (items: unknown[] | undefined) => {
+        items?.forEach((item) => extractFromObject(item));
+      };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const record = obj as any;
+      if (Array.isArray(obj)) {
+        visitAll(obj);
+        return;
+      }
+
+      if (!isCacheRecord(obj) || !isObject(obj)) return;
 
       // Directly check for BountyFieldsFragment/Bounty properties
-      if (typeof record.id === "string" && typeof record.title === "string") {
-        const bounty = record as BountyFieldsFragment;
+      if (isBountyFragment(obj)) {
+        const bounty = obj;
         if (!seenBounties.has(bounty.id)) {
           seenBounties.add(bounty.id);
           bounties.push(bounty);
         }
 
         // Dynamically extract cached project from bounty fields
-        if (bounty.project && typeof bounty.project.id === "string") {
+        if (isCacheProject(bounty.project)) {
           const projId = bounty.project.id;
           if (!seenProjects.has(projId)) {
             seenProjects.add(projId);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const proj = bounty.project as any;
             projects.push({
               id: projId,
-              name: proj.title || proj.name || "Unnamed Project",
-              description: proj.description || "",
-              logoUrl: proj.logoUrl || proj.logo || null,
+              name:
+                stringOrUndefined(bounty.project.title) ||
+                stringOrUndefined(bounty.project.name) ||
+                "Unnamed Project",
+              description: stringOrUndefined(bounty.project.description) || "",
+              logoUrl:
+                stringOrUndefined(bounty.project.logoUrl) ||
+                stringOrUndefined(bounty.project.logo) ||
+                null,
             });
           }
         }
@@ -116,24 +177,23 @@ export function SearchCommand() {
       }
 
       // BountiesQuery structure
-      if (record.bounties && Array.isArray(record.bounties.bounties)) {
-        record.bounties.bounties.forEach((b: unknown) => extractFromObject(b));
+      const bountiesQueryItems = getBountiesQueryItems(obj);
+      if (bountiesQueryItems) {
+        visitAll(bountiesQueryItems);
         return;
       }
 
       // Array structure (PaginatedResponse.data or raw array)
-      if (Array.isArray(record.data)) {
-        record.data.forEach((b: unknown) => extractFromObject(b));
-        return;
-      }
-      if (Array.isArray(record)) {
-        record.forEach((b: unknown) => extractFromObject(b));
+      const dataItems = getCachedArray(obj, "data");
+      if (dataItems) {
+        visitAll(dataItems);
         return;
       }
 
       // InfiniteQuery pages structure
-      if (Array.isArray(record.pages)) {
-        record.pages.forEach((page: unknown) => extractFromObject(page));
+      const pageItems = getCachedArray(obj, "pages");
+      if (pageItems) {
+        visitAll(pageItems);
         return;
       }
     };
