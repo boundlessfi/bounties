@@ -22,11 +22,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useUserRole } from "@/hooks/use-user-role";
+import { authClient } from "@/lib/auth-client";
 
 import { Wallet, LogIn, Fingerprint } from "lucide-react";
 
 export function GlobalNavbar() {
   const pathname = usePathname();
+  const { data: session } = authClient.useSession();
   const userRole = useUserRole();
   const { walletInfo, isConnected, isRegistered, connect, isLoading } =
     useSmartWallet();
@@ -51,6 +53,7 @@ export function GlobalNavbar() {
     has2FA: false,
     isConnected: false,
   };
+  const currentUserId = session?.user?.id;
 
   return (
     <nav className="border-b sticky top-0 z-50 w-full bg-background">
@@ -140,9 +143,12 @@ export function GlobalNavbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <NavRankBadge userId="user-1" className="hidden sm:flex" />
-          <CreditBalance userId="user-1" className="hidden sm:flex" />
-          {/* TODO: Replace with actual auth user ID */}
+          {currentUserId && (
+            <>
+              <NavRankBadge userId={currentUserId} className="hidden sm:flex" />
+              <CreditBalance userId={currentUserId} className="hidden sm:flex" />
+            </>
+          )}
 
           <NotificationCenter />
 
