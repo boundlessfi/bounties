@@ -57,7 +57,10 @@ const isObject = (value: unknown): value is Record<PropertyKey, unknown> =>
 const isBountyFragment = (value: unknown): value is BountyFieldsFragment =>
   isObject(value) &&
   typeof value.id === "string" &&
-  typeof value.title === "string";
+  typeof value.title === "string" &&
+  typeof value.status === "string" &&
+  typeof value.rewardAmount === "number" &&
+  typeof value.rewardCurrency === "string";
 
 const isCacheProject = (value: unknown): value is CacheProject =>
   isObject(value) && typeof value.id === "string";
