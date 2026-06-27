@@ -702,9 +702,6 @@ export function useSendMessage(bountyId: string) {
         timestamp: new Date().toISOString(),
       });
 
-      console.log(
-        `[useSendMessage] Recorded message for bountyId ${bountyId}: contributorId=${contributorId}, message="${message}"`,
-      );
       return { contributorId, message };
     },
   });
