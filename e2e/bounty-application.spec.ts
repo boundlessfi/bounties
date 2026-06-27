@@ -19,10 +19,10 @@ import { test, expect, type Page } from "@playwright/test";
 
 // Must be a valid UUID (all hex chars) so toBountyIdBigInt() in
 // use-competition-bounty.ts can parse it without throwing ContestError("tx_failed").
-const BOUNTY_ID = "e2ec0bcd-dead-beef-cafe-ab01cd02ef03";
-const BOUNTY_ID_MULTI = "e2ec0bcd-dead-beef-cafe-ab01cd02ef04";
+export const BOUNTY_ID = "e2ec0bcd-dead-beef-cafe-ab01cd02ef03";
+export const BOUNTY_ID_MULTI = "e2ec0bcd-dead-beef-cafe-ab01cd02ef04";
 
-const MOCK_MULTI_WINNER_BOUNTY_FRAGMENT = {
+export const MOCK_MULTI_WINNER_BOUNTY_FRAGMENT = {
   __typename: "Bounty",
   id: BOUNTY_ID_MULTI,
   title: "Multi-winner milestone bounty",
@@ -68,7 +68,7 @@ const MOCK_MULTI_WINNER_BOUNTY_FRAGMENT = {
   totalSlotsOccupied: 0,
 };
 
-const MOCK_BOUNTY_FRAGMENT = {
+export const MOCK_BOUNTY_FRAGMENT = {
   __typename: "Bounty",
   id: BOUNTY_ID,
   title: "Add zero-knowledge proof primitives",
@@ -104,7 +104,7 @@ const MOCK_BOUNTY_FRAGMENT = {
 };
 
 // Session includes walletAddress so handleJoin() passes the wallet guard.
-const MOCK_SESSION = {
+export const MOCK_SESSION = {
   user: {
     id: "user-e2e-tester",
     name: "E2E Tester",
@@ -122,7 +122,7 @@ type ContestContracts = {
   }) => Promise<{ txHash: string }>;
 };
 
-async function setupMocks(page: Page) {
+export async function setupMocks(page: Page) {
   // Inject successful contract client by default
   await page.addInitScript(() => {
     (globalThis as { __claimBountyCalls?: number }).__claimBountyCalls = 0;
