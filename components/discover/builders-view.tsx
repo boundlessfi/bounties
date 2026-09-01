@@ -10,7 +10,7 @@ import { Section } from '@/components/marketing/section';
 
 import { BuildersGrid } from './builders-grid';
 import { BuildersSortSelect } from './builders-sort-select';
-import { DiscoverHeader } from './discover-header';
+import { StatsBanner } from './stats-banner';
 import { DiscoverToolbar } from './discover-toolbar';
 import {
   FilterRail,
@@ -245,11 +245,13 @@ export function BuildersView() {
   }, [page, totalPages, search, filters, sort, navigate]);
 
   return (
-    <Section className='py-10 lg:py-12' innerClassName='flex flex-col gap-6'>
-      <DiscoverHeader
-        heading='Builders'
-        subtext='Meet the builders making an impact across the Boundless ecosystem.'
-        count={data?.pagination.total}
+    <Section
+      className='pt-4 pb-16 lg:pt-4 lg:pb-16'
+      innerClassName='flex flex-col gap-8'
+    >
+      <StatsBanner
+        title='Discover the people building what is next'
+        subtitle='Meet the builders making an impact across the Boundless ecosystem.'
       />
 
       <DiscoverToolbar
@@ -316,10 +318,13 @@ export function BuildersView() {
  */
 export function BuildersViewFallback() {
   return (
-    <Section className='py-10 lg:py-12' innerClassName='flex flex-col gap-6'>
-      <DiscoverHeader
-        heading='Builders'
-        subtext='Meet the builders making an impact across the Boundless ecosystem.'
+    <Section
+      className='pt-4 pb-16 lg:pt-4 lg:pb-16'
+      innerClassName='flex flex-col gap-8'
+    >
+      <StatsBanner
+        title='Discover the people building what is next'
+        subtitle='Meet the builders making an impact across the Boundless ecosystem.'
       />
       <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4'>
         {Array.from({ length: PAGE_SIZE }, (_, index) => (
